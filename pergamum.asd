@@ -4,6 +4,6 @@
 (in-package :pergamum.system)
 
 (defsystem :pergamum
-  :depends-on (:alexandria)
+  :depends-on (:alexandria :iterate)
   :components
   ((:file "pergamum")))

@@ -1,11 +1,14 @@
 (defpackage pergamum
-  (:use :common-lisp :alexandria)
+  (:use :common-lisp :alexandria :iterate)
   (:export
    #:quote-when
-   #:lambda-xform
    #:op-parameter-destructurer
-   #:define-lambda-parser
-   ))
+   #:lambda-xform
+   #:lambda-list-binds
+   #:mklist
+   #:emit-lambda
+   #:define-evaluation-domain
+   #:define-evaluations))
 
 (in-package :pergamum)
 
@@ -21,7 +24,6 @@
 (defun lambda-xform (fn spec form &optional acc (mode '&mandatory) key)
   "Perform FN on the input elements combined with the corresponding
    element of the lambda-list encoded SPEC."
-;;   (format t "matching ~S to ~S, so far got acc ~S~%" spec form acc)
   (flet ((yield (acc selt felt)
 	   (cons (funcall fn selt felt) acc)))
     (cond ((and (null spec) (null form))
@@ -70,34 +72,63 @@
 		      (error "Bad or missing spec for the rest."))
 		    (nreverse (nconc (nreverse (mapcar (curry (the function fn) elt) form)) acc))))))))))
 
+(defun lambda-list-binds (list)
+  "Yield a list of symbols bound by a well-formed lambda LIST."
+  (iter (for elt in list)
+	(cond ((consp elt)
+	       (collect (car elt)))
+	      ((not (member elt lambda-list-keywords))
+	       (collect elt)))))
+
+(defun destructurable-by-p (destructuring-spec form)
+  "Checks whether the form is destructurable by destructuring-spec."
+  (declare (ignore destructuring-spec form)))
+
+(defun mklist (x)
+  "Ensure that X is a list."
+  (if (listp x) x (list x)))
+
+(defun emit-lambda (list body &key documentation declarations)
+  (append `(lambda ,list)
+	  (mklist documentation)
+	  (when declarations
+	    (list (list* 'declare declarations)))
+	  body))
+
+(defmacro define-evaluation-domain (domain-name)
+  (let ((table-name (format-symbol (symbol-package domain-name) "*~A-EVALUATION-DOMAIN*" domain-name)))
+    (when (boundp table-name)
+      (warn "redefining ~S in DEFINE-EVALUATION-DOMAIN" domain-name))
+    `(progn
+       (eval-when (:compile-toplevel :execute)
+	 (defparameter ,table-name (make-hash-table :test #'equal)))
+       
+       (defun ,(format-symbol (symbol-package domain-name) "APPLY-~S" domain-name) (query-name form)
+	 (op-parameter-destructurer (op params) form
+	   (let ((evaluator (gethash (list op query-name) ,table-name)))
+	     (unless evaluator
+	       (error "unknown evaluator: ~A/~A" op query-name))
+	     (apply evaluator params))))
+       
+       (defmacro ,(format-symbol (symbol-package domain-name) "LITERAL-FUNCALL-~S" domain-name) (query-name form)
+	 (with-gensyms (evaluator)
+	   (op-parameter-destructurer (op params) form
+	     `(let ((,evaluator (gethash (list ',op ',query-name) ,',table-name)))
+		(unless ,evaluator
+		  (error "unknown evaluator: ~A/~A" ',op ',query-name))
+		(funcall ,evaluator ,@params))))))))
+
 ;; This macro belongs to the wider world.
-(defmacro define-lambda-parser (parser-name (&rest evaluation-result-vars))
-  (with-gensyms (name lambda-list)
-    (let ((table-name (format-symbol (symbol-package parser-name) "*~S-PARSER*" parser-name)))
-      `(progn
-	 (defparameter ,table-name (make-hash-table))
-	 
-	 (defmacro ,(format-symbol (symbol-package parser-name) "DEFINE-~S" parser-name) (,name ,lambda-list &body body)
-	   `(setf (gethash ',,name ,',table-name)
-		  #'(lambda ,,lambda-list ,@body)))
-	 
-	 (defmacro ,(format-symbol (symbol-package parser-name) "APPLY-BIND-~S" parser-name) ((,@evaluation-result-vars) type &body body)
-	   "Apply a lambda list parser to an opaque value."
-	   (with-gensyms (op paramz lambda-parser)
-	     `(op-parameter-destructurer (,op ,paramz) ,type
-		(let ((,lambda-parser (gethash ,op ,',table-name)))
-		  (unless ,lambda-parser
-		    (error "Unknown lambda parser ~A." ,lambda-parser))
-		  (multiple-value-bind (,,@evaluation-result-vars) (apply ,lambda-parser ,paramz)
-		    ,@body)))))
-	 
-	 (defmacro ,(format-symbol (symbol-package parser-name) "FUNCALL-BIND-~S" parser-name) ((,@evaluation-result-vars) type &body body)
-	   "Apply a lambda list parser to a literally comprehensible form."
-	   (with-gensyms (lambda-parser)
-	     (op-parameter-destructurer (op paramy) type
-	       `(let ((,lambda-parser (gethash ,op ,',table-name)))
-		  (unless ,lambda-parser
-		    (error "Unknown lambda parser ~A." ,lambda-parser))
-		  (multiple-value-bind (,,@evaluation-result-vars) (funcall ,lambda-parser ,@paramy)
-		    ,@body)))))))))
+(defmacro define-evaluations (domain-name op lambda-list &rest evaluations)
+  (let ((table-name (format-symbol (symbol-package domain-name) "*~A-EVALUATION-DOMAIN*" domain-name))
+	(lambda-binds (lambda-list-binds lambda-list)))
+    (unless (boundp table-name)
+      (error "undefined evaluation domain ~S." domain-name))
+    `(setf ,@(iter (for (query-name interested-by-list . body) in evaluations)
+		   (unless (every (rcurry #'member lambda-binds) interested-by-list)
+		     (error "the interested-by binding specification ~S is not a subset of the main binding list ~S."
+			    interested-by-list lambda-list))
+		   (collect `(gethash `(,',op ,',query-name) ,table-name))
+		   (collect (emit-lambda lambda-list body
+					 :declarations `((ignore ,@(set-difference lambda-binds interested-by-list)))))))))
   

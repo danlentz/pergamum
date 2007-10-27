@@ -6,4 +6,6 @@
 (defsystem :pergamum
   :depends-on (:alexandria :iterate)
   :components
-  ((:file "pergamum")))
+  ((:file "package")
+   (:file "pergamum" :depends-on ("package"))
+   (:file "u8-sequence" :depends-on ("package"))))

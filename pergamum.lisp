@@ -1,15 +1,3 @@
-(defpackage pergamum
-  (:use :common-lisp :alexandria :iterate)
-  (:export
-   #:quote-when
-   #:op-parameter-destructurer
-   #:lambda-xform
-   #:lambda-list-binds
-   #:mklist
-   #:emit-lambda
-   #:define-evaluation-domain
-   #:define-evaluations))
-
 (in-package :pergamum)
 
 (defun quote-when (c form)
@@ -100,7 +88,7 @@
     (when (boundp table-name)
       (warn "redefining ~S in DEFINE-EVALUATION-DOMAIN" domain-name))
     `(progn
-       (eval-when (:compile-toplevel :execute)
+       (eval-when (:compile-toplevel :load-toplevel)
 	 (defparameter ,table-name (make-hash-table :test #'equal)))
        
        (defun ,(format-symbol (symbol-package domain-name) "APPLY-~S" domain-name) (query-name form)

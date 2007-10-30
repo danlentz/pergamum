@@ -101,16 +101,14 @@
 	 (op-parameter-destructurer (op params) form
 	   (let ((evaluator (gethash (list op query-name) ,table-name)))
 	     (unless evaluator
-	       (error "unknown evaluator: ~A/~A" op query-name))
+	       (error "unknown evaluator: ~A / ~A" op query-name))
 	     (apply evaluator params))))
        
        (defmacro ,(format-symbol (symbol-package domain-name) "LITERAL-FUNCALL-~S" domain-name) (query-name form)
-	 (with-gensyms (evaluator)
-	   (op-parameter-destructurer (op params) form
-	     `(let ((,evaluator (gethash (list ',op ',query-name) ,',table-name)))
-		(unless ,evaluator
-		  (error "unknown evaluator: ~A/~A" ',op ',query-name))
-		(funcall ,evaluator ,@params))))))))
+	 (op-parameter-destructurer (op params) form
+	   (unless (gethash (list op query-name) ,table-name)
+	     (error "unknown evaluator: ~A / ~A" op query-name))
+	   `(funcall (gethash (list ',op ',query-name) ,',table-name) ,@params))))))
 
 ;; This macro belongs to the wider world.
 (defmacro define-evaluations (domain-name op lambda-list &rest evaluations)

@@ -76,12 +76,18 @@
   "Ensure that X is a list."
   (if (listp x) x (list x)))
 
-(defun emit-lambda (list body &key documentation declarations)
-  (append `(lambda ,list)
-	  (mklist documentation)
-	  (when declarations
+(defun emit-binding-form-body (body &key declarations)
+  (append (when declarations
 	    (list (list* 'declare declarations)))
 	  body))
+
+(defun emit-lambda-body (body &key documentation declarations)
+  (append (mklist documentation)
+	  (emit-binding-form-body body :declarations declarations)))
+
+(defun emit-lambda (list body &key documentation declarations)
+  (append `(lambda ,list)
+	  (emit-lambda-body body :documentation documentation :declarations declarations)))
 
 (defmacro define-evaluation-domain (domain-name)
   (let ((table-name (format-symbol (symbol-package domain-name) "*~A-EVALUATION-DOMAIN*" domain-name)))

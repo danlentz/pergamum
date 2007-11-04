@@ -76,10 +76,15 @@
   "Ensure that X is a list."
   (if (listp x) x (list x)))
 
+(defun emit-ignore-declaration (symbols)
+  (when symbols (list* 'ignore symbols)))
+
+(defun emit-declarations (&key ignore)
+  (when (or ignore)
+    (list* 'declare (append (list (emit-ignore-declaration ignore))))))
+
 (defun emit-binding-form-body (body &key declarations)
-  (append (when declarations
-	    (list (list* 'declare declarations)))
-	  body))
+  (append (list declarations) body))
 
 (defun destructure-binding-form-body (body &optional declarations)
   (if (and (consp body) (consp (car body)) (eq (caar body) 'declare))
@@ -93,6 +98,10 @@
 (defun emit-lambda (list body &key documentation declarations)
   (append `(lambda ,list)
 	  (emit-lambda-body body :documentation documentation :declarations declarations)))
+
+(defun emit-named-lambda (name list body &key documentation declarations)
+  `(labels ((,name ,list
+	      ,@(emit-lambda-body body :documentation documentation :declarations declarations))) #',name))
 
 (defmacro define-evaluation-domain (domain-name)
   (let ((table-name (format-symbol (symbol-package domain-name) "*~A-EVALUATIONS*" domain-name))
@@ -108,7 +117,7 @@
 	 (op-parameter-destructurer (op params) form
 	   (let ((evaluator (gethash (list op query-name) ,table-name)))
 	     (unless evaluator
-	       (error "unknown fn evaluator: ~A / ~A" op query-name))
+	       (error "no function evaluator ~S defined for op ~S, within evaluation domain ~S" query-name op ',domain-name))
 	     (apply evaluator params))))
        
        (defmacro ,(format-symbol (symbol-package domain-name) "EVAL-~S" domain-name) (query-name form)
@@ -116,15 +125,16 @@
 	   (let ((evaluator (gethash (list op query-name) ,table-name))
 		 (macro-p (gethash (list op query-name) ,macro-p-table-name)))
 	     (unless evaluator
-	       (error "unknown evaluator: ~A / ~A" op query-name))
+	       (error "no evaluator ~S defined for op ~S, within evaluation domain ~S" query-name op ',domain-name))
 	     (if macro-p
 		 (apply evaluator params)
 		 `(funcall (gethash (list ',op ',query-name) ,',table-name) ,@params))))))))
 
 (defun define-evaluations (domain-name macro-p op lambda-list evaluations)
-  (let ((table-name (format-symbol (symbol-package domain-name) "*~A-EVALUATIONS*" domain-name))
-	(macro-p-table-name (format-symbol (symbol-package domain-name) "*~A-MACRO-P*" domain-name))
-	(lambda-binds (lambda-list-binds lambda-list)))
+  (let* ((target-package (symbol-package domain-name))
+	 (table-name (format-symbol target-package "*~A-EVALUATIONS*" domain-name))
+	 (macro-p-table-name (format-symbol target-package "*~A-MACRO-P*" domain-name))
+	 (lambda-binds (lambda-list-binds lambda-list)))
     (unless (boundp table-name)
       (error "undefined evaluation domain ~S." domain-name))
     `(setf ,@(iter (for (query-name interested-by-list . body) in evaluations)
@@ -134,8 +144,8 @@
 		   (appending
 		    `((gethash `(,',op ,',query-name) ,macro-p-table-name) ,macro-p
 		      (gethash `(,',op ,',query-name) ,table-name)
-		      ,(emit-lambda lambda-list body
-				    :declarations `((ignore ,@(set-difference lambda-binds interested-by-list))))))))))
+		      ,(emit-named-lambda (format-symbol target-package "~S-~S" op query-name) lambda-list body
+					  :declarations (emit-declarations :ignore (set-difference lambda-binds interested-by-list)))))))))
 
 (defmacro define-function-evaluations (domain-name op lambda-list &rest evaluations)
   (define-evaluations domain-name nil op lambda-list evaluations))

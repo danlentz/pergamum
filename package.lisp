@@ -9,7 +9,8 @@
    #:mklist
    #:emit-lambda
    #:define-evaluation-domain
-   #:define-evaluations
+   #:define-function-evaluations
+   #:define-macro-evaluations
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe
    #:u8-vector-word16le #:u8-vector-word16be

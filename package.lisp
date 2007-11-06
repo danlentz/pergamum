@@ -7,7 +7,7 @@
    #:lambda-xform
    #:lambda-list-binds
    #:mklist
-   #:emit-lambda
+   #:emit-lambda #:emit-declarations
    #:define-evaluation-domain
    #:define-function-evaluations
    #:define-macro-evaluations

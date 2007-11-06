@@ -137,21 +137,19 @@
 	 (lambda-binds (lambda-list-binds lambda-list)))
     (unless (boundp table-name)
       (error "undefined evaluation domain ~S." domain-name))
-    `(setf ,@(iter (for (query-name interested-by-list . body) in evaluations)
-		   (unless (every (rcurry #'member lambda-binds) interested-by-list)
-		     (error "the interested-by binding specification ~S is not a subset of the main binding list ~S."
-			    interested-by-list lambda-list))
-		   (appending
-		    `((gethash `(,',op ,',query-name) ,macro-p-table-name) ,macro-p
-		      (gethash `(,',op ,',query-name) ,table-name)
-		      ,(emit-named-lambda (format-symbol target-package "~S-~S" op query-name) lambda-list body
-					  :declarations (emit-declarations :ignore (set-difference lambda-binds interested-by-list)))))))))
+    `(eval-when (:compile-toplevel :load-toplevel)
+       (setf ,@(iter (for (query-name interested-by-list . body) in evaluations)
+		     (unless (every (rcurry #'member lambda-binds) interested-by-list)
+		       (error "the interested-by binding specification ~S is not a subset of the main binding list ~S."
+			      interested-by-list lambda-list))
+		     (appending
+		      `((gethash `(,',op ,',query-name) ,macro-p-table-name) ,macro-p
+			(gethash `(,',op ,',query-name) ,table-name)
+			,(emit-named-lambda (format-symbol target-package "~S-~S-~S" op domain-name query-name) lambda-list body
+					    :declarations (emit-declarations :ignore (set-difference lambda-binds interested-by-list))))))))))
 
 (defmacro define-function-evaluations (domain-name op lambda-list &rest evaluations)
   (define-evaluations domain-name nil op lambda-list evaluations))
 
 (defmacro define-macro-evaluations (domain-name op lambda-list &rest evaluations)
   (define-evaluations domain-name t op lambda-list evaluations))
-
-(setf *break-on-signals* t)
-(setf *break-on-signals* nil)

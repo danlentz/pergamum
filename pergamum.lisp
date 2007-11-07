@@ -60,6 +60,10 @@
 		      (error "Bad or missing spec for the rest."))
 		    (nreverse (nconc (nreverse (mapcar (curry (the function fn) elt) form)) acc))))))))))
 
+(defun mklist (x)
+  "Ensure that X is a list."
+  (if (listp x) x (list x)))
+
 (defun lambda-list-binds (list)
   "Yield a list of symbols bound by a well-formed lambda LIST."
   (iter (for elt in list)
@@ -67,14 +71,6 @@
 	       (collect (car elt)))
 	      ((not (member elt lambda-list-keywords))
 	       (collect elt)))))
-
-(defun destructurable-by-p (destructuring-spec form)
-  "Checks whether the form is destructurable by destructuring-spec."
-  (declare (ignore destructuring-spec form)))
-
-(defun mklist (x)
-  "Ensure that X is a list."
-  (if (listp x) x (list x)))
 
 (defun emit-ignore-declaration (symbols)
   (when symbols (list* 'ignore symbols)))
@@ -102,6 +98,13 @@
 (defun emit-named-lambda (name list body &key documentation declarations)
   `(labels ((,name ,list
 	      ,@(emit-lambda-body body :documentation documentation :declarations declarations))) #',name))
+
+(defmacro lambda-list-satisfied-p (list value)
+  "Checks whether the VALUE is destructurable by lambda LIST.
+   NOTE: evaluation of VALUE might raise an unrelated error,
+   potentially yielding a false negative."
+  `(ignore-errors
+     (destructuring-bind ,list ,value ,@(emit-lambda-body '(t) :declarations (emit-declarations :ignore (lambda-list-binds list))))))
 
 (defmacro define-evaluation-domain (domain-name)
   (let ((table-name (format-symbol (symbol-package domain-name) "*~A-EVALUATIONS*" domain-name))

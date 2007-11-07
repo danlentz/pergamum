@@ -5,9 +5,10 @@
    #:quote-when
    #:op-parameter-destructurer
    #:lambda-xform
-   #:lambda-list-binds
    #:mklist
+   #:lambda-list-binds
    #:emit-lambda #:emit-declarations
+   #:lambda-list-satisfied-p
    #:define-evaluation-domain
    #:define-function-evaluations
    #:define-macro-evaluations

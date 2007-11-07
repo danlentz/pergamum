@@ -72,12 +72,13 @@
 	      ((not (member elt lambda-list-keywords))
 	       (collect elt)))))
 
-(defun emit-ignore-declaration (symbols)
-  (when symbols (list* 'ignore symbols)))
+(defun emit-declaration (type symbols)
+  (when symbols (list (list* type symbols))))
 
-(defun emit-declarations (&key ignore)
-  (when (or ignore)
-    (list* 'declare (append (list (emit-ignore-declaration ignore))))))
+(defun emit-declarations (&key ignore special)
+  (when (or ignore special)
+    (list* 'declare (append (emit-declaration 'ignore ignore)
+			    (emit-declaration 'special special)))))
 
 (defun emit-binding-form-body (body &key declarations)
   (append (list declarations) body))

@@ -81,7 +81,7 @@
 			    (emit-declaration 'special special)))))
 
 (defun emit-binding-form-body (body &key declarations)
-  (append (list declarations) body))
+  (append (when declarations (list declarations)) body))
 
 (defun destructure-binding-form-body (body &optional declarations)
   (if (and (consp body) (consp (car body)) (eq (caar body) 'declare))

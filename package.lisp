@@ -4,7 +4,9 @@
    ;; pergamum.lisp
    #:quote-when
    #:op-parameter-destructurer
-   #:lambda-xform
+   #:map-lambda-list
+   #:order
+   #:lambda-list-application-types-match-p
    #:mklist
    #:lambda-list-binds
    #:emit-lambda #:emit-declarations

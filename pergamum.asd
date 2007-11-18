@@ -7,5 +7,6 @@
   :depends-on (:alexandria :iterate)
   :components
   ((:file "package")
-   (:file "pergamum" :depends-on ("package"))
+   (:file "basis")
+   (:file "pergamum" :depends-on ("basis"))
    (:file "u8-sequence" :depends-on ("package"))))

@@ -1,6 +1,7 @@
 (defpackage pergamum
   (:use :common-lisp :alexandria :iterate)
   (:export
+   ;; basis.lisp
    ;; pergamum.lisp
    #:quote-when
    #:op-parameter-destructurer
@@ -9,7 +10,8 @@
    #:lambda-list-application-types-match-p
    #:mklist
    #:lambda-list-binds
-   #:emit-lambda #:emit-declarations
+   #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission
+   #:emit-declarations
    #:lambda-list-satisfied-p
    #:define-evaluation-domain
    #:define-function-evaluations

@@ -122,6 +122,9 @@
   `(labels ((,name ,list
 	      ,@(emit-lambda-body body :documentation documentation :declarations declarations))) #',name))
 
+(defmacro with-named-lambda-emission (name lambda-list &body body)
+  `(emit-named-lambda ,name ,lambda-list (list ,@body)))
+
 (defmacro lambda-list-satisfied-p (list value)
   "Checks whether the VALUE is destructurable by lambda LIST.
    NOTE: evaluation of VALUE might raise an unrelated error,

@@ -157,7 +157,7 @@
 	       (error "no evaluator ~S defined for op ~S, within evaluation domain ~S" query-name op ',domain-name))
 	     (if macro-p
 		 (apply evaluator params)
-		 `(funcall (gethash (list ',op ',query-name) ,',table-name) ,@params))))))))
+		 `(funcall (load-time-value (gethash (list ',op ',query-name) ,',table-name)) ,@params))))))))
 
 (defun define-evaluations (domain-name macro-p op lambda-list evaluations)
   (let* ((target-package (symbol-package domain-name))

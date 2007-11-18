@@ -1,0 +1,13 @@
+(in-package :pergamum)
+
+(defun xform/filter-if (xform test &rest sequences)
+  (labels ((iterate (acc sequences)
+	     (if (notany #'null sequences)
+		 (let ((crop (mapcar #'car sequences))
+		       (rest (mapcar #'cdr sequences)))
+		   (iterate (if (apply test crop)
+				(cons (apply xform crop) acc)
+				acc)
+			    rest))
+		 acc)))
+    (nreverse (iterate nil sequences))))

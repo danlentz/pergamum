@@ -61,18 +61,6 @@
 		      (error "Bad or missing spec for the rest."))
 		    (nreverse (nconc (nreverse (mapcar (curry (the function fn) elt) form)) acc))))))))))
 
-(defun xform/filter-if (xform test &rest sequences)
-  (labels ((iterate (acc sequences)
-	     (if (notany #'null sequences)
-		 (let ((crop (mapcar #'car sequences))
-		       (rest (mapcar #'cdr sequences)))
-		   (iterate (if (apply test crop)
-				(cons (apply xform crop) acc)
-				acc)
-			    rest))
-		 acc)))
-    (nreverse (iterate nil sequences))))
-
 (defmacro order (fnspec &rest order)
   "Given a function specification (either FNSYM or (FNSYM NPARAMS)),
    and a list of positional parameter specifiers, produce a function

@@ -51,11 +51,12 @@
                         (return-from map-lambda-list (nreverse acc)))
                       (unless val
                         (error "odd number of &KEY arguments"))
-                      (let ((spec-keyspec (getf spec key)))
-                        (unless spec-keyspec
+                      (multiple-value-bind (property-name value list) (get-properties spec (list key))
+                        (declare (ignore property-name ))
+                        (unless list
                           (error "unknown &KEY argument: ~S" key))
                         (map-lambda-list fn (remove-from-plist spec key) rest
-                                         (yield (cons key acc) spec-keyspec val) '&key))))
+                                         (yield (cons key acc) value val) '&key))))
 		   ((&body &rest)
 		    (unless (= (length spec) 1)
 		      (error "Bad or missing spec for the rest."))

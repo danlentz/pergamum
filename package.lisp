@@ -16,6 +16,20 @@
    #:define-evaluation-domain
    #:define-function-evaluations
    #:define-macro-evaluations
+   ;; extent-list.lisp
+   #:extent-list #:u32-extent-list #:u8-extent-list
+   #:extent-list-extents #:extent-list-element-type
+   #:extent #:make-extent #:extent-base #:extent-data #:extent-length
+   #:extent-list-insert #:extent-list-adjoin #:extent-list-grow
+   #:merge-extent-lists
+   #:extent-list-compatible-vector-p
+   #:do-extent-list-vectors
+   #:extent-list-vector-by-base
+   #:serialize-extent-list #:unserialize-extent-list
+   #:extent-lists-equal
+   #:extent-list-print-as-eltext
+   #:extent-list-load-from-eltext
+   #:read-extent-list-from-eltext
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe
    #:u8-vector-word16le #:u8-vector-word16be

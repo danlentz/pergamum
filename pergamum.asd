@@ -9,4 +9,5 @@
   ((:file "package")
    (:file "basis")
    (:file "pergamum" :depends-on ("basis"))
+   (:file "extent-list" :depends-on ("package"))
    (:file "u8-sequence" :depends-on ("package"))))

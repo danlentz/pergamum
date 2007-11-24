@@ -86,6 +86,12 @@
   "Ensure that X is a list."
   (if (listp x) x (list x)))
 
+(defun ensure-destructurisation (spec form)
+  (declare (list spec))
+  (cond ((atom form) `(,@(iter (for i below (length spec)) (collect `(nth ,i ,form)))))
+        ((= (length form) (length spec)) form)
+        (t (error "form ~S doesn't match destructurisation ~S" form spec))))
+
 (defun lambda-list-binds (list)
   "Yield a list of symbols bound by a well-formed lambda LIST."
   (iter (for elt in list)

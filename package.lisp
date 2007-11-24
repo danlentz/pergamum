@@ -8,7 +8,7 @@
    #:map-lambda-list
    #:order
    #:lambda-list-application-types-match-p
-   #:mklist
+   #:mklist #:ensure-destructurisation
    #:lambda-list-binds
    #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission
    #:emit-declarations

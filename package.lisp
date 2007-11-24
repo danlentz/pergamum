@@ -27,9 +27,6 @@
    #:extent-list-vector-by-base
    #:serialize-extent-list #:unserialize-extent-list
    #:extent-lists-equal
-   #:extent-list-print-as-eltext
-   #:extent-list-load-from-eltext
-   #:read-extent-list-from-eltext
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe
    #:u8-vector-word16le #:u8-vector-word16be

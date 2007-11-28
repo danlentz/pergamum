@@ -10,7 +10,7 @@
    #:lambda-list-application-types-match-p
    #:mklist #:ensure-destructurisation
    #:lambda-list-binds
-   #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission
+   #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission
    #:emit-declarations
    #:lambda-list-satisfied-p
    #:define-evaluation-domain

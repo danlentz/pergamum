@@ -116,6 +116,13 @@
       (destructure-binding-form-body (cdr body) (append declarations (list (car body))))
       (values body declarations)))
 
+(defun emit-let (bindings body &key declarations)
+  (declare (list bindings))
+  (if bindings
+      (append `(let ,bindings)
+	      (emit-binding-form-body body :declarations declarations))
+      `(progn ,@body)))
+
 (defun emit-lambda-body (body &key documentation declarations)
   (append (mklist documentation)
 	  (emit-binding-form-body body :declarations declarations)))

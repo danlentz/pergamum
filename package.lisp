@@ -3,6 +3,7 @@
   (:export
    ;; basis.lisp
    ;; pergamum.lisp
+   #:lret #:lret*
    #:nand #:nor #:xor
    #:quote-when
    #:op-parameter-destructurer

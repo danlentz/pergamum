@@ -1,5 +1,15 @@
 (in-package :pergamum)
 
+(defmacro nand (&rest rest)
+  `(not (and ,@rest)))
+
+(defmacro nor (&rest rest)
+  `(not (or ,@rest)))
+
+(defmacro xor (x y)
+  (once-only (x y)
+    `(and (or ,x ,y) (nand ,x ,y))))
+
 (defun quote-when (c form)
   (if c (list 'quote form) form))
 

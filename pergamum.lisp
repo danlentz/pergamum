@@ -189,7 +189,7 @@
 	 (macro-p-table-name (format-symbol target-package "*~A-MACRO-P*" domain-name))
 	 (lambda-binds (lambda-list-binds lambda-list)))
     (unless (boundp table-name)
-      (error "undefined evaluation domain ~S" domain-name table-name))
+      (error "undefined evaluation domain ~S" domain-name))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (setf ,@(iter (for (query-name interested-by-list . body) in evaluations)
 		     (unless (every (rcurry #'member lambda-binds) interested-by-list)

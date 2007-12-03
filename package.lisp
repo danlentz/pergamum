@@ -19,7 +19,7 @@
    #:define-function-evaluations
    #:define-macro-evaluations
    ;; hash-table.lisp
-   #:hash-table-next #:hash-table-key-present-p
+   #:hash-table-next #:hash-table-pop #:hash-table-itearate #:hash-table-key-present-p
    ;; extent-list.lisp
    #:extent-list #:u32-extent-list #:u8-extent-list
    #:extent-list-extents #:extent-list-element-type

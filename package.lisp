@@ -2,6 +2,8 @@
   (:use :common-lisp :alexandria :iterate)
   (:export
    ;; basis.lisp
+   ;; functions.lisp
+   #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp
    #:lret #:lret*
    #:nand #:nor #:xor

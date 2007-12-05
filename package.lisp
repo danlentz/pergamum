@@ -2,6 +2,8 @@
   (:use :common-lisp :alexandria :iterate)
   (:export
    ;; basis.lisp
+   ;; conditions.lisp
+   #:style-warn
    ;; functions.lisp
    #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp

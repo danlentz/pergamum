@@ -8,6 +8,7 @@
   :components
   ((:file "package")
    (:file "basis" :depends-on ("package"))
+   (:file "conditions" :depends-on ("package"))
    (:file "functions" :depends-on ("package"))
    (:file "pergamum" :depends-on ("basis"))
    (:file "hash-table" :depends-on ("package"))

@@ -5,6 +5,7 @@
    ;; functions.lisp
    #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp
+   #:with-condition-printing
    #:lret #:lret*
    #:nand #:nor #:xor
    #:quote-when

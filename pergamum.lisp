@@ -1,5 +1,11 @@
 (in-package :pergamum)
 
+(defmacro with-condition-printing ((stream type) &body body)
+  (with-gensyms (cond)
+    `(handler-case (progn ,@body)
+       (,type (,cond)
+	 (format ,stream "~@<~A~:@>" ,cond)))))
+
 (defmacro lret (bindings &body body) 
   "A @macro{let}-construct which returns its last binding." 
   `(let ,bindings ,@body 

@@ -12,15 +12,29 @@
 
 (defclass extent-list ()
   ((element-type :accessor extent-list-element-type :initarg :element-type :type permissible-extent-list-typespec)
-   (extents :accessor extent-list-extents :initform nil :type list)))
+   (extents :accessor extent-list-extents :type list)))
+
+(defmethod initialize-instance :after ((extent-list extent-list) &key spec &allow-other-keys)
+  (setf (extent-list-extents extent-list)
+        (iter (for (base . length) in spec)
+              (collect (cons base (make-array length :element-type (extent-list-element-type extent-list) :initial-element 0))))))
 
 (defclass u32-extent-list (extent-list)
-  ((element-type :type typespec-unsigned-byte-32)))
+  ((element-type :type typespec-unsigned-byte-32))
+  (:default-initargs
+   :element-type '(unsigned-byte 32)))
 
 (defclass u8-extent-list (extent-list)
-  ((element-type :type typespec-unsigned-byte-8)))
+  ((element-type :type typespec-unsigned-byte-8))
+  (:default-initargs
+   :element-type '(unsigned-byte 8)))
 
 (deftype extent () `(cons (unsigned-byte 32) vector))
+(deftype extent-spec () `(cons (unsigned-byte 32) (unsigned-byte 32)))
+
+(defun extent-spec (extent)
+  (declare (extent extent))
+  (cons (car extent) (length (cdr extent))))
 
 (defun make-extent (base vector)
   (declare ((unsigned-byte 32) base) (vector vector))
@@ -38,11 +52,32 @@
   (declare (extent extent))
   (array-dimension (extent-data extent) 0))
 
+(defun extent-list-spec (extent-list)
+  (declare (extent-list extent-list))
+  (mapcar #'extent-spec (extent-list-extents extent-list)))
+
+(defun print-extent-list-spec (stream spec colon at-sign)
+  (declare (ignore colon at-sign))
+  (pprint-logical-block (stream spec)
+    (iter (for spec = (pprint-pop))
+          (while spec)
+          (format stream " (~X:~X)" (car spec) (+ (car spec) (cdr spec))))))
+
+(defun extent-list-matches-spec-p (spec extent-list)
+  (every #'equalp spec (extent-list-spec extent-list)))
+
+(define-condition extent-list-spec-mismatch (error)
+  ((extent-list :accessor condition-extent-list :initarg :extent-list)
+   (spec :accessor condition-spec :initarg :spec))
+  (:report (lambda (condition stream)
+             (format stream "extent list ~S doesn't match the spec ~/extent-list:print-extent-list-spec/"
+                     (condition-extent-list condition) (condition-spec condition)))))
+
 (defmethod print-object ((obj extent-list) stream)
-  (format stream "#<EXTENT-LIST")
-  (dolist (extent (extent-list-extents obj))
-    (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent))))
-  (format stream ">"))
+  (pprint-logical-block (stream (extent-list-extents obj) :prefix "#<EXTENT-LIST" :suffix ">")
+    (iter (for extent = (pprint-pop))
+          (while extent)
+          (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent))))))
 
 (defun point-in-extent-p (extent p)
   (declare ((unsigned-byte 32) p) (extent extent))
@@ -118,3 +153,7 @@
 			   (equalp a-data b-data))
 		(return nil))
 	  :finally (return t))))
+
+(defun dump-u8-extent-list (stream extent-list &key (endianness :little-endian))
+  (do-extent-list-vectors (base vector) extent-list
+      (print-u8-sequence stream vector :base-address base :endianness endianness)))

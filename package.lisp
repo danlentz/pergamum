@@ -33,7 +33,7 @@
    ;; extent-list.lisp
    #:extent-list #:u32-extent-list #:u8-extent-list
    #:extent-list-extents #:extent-list-element-type
-   #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:extent-spec
+   #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:extent-spec #:print-extent-spec
    #:extent-list-spec #:print-extent-list-spec #:extent-list-matches-spec-p #:extent-list-spec-mismatch
    #:extent-list-insert #:extent-list-adjoin #:extent-list-grow
    #:merge-extent-lists
@@ -42,4 +42,6 @@
    #:extent-list-vector-by-base
    #:serialize-extent-list #:unserialize-extent-list
    #:extent-lists-equal
-   #:dump-u8-extent-list))
+   #:dump-u8-extent-list
+   ;; extentable.lisp
+   #:extentable #:u8-extent #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#))

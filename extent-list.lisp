@@ -12,12 +12,15 @@
 
 (defclass extent-list ()
   ((element-type :accessor extent-list-element-type :initarg :element-type :type permissible-extent-list-typespec)
-   (extents :accessor extent-list-extents :type list)))
+   (extents :accessor extent-list-extents :type list :initarg :extents))
+  (:default-initargs
+   :extents nil))
 
 (defmethod initialize-instance :after ((extent-list extent-list) &key spec &allow-other-keys)
-  (setf (extent-list-extents extent-list)
-        (iter (for (base . length) in spec)
-              (collect (cons base (make-array length :element-type (extent-list-element-type extent-list) :initial-element 0))))))
+  (when spec
+    (setf (extent-list-extents extent-list)
+          (iter (for (base . length) in spec)
+                (collect (cons base (make-array length :element-type (extent-list-element-type extent-list) :initial-element 0)))))))
 
 (defclass u32-extent-list (extent-list)
   ((element-type :type typespec-unsigned-byte-32))
@@ -35,6 +38,11 @@
 (defun extent-spec (extent)
   (declare (extent extent))
   (cons (car extent) (length (cdr extent))))
+
+(defun print-extent-spec (stream spec colon at-sign)
+  (declare (ignore colon at-sign))
+  (pprint-logical-block (stream spec)
+    (format stream "(~X:~X)" (car spec) (+ (car spec) (cdr spec)))))
 
 (defun make-extent (base vector)
   (declare ((unsigned-byte 32) base) (vector vector))
@@ -61,7 +69,7 @@
   (pprint-logical-block (stream spec)
     (iter (for spec = (pprint-pop))
           (while spec)
-          (format stream " (~X:~X)" (car spec) (+ (car spec) (cdr spec))))))
+          (write-char #\space stream) (print-extent-spec stream spec nil nil))))
 
 (defun extent-list-matches-spec-p (spec extent-list)
   (every #'equalp spec (extent-list-spec extent-list)))
@@ -70,7 +78,7 @@
   ((extent-list :accessor condition-extent-list :initarg :extent-list)
    (spec :accessor condition-spec :initarg :spec))
   (:report (lambda (condition stream)
-             (format stream "extent list ~S doesn't match the spec ~/extent-list:print-extent-list-spec/"
+             (format stream "extent list ~S doesn't match the spec ~/pergamum:print-extent-list-spec/"
                      (condition-extent-list condition) (condition-spec condition)))))
 
 (defmethod print-object ((obj extent-list) stream)

@@ -2,20 +2,20 @@
   (:use :common-lisp :alexandria :iterate)
   (:export
    ;; basis.lisp
+   #:xform/filter-if
    ;; conditions.lisp
-   #:style-warn
    ;; functions.lisp
    #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp
    #:with-condition-printing
    #:lret #:lret*
-   #:nand #:nor #:xor
+   #:nand #:nor #:andf #:orf #:notf #:xorf
    #:quote-when
    #:op-parameter-destructurer
    #:map-lambda-list
    #:order
    #:lambda-list-application-types-match-p
-   #:mklist #:ensure-destructurisation
+   #:ensure-destructurisation
    #:lambda-list-binds
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission
    #:emit-declarations

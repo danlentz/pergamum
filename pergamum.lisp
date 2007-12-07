@@ -28,9 +28,10 @@
 (defmacro nor (&rest rest)
   `(not (or ,@rest)))
 
-(defmacro xor (x y)
-  (once-only (x y)
-    `(and (or ,x ,y) (nand ,x ,y))))
+(define-modify-macro orf (&rest params) or)
+(define-modify-macro andf (&rest params) and)
+(define-modify-macro xorf (&rest params) xor)
+(define-modify-macro notf () not)
 
 (defun quote-when (c form)
   (if c (list 'quote form) form))
@@ -114,10 +115,6 @@
 (defun lambda-list-application-types-match-p (typespec list)
   (every (complement #'null) (map-lambda-list (order typep 1 0) typespec list)))
 
-(defun mklist (x)
-  "Ensure that X is a list."
-  (if (listp x) x (list x)))
-
 (defun ensure-destructurisation (spec form)
   (declare (list spec))
   (cond ((atom form) `(,@(iter (for i below (length spec)) (collect `(nth ,i ,form)))))
@@ -156,7 +153,7 @@
       `(progn ,@body)))
 
 (defun emit-lambda-body (body &key documentation declarations)
-  (append (mklist documentation)
+  (append (ensure-list documentation)
 	  (emit-binding-form-body body :declarations declarations)))
 
 (defun emit-lambda (list body &key documentation declarations)

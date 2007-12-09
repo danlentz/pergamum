@@ -11,6 +11,9 @@
 (defgeneric set-u8-extent (extentable extent-spec extent))
 (defsetf u8-extent set-u8-extent)
 
+(defun (setf extentable-u8-vector) (vector extentable base)
+  (set-u8-extent extentable (cons base (length vector)) (cons base vector)))
+
 (defun u8-extent-list (extentable extent-list-spec)
   (make-instance 'u8-extent-list
                  :extents (mapcar (curry #'u8-extent extentable) extent-list-spec)))

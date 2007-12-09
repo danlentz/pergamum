@@ -1,5 +1,11 @@
 (in-package :pergamum)
 
+(defmacro progn-1 (&body body)
+  `(prog1
+       (progn
+         ,@(butlast body))
+     ,(lastcar body)))
+
 (defmacro with-condition-printing ((stream type) &body body)
   (with-gensyms (cond)
     `(handler-case (progn ,@body)

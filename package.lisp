@@ -3,10 +3,13 @@
   (:export
    ;; basis.lisp
    #:xform/filter-if
+   ;; binary.lisp
+   #:logandf #:logiorf #:logandcf
    ;; conditions.lisp
    ;; functions.lisp
    #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp
+   #:progn-1
    #:with-condition-printing
    #:lret #:lret*
    #:nand #:nor #:andf #:orf #:notf #:xorf

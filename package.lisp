@@ -6,6 +6,7 @@
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
    ;; conditions.lisp
+   #:make-condition-raiser #:make-error-raiser
    ;; functions.lisp
    #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp

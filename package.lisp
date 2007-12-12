@@ -7,6 +7,7 @@
    #:logandf #:logiorf #:logandcf
    ;; conditions.lisp
    #:make-condition-raiser #:make-error-raiser
+   #:condition-bind-default
    ;; functions.lisp
    #:bukkake-combinator #:bukkake-combinator-1
    ;; pergamum.lisp

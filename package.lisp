@@ -35,8 +35,10 @@
    #:u8-vector-wordle #:u8-vector-wordbe
    #:u8-vector-word16le #:u8-vector-word16be
    #:u8-vector-word32le #:u8-vector-word32be
+   #:u8-vector-word64le #:u8-vector-word64be
    #:u8-seq-word16le #:u8-seq-word16be
    #:u8-seq-word32le #:u8-seq-word32be
+   #:u8-seq-word64le #:u8-seq-word64be
    #:print-u8-sequence
    ;; extent-list.lisp
    #:extent-list #:u32-extent-list #:u8-extent-list

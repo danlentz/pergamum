@@ -9,6 +9,7 @@
   (;; tier 0
    (:file "package")
    ;; tier 1
+   (:file "read" :depends-on ("package"))
    (:file "basis" :depends-on ("package"))
    (:file "binary" :depends-on ("package"))
    (:file "conditions" :depends-on ("package"))

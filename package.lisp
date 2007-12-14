@@ -52,4 +52,6 @@
    #:extent-lists-equal
    #:dump-u8-extent-list
    ;; extentable.lisp
-   #:extentable #:u8-extent #:extentable-u8-vector #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#))
+   #:extentable #:u8-extent #:extentable-u8-vector #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#
+   ;; read.lisp
+   #:enable-array-reader #:enable-compose-reader #:enable-curry-reader))

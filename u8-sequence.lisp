@@ -25,7 +25,7 @@
 	  (ash (elt sequence (+ offset 0)) 24)))
 
 (defun u8-seq-word64le (sequence offset)
-  (declare (type (vector (unsigned-byte 8)) array))
+  (declare (type sequence sequence))
   (logior (ash (elt sequence (+ offset 0)) 0)
 	  (ash (elt sequence (+ offset 1)) 8)
 	  (ash (elt sequence (+ offset 2)) 16)
@@ -36,7 +36,7 @@
 	  (ash (elt sequence (+ offset 7)) 56)))
 
 (defun u8-seq-word64be (sequence offset)
-  (declare (type (vector (unsigned-byte 8)) array))
+  (declare (type sequence sequence))
   (logior (ash (elt sequence (+ offset 7)) 0)
 	  (ash (elt sequence (+ offset 6)) 8)
 	  (ash (elt sequence (+ offset 5)) 16)

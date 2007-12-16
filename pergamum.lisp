@@ -140,16 +140,28 @@
 
 (defun emit-declarations (&key ignore special)
   (when (or ignore special)
-    (list* 'declare (append (emit-declaration 'ignore ignore)
-			    (emit-declaration 'special special)))))
+    (append (emit-declaration 'ignore ignore)
+            (emit-declaration 'special special))))
+
+(defun prepend (something list &key (test (complement #'null)) (key #'identity))
+  (if (funcall test (funcall key something))
+      (list* something list)
+      list))
 
 (defun emit-binding-form-body (body &key declarations)
-  (append (when declarations (list declarations)) body))
+  (prepend (list* 'declare declarations) body :key #'rest))
 
 (defun destructure-binding-form-body (body &optional declarations)
   (if (and (consp body) (consp (car body)) (eq (caar body) 'declare))
-      (destructure-binding-form-body (cdr body) (append declarations (list (car body))))
-      (values body declarations)))
+      (destructure-binding-form-body (cdr body) (append declarations (cdar body)))
+      (values declarations body)))
+
+(defun destructure-def-body (body)
+  (destructuring-bind (documentation body) (if (stringp (first body))
+                                               (list (first body) (rest body))
+                                               (list nil body))
+    (multiple-value-bind (declarations body) (destructure-binding-form-body body)
+      (values documentation declarations body))))
 
 (defun emit-let (bindings body &key declarations)
   (declare (list bindings))
@@ -159,8 +171,7 @@
       `(progn ,@body)))
 
 (defun emit-lambda-body (body &key documentation declarations)
-  (append (ensure-list documentation)
-	  (emit-binding-form-body body :declarations declarations)))
+  (prepend documentation (emit-binding-form-body body :declarations declarations)))
 
 (defun emit-lambda (list body &key documentation declarations)
   (append `(lambda ,list)
@@ -170,8 +181,15 @@
   `(labels ((,name ,list
 	      ,@(emit-lambda-body body :documentation documentation :declarations declarations))) #',name))
 
-(defmacro with-named-lambda-emission (name lambda-list &body body)
-  `(emit-named-lambda ,name ,lambda-list (list ,@body)))
+(defmacro with-named-lambda-emission ((name lambda-list &key documentation declarations) &body body)
+  `(emit-named-lambda ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
+
+(defun emit-defun (name list body &key documentation declarations)
+  `(defun ,name ,list
+     ,@(emit-lambda-body body :documentation documentation :declarations declarations)))
+
+(defmacro with-defun-emission ((name lambda-list &key documentation declarations) &body body)
+  `(emit-defun ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
 
 (defmacro lambda-list-satisfied-p (list value)
   "Checks whether the VALUE is destructurable by lambda LIST.

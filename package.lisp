@@ -20,9 +20,10 @@
    #:map-lambda-list
    #:order
    #:lambda-list-application-types-match-p
-   #:ensure-destructurisation
+   #:ensure-destructurisation #:destructure-binding-form-body #:destructure-def-body
    #:lambda-list-binds
-   #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission
+   #:prepend
+   #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission
    #:emit-declarations
    #:lambda-list-satisfied-p
    #:define-evaluation-domain

@@ -4,7 +4,7 @@
    ;; basis.lisp
    #:xform/filter-if
    ;; forms.lisp
-   #:quoted-p #:quoted-forms
+   #:quoted-p #:quoted-form
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
    ;; objects.lisp

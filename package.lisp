@@ -3,10 +3,12 @@
   (:export
    ;; basis.lisp
    #:xform/filter-if
-   ;; form.lisp
+   ;; forms.lisp
    #:quoted-p #:quoted-forms
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
+   ;; objects.lisp
+   #:copy-slots
    ;; conditions.lisp
    #:make-condition-raiser #:make-error-raiser
    #:condition-bind-default

@@ -10,6 +10,7 @@
    (:file "package")
    ;; tier 1
    (:file "forms" :depends-on ("package"))
+   (:file "objects" :depends-on ("package"))
    (:file "read" :depends-on ("package"))
    (:file "basis" :depends-on ("package"))
    (:file "binary" :depends-on ("package"))

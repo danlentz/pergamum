@@ -10,7 +10,6 @@
    (:file "package")
    ;; tier 1
    (:file "forms" :depends-on ("package"))
-   (:file "objects" :depends-on ("package"))
    (:file "read" :depends-on ("package"))
    (:file "basis" :depends-on ("package"))
    (:file "binary" :depends-on ("package"))
@@ -19,6 +18,7 @@
    (:file "hash-table" :depends-on ("package"))
    (:file "u8-sequence" :depends-on ("package"))
    ;; tier 2
+   (:file "objects" :depends-on ("forms"))
    (:file "pergamum" :depends-on ("basis"))
    (:file "extent-list" :depends-on ("u8-sequence"))
    ;; tier 3

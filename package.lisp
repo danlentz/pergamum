@@ -3,6 +3,8 @@
   (:export
    ;; basis.lisp
    #:xform/filter-if
+   ;; form.lisp
+   #:quoted-p #:quoted-forms
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
    ;; conditions.lisp

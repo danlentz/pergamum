@@ -17,7 +17,23 @@
     (mapc (rcurry #'funcall param) (butlast functions))
     (funcall (lastcar functions) param)))
 
-(defun maybe (function arg)
-  "Given FUNCTION return the result of applying ARG to it, when the latter is non-NIL."
-  (when arg 
-    (funcall function arg)))
+(defun maybecall (bool function &rest args)
+  "Given FUNCTION, return the result of applying ARGS to it, when BOOL is non-NIL."
+  (when bool
+    (apply function args)))
+
+(defun iterate-until (pred function &rest initial-args)
+  "Given an INITIAL parameter value and a FUNCTION, iteratily apply the latter to the parameter, getting the new parameter, returning the last non-NIL one."
+  (iter (with params = initial-args)
+    (for result = (multiple-value-list (funcall function params)))
+    (while (apply pred result))
+    (setf params result)
+    (finally (return params))))
+
+(defun collect-until (pred function &rest initial-args)
+  "Given an INITIAL parameter value and a FUNCTION, iteratively apply the latter to the parameter, getting the new parameter, until it becomes NIL, collecting all non-NIL result parameters."
+  (iter (with params = initial-args)
+    (for result = (multiple-value-list (funcall function params)))
+    (while (apply pred result))
+    (collect result)
+    (setf param result)))

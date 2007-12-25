@@ -13,7 +13,7 @@
    #:make-condition-raiser #:make-error-raiser
    #:condition-bind-default
    ;; functions.lisp
-   #:bukkake-combinator #:bukkake-combinator-1
+   #:bukkake-combinator #:bukkake-combinator-1 #:maybe
    ;; pergamum.lisp
    #:progn-1
    #:with-condition-printing

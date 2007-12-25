@@ -16,3 +16,8 @@
   (lambda (param)
     (mapc (rcurry #'funcall param) (butlast functions))
     (funcall (lastcar functions) param)))
+
+(defun maybe (function arg)
+  "Given FUNCTION return the result of applying ARG to it, when the latter is non-NIL."
+  (when arg 
+    (funcall function arg)))

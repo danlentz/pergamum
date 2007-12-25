@@ -17,6 +17,11 @@
     (mapc (rcurry #'funcall param) (butlast functions))
     (funcall (lastcar functions) param)))
 
+(defun maybe (function arg)
+  "Given FUNCTION, return the result of applying ARG to it, when the latter is non-NIL."
+  (when arg
+    (funcall function arg)))
+
 (defun maybecall (bool function &rest args)
   "Given FUNCTION, return the result of applying ARGS to it, when BOOL is non-NIL."
   (when bool

@@ -10,7 +10,10 @@
    ;; objects.lisp
    #:copy-slots
    ;; conditions.lisp
-   #:make-condition-raiser #:make-error-raiser #:make-fixed-restarter #:with-fixed-condition-restarts
+   #:make-condition-raiser #:make-error-raiser 
+   #:with-retry-restart #:with-ignore-restart
+   #:make-fixed-restarter
+   #:with-condition-restart-binding #:with-condition-printing #:with-condition-collection
    #:condition-bind-default
    ;; functions.lisp
    #:bukkake-combine #:bukkake-combine-1 #:maybe #:maybecall #:iterate-until #:collect-until

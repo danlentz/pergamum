@@ -7,6 +7,14 @@
   (format stream "~@<#<EXTENTABLE~; range: ~/pergamum:print-extent-spec/~;>~:@>"
           (slot-value extentable 'range)))
 
+(defclass subextent ()
+  ((parent :accessor subextent-parent :type extentable :initarg :parent)
+   (base :accessor subextent-base :type (integer 0) :initarg :base)))
+
+(defmethod print-object ((subextent subextent) stream)
+  (format stream "~@<#<SUBEXTENT~; base: ~S  parent: ~S~;>~:@>"
+          (slot-value subextent 'base) (slot-value subextent 'parent)))
+
 (defgeneric u8-extent (extentable extent-spec))
 (defgeneric set-u8-extent (extentable extent-spec extent))
 (defsetf u8-extent set-u8-extent)

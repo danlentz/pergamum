@@ -1,5 +1,15 @@
 (in-package :pergamum)
 
+(defun latch-fn (fn)
+  "Produce a function which applies FN to its parameters."
+  (lambda (&rest args)
+    (apply fn args)))
+
+(defun latch-args (&rest args)
+  "Produce a function which applies its first parameter to ARGS."
+  (lambda (fn)
+    (apply fn args)))
+
 (defun bukkake-combine (&rest functions)
   "Return a function accepting an indefinite amount of values, 
    applying all FUNCTIONS to them in turn, returning the value

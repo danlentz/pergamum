@@ -33,9 +33,15 @@
     (funcall function arg)))
 
 (defun maybecall (bool function &rest args)
-  "Given FUNCTION, return the result of applying ARGS to it, when BOOL is non-NIL."
+  "Given FUNCTION, return the result of applying it to ARGS, when BOOL is non-NIL."
   (when bool
     (apply function args)))
+
+(defun xform-if (bool function &rest args)
+  "Given FUNCTION, either return the result of applying it to ARGS, when BOOL is non-NIL, or return them as multiple values."
+  (if bool
+      (apply function args)
+      (values-list args)))
 
 (defun iterate-until (pred function &rest initial-args)
   "Given an INITIAL parameter value and a FUNCTION, iteratily apply the latter to the parameter, getting the new parameter, returning the last non-NIL one."

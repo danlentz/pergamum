@@ -16,10 +16,12 @@
    (:file "conditions" :depends-on ("package"))
    (:file "functions" :depends-on ("package"))
    (:file "hash-table" :depends-on ("package"))
-   (:file "u8-sequence" :depends-on ("package"))
+   (:file "extent" :depends-on ("package"))
    ;; tier 2
+   (:file "u8-sequence" :depends-on ("extent"))
    (:file "objects" :depends-on ("forms"))
    (:file "pergamum" :depends-on ("basis"))
-   (:file "extent-list" :depends-on ("u8-sequence"))
    ;; tier 3
+   (:file "extent-list" :depends-on ("u8-sequence"))
+   ;; tier 4
    (:file "extentable" :depends-on ("extent-list"))))

@@ -32,34 +32,6 @@
   (:default-initargs
    :element-type '(unsigned-byte 8)))
 
-(deftype extent () `(cons (unsigned-byte 32) vector))
-(deftype extent-spec () `(cons (unsigned-byte 32) (unsigned-byte 32)))
-
-(defun extent-spec (extent)
-  (declare (extent extent))
-  (cons (car extent) (length (cdr extent))))
-
-(defun print-extent-spec (stream spec colon at-sign)
-  (declare (ignore colon at-sign))
-  (pprint-logical-block (stream spec)
-    (format stream "(~X:~X)" (car spec) (+ (car spec) (cdr spec)))))
-
-(defun make-extent (base vector)
-  (declare ((unsigned-byte 32) base) (vector vector))
-  (cons base vector))
-
-(defun extent-base (extent)
-  (declare (extent extent))
-  (car extent))
-
-(defun extent-data (extent)
-  (declare (extent extent))
-  (cdr extent))
-
-(defun extent-length (extent)
-  (declare (extent extent))
-  (array-dimension (extent-data extent) 0))
-
 (defun extent-list-spec (extent-list)
   (declare (extent-list extent-list))
   (mapcar #'extent-spec (extent-list-extents extent-list)))
@@ -86,15 +58,6 @@
     (iter (for extent = (pprint-pop))
           (while extent)
           (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent))))))
-
-(defun point-in-extent-p (extent p)
-  (declare ((unsigned-byte 32) p) (extent extent))
-  (and (>= p (extent-base extent)) (< p (+ (extent-base extent) (extent-length extent)))))
-
-(defun extents-intersect-p (x y)
-  (declare (extent x y))
-  (and (plusp (extent-length x)) (plusp (extent-length y))
-       (or (point-in-extent-p x (extent-base y)) (point-in-extent-p x (+ (extent-base y) (extent-length y) -1)))))
 
 (defun extent-list-insert (extent-list vector base)
   (declare (extent-list extent-list) ((unsigned-byte 32) base) (vector vector))

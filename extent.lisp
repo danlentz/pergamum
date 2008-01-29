@@ -41,14 +41,15 @@
   (pprint-logical-block (stream spec)
     (format stream "(~X:~X)" (car spec) (+ (car spec) (cdr spec)))))
 
-(defmacro with-aligned-extent-spec-pieces (alignment (head body tail) extent &body innards)
+(defmacro with-aligned-extent-spec-pieces (alignment (prehead head body tail) extent &body innards)
   "Bind the HEAD, BODY and TAIL pieces of EXTENT's length, as mandated by aligning it by ALIGNMENT (evaluated)."
   (with-gensyms (base length alignment-mask)
     (once-only (alignment extent)
       `(let* ((,alignment-mask (1- ,alignment))
               (,length (extent-length ,extent))
               (,base (extent-base ,extent))
-              (,head (logand ,alignment-mask (- ,alignment (logand ,alignment-mask ,base))))
+              (,prehead (logand ,alignment-mask ,base))
+              (,head (logand ,alignment-mask (- ,alignment ,prehead)))
               (,body (logandc1 ,alignment-mask (- ,length ,head)))
               (,tail (- ,length ,head ,body)))
          ,@innards))))

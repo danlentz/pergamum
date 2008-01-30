@@ -33,6 +33,16 @@
 (define-modify-macro xorf (&rest params) xor)
 (define-modify-macro notf () not)
 
+(defun maybe-capture-subform (condition form accessor)
+  `(or (and ,condition (,accessor ,form)) (gensym)))
+
+(defmacro with-optional-subform-captures ((&rest specs) &body body)
+  `(let ,(iter (for (vars accessors condition form) in specs)
+               (appending (mapcar (lambda (var accessor)
+                                    (list var (maybe-capture-subform condition form accessor)))
+                                  vars accessors)))
+     ,@body))
+
 (defun quote-when (c form)
   (if c (list 'quote form) form))
 

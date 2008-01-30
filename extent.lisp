@@ -41,6 +41,21 @@
   (pprint-logical-block (stream spec)
     (format stream "(~X:~X)" (car spec) (+ (car spec) (cdr spec)))))
 
+(defun extent-spec-base (spec)
+  (car spec))
+
+(defun extent-spec-length (spec)
+  (cdr spec))
+
+(defun extent-spec-end (spec)
+  (+ (car spec) (cdr spec)))
+
+(defmacro do-extent-spec-aligned-blocks (alignment (addr spec) &body body)
+  "Execute body with ADDR being set to all successive beginnings of ALIGNMENT-aligned blocks covering the extent specified by SPEC."
+  (once-only (alignment spec)
+    `(iter (for ,addr from (align-down ,alignment (car ,spec)) below (extent-spec-end ,spec) by ,alignment)
+           ,@body)))
+
 (defmacro with-aligned-extent-spec-pieces (alignment (prehead head body tail &optional posttail) extent-spec &body innards)
   "Bind the HEAD, BODY and TAIL pieces of EXTENT-SPEC, with possible destructurisation, as mandated by aligning it by ALIGNMENT (evaluated)."
   (let ((d-prehead (consp prehead)) (d-head (consp head)) (d-body (consp body)) (d-tail (consp tail)) (d-posttail (consp posttail)))

@@ -39,9 +39,16 @@
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
    #:make-hash-table-injector #:hash-table-key-present-p
+   ;; alignment.lisp
+   #:alignment-condition #:address-misalignment #:size-misalignment
+   #:aligned-p #:align-down #:align-up
+   #:aligned-4 #:aligned-16
+   #:check-size-alignment #:check-address-alignment
    ;; extent.lisp
    #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:point-in-extent-p #:extents-intersect-p
-   #:extent-spec #:make-extent-spec #:print-extent-spec #:with-aligned-extent-spec-pieces
+   #:extent-spec #:make-extent-spec #:print-extent-spec
+   #:extent-spec-base #:extent-spec-length #:extent-spec-length
+   #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe
    #:u8-vector-word16le #:u8-vector-word16be

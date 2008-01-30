@@ -69,4 +69,5 @@
                   ,@(unless d-body `((,body (cons ,body-base ,body-length))))
                   ,@(unless d-tail `((,tail (cons ,tail-base ,tail-length))))
                   ,@(unless (or (null posttail) d-posttail) `((,posttail (cons ,posttail-base ,posttail-length)))))
+             (declare (ignorable ,prehead-base ,prehead-length ,head-base ,head-length ,body-base ,body-length ,tail-base ,tail-length ,@(when posttail `(,posttail-base ,posttail-length))))
              ,@innards))))))

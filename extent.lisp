@@ -50,10 +50,11 @@
 (defun extent-spec-end (spec)
   (+ (car spec) (cdr spec)))
 
-(defmacro do-extent-spec-aligned-blocks (alignment (addr spec) &body body)
+(defmacro do-extent-spec-aligned-blocks (alignment (addr len spec) &body body)
   "Execute body with ADDR being set to all successive beginnings of ALIGNMENT-aligned blocks covering the extent specified by SPEC."
   (once-only (alignment spec)
     `(iter (for ,addr from (align-down ,alignment (car ,spec)) below (extent-spec-end ,spec) by ,alignment)
+           (for ,len = (min ,alignment (- (extent-spec-end ,spec) ,addr)))
            ,@body)))
 
 (defmacro with-aligned-extent-spec-pieces (alignment (prehead head body tail &optional posttail) extent-spec &body innards)

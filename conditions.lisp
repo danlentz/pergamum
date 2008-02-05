@@ -22,7 +22,8 @@
 
 (defun make-fixed-restarter (restart-name &rest params)
   (lambda (cond)
-    (apply #'invoke-restart restart-name cond params)))
+    (with-condition-restarts cond (list (find-restart restart-name))
+      (apply #'invoke-restart restart-name cond params))))
 
 (defmacro with-condition-restart-binding ((&rest condition-restart-specs) &body body)
   `(handler-bind (,@(iter (for (condition restart . params) in condition-restart-specs)

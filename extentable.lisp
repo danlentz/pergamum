@@ -9,11 +9,17 @@
 
 (defclass subextent ()
   ((parent :accessor subextent-parent :type extentable :initarg :parent)
-   (base :accessor subextent-base :type (integer 0) :initarg :base)))
+   (extent :accessor subextent-extent :type (integer 0) :initarg :extent)))
 
 (defmethod print-object ((subextent subextent) stream)
-  (format stream "~@<#<SUBEXTENT~; base: ~S  parent: ~S~;>~:@>"
-          (slot-value subextent 'base) (slot-value subextent 'parent)))
+  (format stream "~@<#<SUBEXTENT~; extent: ~S  parent: ~S~;>~:@>"
+          (slot-value subextent 'extent) (slot-value subextent 'parent)))
+
+(defun subextent-absolutize (subex val)
+  (+ val (extent-base (subextent-extent subex))))
+
+(defun subextent-relativize (subex val)
+  (- val (extent-base (subextent-extent subex))))
 
 (defgeneric u8-extent (extentable extent-spec))
 (defgeneric set-u8-extent (extentable extent-spec extent))

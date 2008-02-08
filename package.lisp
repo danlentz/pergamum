@@ -8,7 +8,7 @@
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
    ;; objects.lisp
-   #:copy-slots
+   #:copy-slots #:slot-value*
    ;; conditions.lisp
    #:make-condition-raiser #:make-error-raiser 
    #:with-retry-restart #:with-ignore-restart

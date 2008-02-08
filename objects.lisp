@@ -10,3 +10,8 @@
         `(setf ,@(iter (for slot in (quoted-form slots))
                        (nconcing `((slot-value ,to ',slot) (slot-value ,from ',slot))))))
       whole))
+
+(defun slot-value* (o slot-name &optional (default :unbound-slot))
+  (if (slot-boundp o slot-name)
+      (slot-value o slot-name)
+      default))

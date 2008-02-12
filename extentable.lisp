@@ -16,10 +16,10 @@
           (slot-value subextent 'extent) (slot-value subextent 'parent)))
 
 (defun subextent-absolutize (subex val)
-  (+ val (extent-base (subextent-extent subex))))
+  (+ val (extent-spec-base (subextent-extent subex))))
 
 (defun subextent-relativize (subex val)
-  (- val (extent-base (subextent-extent subex))))
+  (- val (extent-spec-base (subextent-extent subex))))
 
 (defgeneric u8-extent (extentable extent-spec))
 (defgeneric set-u8-extent (extentable extent-spec extent))

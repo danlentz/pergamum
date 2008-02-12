@@ -9,7 +9,7 @@
 
 (defclass subextent ()
   ((parent :accessor subextent-parent :type extentable :initarg :parent)
-   (extent :accessor subextent-extent :type (integer 0) :initarg :extent)))
+   (extent :accessor subextent-extent :type cons :initarg :extent)))
 
 (defmethod print-object ((subextent subextent) stream)
   (format stream "~@<#<SUBEXTENT~; extent: ~S  parent: ~S~;>~:@>"

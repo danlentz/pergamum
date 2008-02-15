@@ -61,3 +61,34 @@
   (iter (for (nil v) in-hashtable table)
         (when (satisfies-the-test v)
           (collect (funcall function v)))))
+
+(defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
+                                          coercer mapper (when-exists :warn))
+  (declare (type (member :continue :warn :error) when-exists))
+  (let* ((container (if parametrize-container 'container container-name))
+         (container-form (if container-transform `(,container-transform ,container) container))
+         (hash-key-form (cond ((null name-transform-fn) 'name)
+                              ((null compound-name-p) `(,name-transform-fn name))
+                              (t `(mapcar #',name-transform-fn name)))))
+    (when (and parametrize-container coercer)
+      (error "~@<cannot define coercers for accessors with parametrized containers in DEFINE-CONTAINER-ACCESSOR~:@>"))
+    `(progn
+       (defun ,accessor-name (,@(when parametrize-container `(,container)) name &key (if-does-not-exist :error))
+         (or (gethash ,hash-key-form ,container-form)
+             (when (eq if-does-not-exist :error)
+               (error "~@<~A ~A not defined in ~S~:@>" ,(string-downcase (string type)) name ,container))))
+       (defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) name)
+         (declare (type ,type val))
+         ,@(unless (eq when-exists :continue)
+             `((when (,accessor-name name :if-does-not-exist :continue)
+                 (,(case when-exists (:warn 'warn) (:error 'error)) "~@<redefining ~A ~A~:@>" ,(string-downcase (string type)) name))))
+         (setf (gethash ,hash-key-form ,container-form) val))
+       ,@(when coercer
+           `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (spec)
+               (declare (type (or ,type symbol) spec))
+               (etypecase spec
+                 (,type spec)
+                 (symbol (,accessor-name spec))))))
+       ,@(when mapper
+           `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" (or container-transform mapper)) (fn ,@(when parametrize-container `(,container)) &rest parameters)
+               (apply #'maphash-values fn ,container-form parameters)))))))

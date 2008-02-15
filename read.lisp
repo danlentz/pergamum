@@ -1,5 +1,10 @@
 (in-package :pergamum)
 
+(defstruct unreadable-object)
+
+(defmethod print-object ((o unreadable-object) s)
+  (print-unreadable-object (o s)))
+
 (defun array-reader (stream &optional sharp char)
   (declare (ignore sharp char))
   (let ((list (read stream)))

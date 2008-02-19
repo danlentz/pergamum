@@ -1,5 +1,27 @@
 (in-package :pergamum)
 
+(defmacro progn-1 (&body body)
+  `(prog1
+       (progn
+         ,@(butlast body))
+     ,(lastcar body)))
+
+(defmacro lret (bindings &body body) 
+  "A @macro{let}-construct which returns its last binding." 
+  `(let ,bindings ,@body 
+        ,(let ((x (car (last bindings)))) 
+              (if (atom x) 
+                  x 
+                  (car x))))) 
+
+(defmacro lret* (bindings &body body) 
+  "A @macro{let*}-construct which returns its last binding." 
+  `(let* ,bindings ,@body 
+         ,(let ((x (car (last bindings)))) 
+               (if (atom x) 
+                   x 
+                   (car x)))))
+
 (defun xform/filter-if (xform test &rest sequences)
   (labels ((iterate (acc sequences)
 	     (if (notany #'null sequences)

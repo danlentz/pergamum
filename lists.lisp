@@ -29,3 +29,10 @@
     (iter (for tails on lists)
           (while (every #'consp tails))
           (enqueue (apply fn (mapcar #'car tails)) q))))
+
+(defun mapcons (fn initial &rest lists)
+  "Like MAPCAR, but specifies the cdr of the last cons cell."
+  (let ((q (make-queue)))
+    (apply #'mapqueue fn lists)
+    (setf (cdar q) initial)
+    (queue-contents q)))

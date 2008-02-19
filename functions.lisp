@@ -37,11 +37,23 @@
   (when bool
     (apply function args)))
 
-(defun xform-if (bool function &rest args)
+(defun xform (bool function &rest args)
   "Given FUNCTION, either return the result of applying it to ARGS, when BOOL is non-NIL, or return them as multiple values."
   (if bool
       (apply function args)
       (values-list args)))
+
+(defun xform-if (predicate function &rest args)
+  "Given FUNCTION, either return the result of applying it to ARGS, when PREDICATE applied to them yields non-NIL, or return them as multiple values."
+  (if (apply predicate args)
+      (apply function args)
+      (values-list args)))
+
+(defun xform-if-not (predicate function &rest args)
+  "Given FUNCTION, either return the result of applying it to ARGS, when PREDICATE applied to them yields NIL, or return them as multiple values."
+  (if (apply predicate args)
+      (values-list args)
+      (apply function args)))
 
 (defun iterate-until (pred function &rest initial-args)
   "Given an INITIAL parameter value and a FUNCTION, iteratily apply the latter to the parameter, getting the new parameter, returning the last non-NIL one."

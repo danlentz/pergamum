@@ -18,12 +18,14 @@
    (:file "hash-table" :depends-on ("package"))
    (:file "alignment" :depends-on ("package"))
    ;; tier 2
+   (:file "lists" :depends-on ("basis"))
+   ;; tier 3
    (:file "extent" :depends-on ("basis" "alignment"))
    (:file "pergamum" :depends-on ("basis"))
    (:file "objects" :depends-on ("forms"))
-   ;; tier 3
-   (:file "u8-sequence" :depends-on ("extent"))
    ;; tier 4
-   (:file "extent-list" :depends-on ("u8-sequence"))
+   (:file "u8-sequence" :depends-on ("extent"))
    ;; tier 5
+   (:file "extent-list" :depends-on ("u8-sequence"))
+   ;; tier 6
    (:file "extentable" :depends-on ("extent-list"))))

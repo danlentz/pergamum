@@ -33,7 +33,7 @@
    :element-type '(unsigned-byte 8)))
 
 (defun extent-list-spec (extent-list)
-  (declare (extent-list extent-list))
+  (declare (type extent-list extent-list))
   (mapcar #'extent-spec (extent-list-extents extent-list)))
 
 (defun print-extent-list-spec (stream spec colon at-sign)
@@ -60,11 +60,11 @@
           (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent))))))
 
 (defun extent-list-insert (extent-list vector base)
-  (declare (extent-list extent-list) ((unsigned-byte 32) base) (vector vector))
+  (declare (type extent-list extent-list) (type (unsigned-byte 32) base) (type vector vector))
   (push (make-extent base vector) (extent-list-extents extent-list)))
 
 (defun extent-list-adjoin (extent-list vector base)
-  (declare (extent-list extent-list) ((unsigned-byte 32) base) (vector vector))
+  (declare (type extent-list extent-list) (type (unsigned-byte 32) base) (type vector vector))
   (let ((new-extent (make-extent base vector)))
     (when (find-if (curry #'extents-intersect-p new-extent) (extent-list-extents extent-list))
       (error "vector ~S at base ~S collides with extent list ~S." vector base extent-list))
@@ -72,7 +72,7 @@
 
 (defun merge-extent-lists (to what)
   "Adjoin all extents from the list WHAT to the list TO."
-  (declare (extent-list what to))
+  (declare (type extent-list what to))
   (dolist (extent (extent-list-extents what))
     (extent-list-adjoin to (extent-data extent) (extent-base extent))))
 

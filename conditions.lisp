@@ -16,9 +16,12 @@
             ,@restart-body))))
 
 (defmacro with-ignore-restart ((restart-name condition-binding &body restart-body) &body body)
-  `(restart-case (progn ,@body)
-     (,restart-name (,@condition-binding)
-       ,@restart-body)))
+  (with-gensyms (block)
+   `(block ,block
+      (restart-case (progn ,@body)
+        (,restart-name (,@condition-binding)
+          ,@restart-body
+          (return-from ,block))))))
 
 (defun make-fixed-restarter (restart-name &rest params)
   (lambda (cond)

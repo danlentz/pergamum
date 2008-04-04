@@ -70,3 +70,9 @@
     (until (apply pred result))
     (collect result)
     (setf params result)))
+
+(defun or-p (a b)
+  (or a b))
+
+(defun and-p (a b)
+  (and a b))

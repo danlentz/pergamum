@@ -19,6 +19,8 @@
    #:latch-fn #:latch-args #:bukkake-combine #:bukkake-combine-1 #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:iterate-until #:collect-until #:or-p #:and-p
    ;; lists.lisp
    #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons
+   ;; numbers.lisp
+   #:bisect
    ;; pergamum.lisp
    #:progn-1
    #:with-condition-printing

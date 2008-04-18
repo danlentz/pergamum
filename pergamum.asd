@@ -17,6 +17,7 @@
    (:file "functions" :depends-on ("package"))
    (:file "hash-table" :depends-on ("package"))
    (:file "alignment" :depends-on ("package"))
+   (:file "packages" :depends-on ("package"))
    ;; tier 2
    (:file "lists" :depends-on ("basis"))
    ;; tier 3

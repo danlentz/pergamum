@@ -77,4 +77,6 @@
    #:extentable #:u8-extent #:extentable-u8-vector #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#
    #:subextent #:subextent-extent #:subextent-parent #:subextent-absolutize #:subextent-relativize
    ;; read.lisp
-   #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader))
+   #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader
+   ;; packages.lisp
+   #:mar #:export-unmarred))

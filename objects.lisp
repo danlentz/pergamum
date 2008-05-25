@@ -16,6 +16,29 @@
       (slot-value o slot-name)
       default))
 
+(define-method-combination primary-method-not-required ()
+  ((around (:around))
+   (before (:before))
+   (primary ())
+   (after (:after)))
+  :documentation "A variant of standard method combination not requiring the existence of an applicable primary method, in the presence of an :AROUND method."
+  (flet ((call-methods (methods)
+           (mapcar #'(lambda (method)
+                       `(call-method ,method))
+                   methods)))
+    (let ((form (if (or before after (rest primary))
+                    `(multiple-value-prog1
+                         (progn ,@(call-methods before)
+                                (call-method ,(first primary)
+                                             ,(rest primary)))
+                       ,@(call-methods (reverse after)))
+                    `(call-method ,(first primary)))))
+      (if around
+          `(call-method ,(first around)
+                        (,@(rest around)
+                           (make-method ,form)))
+          form))))
+
 (define-method-combination most-specific-last ()
   ((around (:around) :order :most-specific-last)
    (before (:before))

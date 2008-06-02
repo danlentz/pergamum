@@ -20,7 +20,7 @@
    ;; lists.lisp
    #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons
    ;; numbers.lisp
-   #:bisect
+   #:bisect #:split-number
    ;; pergamum.lisp
    #:progn-1
    #:with-condition-printing

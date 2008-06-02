@@ -14,3 +14,13 @@
            (rebalance (origin span &aux (middle (ash span -1)))
              (traverse (+ origin middle) middle (- span middle 1))))
     (rebalance base (- n base))))
+
+(defun split-number (x split-list &optional (base 10))
+  "Split the integer X to a list of its BASE-imal digit constituents, with split points determined by the SPLIT-LIST of positions."
+  (declare (type integer x) (type (integer 2) base))
+  (nconc (iter (for power in split-list)
+               (let* ((expt (expt base power))
+                      (coll (floor x expt)))
+                 (collect coll)
+                 (decf x (* expt coll))))
+         (list x)))

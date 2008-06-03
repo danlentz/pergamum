@@ -116,12 +116,21 @@
 	(setf (extent-list-extents extent-list) (nreverse (extent-list-extents extent-list)))
 	extent-list))))
 
-(defun extent-lists-equal (a b)
+(defun alignment-relaxed-vector-equalp (v1 v2 relax-factor &aux (relax-mask (1- relax-factor)))
+  (let ((test-length (logand (length v1) relax-mask)))
+    (and (= test-length (logand (length v2) relax-mask))
+         (not (mismatch v1 v2 :end1 test-length :end2 test-length)))))
+
+(defun extent-lists-equal (a b &key (relax-alignment 1) report-stream (error-report-limit 16)
+                           (report-format "~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors~%"))
   (and (= (length (extent-list-extents a)) (length (extent-list-extents b)))
        (loop :for (a-base . a-data) :in (extent-list-extents a)
 	     :for (b-base . b-data) :in (extent-list-extents b)
 	  :do (unless (and (= a-base b-base)
-			   (equalp a-data b-data))
+                           (alignment-relaxed-vector-equalp a-data b-data relax-alignment))
+                (when report-stream
+                  (print-u8-sequence-diff report-stream a-data b-data report-format
+                   :error-report-limit error-report-limit))
 		(return nil))
 	  :finally (return t))))
 

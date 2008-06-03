@@ -62,7 +62,7 @@
    #:u8-seq-word16le #:u8-seq-word16be
    #:u8-seq-word32le #:u8-seq-word32be
    #:u8-seq-word64le #:u8-seq-word64be
-   #:print-u8-sequence
+   #:print-u8-sequence #:print-u8-sequence-diff
    ;; extent-list.lisp
    #:extent-list #:u32-extent-list #:u8-extent-list
    #:extent-list-extents #:extent-list-element-type

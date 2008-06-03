@@ -181,3 +181,21 @@
         (iter (for i from tailbase below (+ tailbase tail) by 4)
               (format stream " ~8,'0X" (funcall accessor-fn seq i)))
         (format stream "~%")))))
+
+(defun print-u8-sequence-diff (stream x y fmtstr &key error-report-limit)
+  (declare (type (array (unsigned-byte 8)) x y))
+  (loop :with errors = 0 :with length = (min (length x) (length y))
+	:for i :from 0 :below (ash length -2) :do
+     (unless (= (u8-seq-word32le x (ash i 2))
+		(u8-seq-word32le y (ash i 2)))
+       (incf errors)
+       (unless (and error-report-limit (>= errors error-report-limit))
+	 (format stream fmtstr
+		 (ash i 2) (u8-seq-word32le x (ash i 2))
+		 (when (plusp i)
+		   (u8-seq-word32le y (ash (1- i) 2)))
+		 (u8-seq-word32le y (ash i 2))
+		 (when (< i (length y))
+		   (u8-seq-word32le y (ash (1+ i) 2)))
+		 (/ errors (1+ i) 0.01))))
+     :finally (return errors)))

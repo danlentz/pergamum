@@ -1,5 +1,5 @@
 (defpackage pergamum
-  (:use :common-lisp :alexandria :iterate)
+  (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
   (:export
    ;; basis.lisp
    #:xform/filter-if
@@ -19,6 +19,8 @@
    #:latch-fn #:latch-args #:bukkake-combine #:bukkake-combine-1 #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:iterate-until #:collect-until #:or-p #:and-p
    ;; lists.lisp
    #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons
+   ;; mop.lisp
+   #:rename-class-slot
    ;; numbers.lisp
    #:bisect #:split-number
    ;; pergamum.lisp

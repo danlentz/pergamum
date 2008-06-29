@@ -17,6 +17,7 @@
    (:file "functions" :depends-on ("package"))
    (:file "hash-table" :depends-on ("package"))
    (:file "packages" :depends-on ("package"))
+   (:file "mop" :depends-on ("package"))
    (:file "numbers" :depends-on ("package"))
    (:file "read" :depends-on ("package"))
    ;; tier 2

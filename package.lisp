@@ -20,7 +20,7 @@
    ;; lists.lisp
    #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons
    ;; mop.lisp
-   #:rename-class-slot
+   #:rename-class-slot #:slot-definition-documentation
    ;; numbers.lisp
    #:bisect #:split-number
    ;; pergamum.lisp

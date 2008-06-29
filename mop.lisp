@@ -54,3 +54,7 @@
          :direct-slots (mapcar #'essentialize-slotd (remove from (class-direct-slots class) :key #'slot-definition-name))
          :direct-default-initargs (set-difference (class-direct-default-initargs class) '((from) (to)) :key #'first)
          :direct-superclasses (remove 'slot-renaming-mixin (class-direct-superclasses class) :key #'class-name))))))
+
+(defun slot-definition-documentation (slotd)
+  #+sbcl
+  (sb-pcl::%slot-definition-documentation slotd))

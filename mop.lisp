@@ -1,8 +1,7 @@
 (in-package :pergamum)
 
 (defclass slot-renaming-mixin () 
-  ((from :initarg from)
-   (to :initarg to)))
+  ())
 
 (defmethod update-instance-for-redefined-class ((o slot-renaming-mixin) added discarded plist &rest initargs)
   (declare (ignore added discarded plist initargs))
@@ -18,9 +17,10 @@
      :collect initarg :collect (slot-value slotd slot)))
 
 #+sbcl
-(defun rename-class-slot (class from to)
+(defun rename-class-slot (class from to mapper)
   "Change name of the slot of CLASS from FROM to TO, 
-   arranging for its value to be carried over in all instances.
+   arranging for its value to be carried over in all instances
+   reachable by MAPPER.
 
    Caveats:
    1. Has a low-pass filter effect, due to not being able
@@ -36,24 +36,34 @@
       (error "Can only rename slots in instances of instances of standard-class."))
     (let* ((from-slotd (find from (class-slots class) :key #'slot-definition-name))
            (new-slotd (make-instance 'standard-direct-slot-definition :name to)))
-      (flet ((make-default-initarg (name val) (list name val (lambda () val))))
-        (dolist (slot '(sb-pcl::initform sb-pcl::initfunction sb-pcl::readers sb-pcl::writers sb-pcl::initargs sb-pcl::%type))
-          (when (slot-boundp from-slotd slot)
-            (setf (slot-value new-slotd slot) (slot-value from-slotd slot))))
-        (reinitialize-instance
-         class
-         :direct-slots (mapcar #'essentialize-slotd (cons new-slotd (class-direct-slots class)))
-         :direct-superclasses (cons (find-class 'slot-renaming-mixin) (class-direct-superclasses class)))
-        (reinitialize-instance
-         class
-         :direct-default-initargs (list* (make-default-initarg 'from from)
-                                         (make-default-initarg 'to to)
-                                         (class-direct-default-initargs class)))
-        (reinitialize-instance
-         class
-         :direct-slots (mapcar #'essentialize-slotd (remove from (class-direct-slots class) :key #'slot-definition-name))
-         :direct-default-initargs (set-difference (class-direct-default-initargs class) '((from) (to)) :key #'first)
-         :direct-superclasses (remove 'slot-renaming-mixin (class-direct-superclasses class) :key #'class-name))))))
+      (dolist (slot '(sb-pcl::initform sb-pcl::initfunction sb-pcl::readers sb-pcl::writers sb-pcl::initargs sb-pcl::%type))
+        (when (slot-boundp from-slotd slot)
+          (setf (slot-value new-slotd slot) (slot-value from-slotd slot))))
+
+      ;; Phase 1, add the slot and prepare for slot-renaming-mixin
+      (reinitialize-instance
+       class
+       :direct-slots (list* `(:name from :initform ,from :initfunction ,(lambda () from))
+                            `(:name to :initform ,to :initfunction ,(lambda () to))
+                            (mapcar #'essentialize-slotd (cons new-slotd (class-direct-slots class)))))
+      (make-instances-obsolete class)
+      (funcall mapper (lambda (o) (slot-boundp o 'to)))
+
+      ;; Phase 2, mix in the slot-renaming-mixin, and run its u-i-f-r-c 
+      (reinitialize-instance
+       class
+       :direct-superclasses (cons (find-class 'slot-renaming-mixin) (class-direct-superclasses class)))
+      (make-instances-obsolete class)
+      (funcall mapper (lambda (o) (slot-boundp o 'to)))
+
+      ;; Phase 3, cleanup
+      (reinitialize-instance
+       class
+       :direct-slots (mapcar #'essentialize-slotd (set-difference (class-direct-slots class)
+                                                                  (mapcar (curry #'make-instance 'direct-slot-definition :name) (list from 'from 'to))
+                                                                  :key #'slot-definition-name))
+       :direct-superclasses (remove 'slot-renaming-mixin (class-direct-superclasses class) :key #'class-name))
+      (make-instances-obsolete class))))
 
 (defun slot-definition-documentation (slotd)
   #+sbcl

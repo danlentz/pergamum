@@ -44,7 +44,7 @@
    #:define-macro-evaluations
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
-   #:make-hash-table-injector #:hash-table-key-present-p
+   #:make-hash-table-injector #:hash-table-key-present-p #:maphash*
    #:define-container-hash-accessor
    ;; alignment.lisp
    #:alignment-condition #:address-misalignment #:size-misalignment

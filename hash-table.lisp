@@ -44,6 +44,15 @@
              (notp (not (funcall test-not ,key-tmp)))
              (t t)))))
 
+(declaim (inline maphash*))
+(defun maphash* (function table &key key (test nil testp) (test-not nil notp))
+  "Like MAPHASH, but collects the return values of FUNCTION."
+  (when (and testp notp)
+    (error ":TEST and :TEST-NOT were both supplied."))
+  (iter (for (k v) in-hashtable table)
+        (when (satisfies-the-test v)
+          (collect (funcall function k v)))))
+
 (declaim (inline maphash-keys))
 (defun maphash-keys (function table &key key (test nil testp) (test-not nil notp))
   "Like MAPHASH, but calls FUNCTION with each key in the hash table TABLE."

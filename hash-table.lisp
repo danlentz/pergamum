@@ -58,8 +58,8 @@
   "Like MAPHASH, but calls FUNCTION with each key in the hash table TABLE."
   (when (and testp notp)
     (error ":TEST and :TEST-NOT were both supplied."))
-  (iter (for (k nil) in-hashtable table)
-        (when (satisfies-the-test k)
+  (iter (for (k v) in-hashtable table)
+        (when (satisfies-the-test v)
           (collect (funcall function k)))))
 
 (declaim (inline maphash-values))

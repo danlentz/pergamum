@@ -135,5 +135,5 @@
 	  :finally (return t))))
 
 (defun dump-u8-extent-list (stream extent-list &key (endianness :little-endian))
-  (do-extent-list-vectors (base vector) extent-list
-      (print-u8-sequence stream vector :base-address base :endianness endianness)))
+  (dolist (extent (extent-list-extents extent-list))
+    (print-extent stream extent endianness)))

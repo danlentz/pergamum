@@ -41,6 +41,9 @@
   (pprint-logical-block (stream spec)
     (format stream "(~X:~X)" (car spec) (+ (car spec) (cdr spec)))))
 
+(defun print-extent (stream extent &optional (endianness :little-endian))
+  (print-u8-sequence stream (extent-data extent) :base-address (extent-base extent) :endianness endianness))
+
 (defun extent-spec-base (spec)
   (car spec))
 

@@ -53,7 +53,7 @@
    #:check-size-alignment #:check-address-alignment
    ;; extent.lisp
    #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:point-in-extent-p #:extents-intersect-p
-   #:extent-spec #:make-extent-spec #:print-extent-spec
+   #:extent-spec #:make-extent-spec #:print-extent-spec #:print-extent
    #:extent-spec-base #:extent-spec-length #:extent-spec-length
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp

@@ -54,10 +54,11 @@
                      (condition-extent-list condition) (condition-spec condition)))))
 
 (defmethod print-object ((obj extent-list) stream)
-  (pprint-logical-block (stream (extent-list-extents obj) :prefix "#<EXTENT-LIST" :suffix ">")
-    (iter (for extent = (pprint-pop))
-          (while extent)
-          (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent))))))
+  (let ((*print-length* nil))
+    (pprint-logical-block (stream (extent-list-extents obj) :prefix "#<EXTENT-LIST" :suffix ">")
+      (iter (for extent = (pprint-pop))
+            (while extent)
+            (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent)))))))
 
 (defun extent-list-insert (extent-list vector base)
   (declare (type extent-list extent-list) (type (unsigned-byte 32) base) (type vector vector))

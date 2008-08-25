@@ -13,7 +13,7 @@
    #:make-condition-raiser #:make-error-raiser 
    #:with-retry-restart #:with-ignore-restart
    #:make-fixed-restarter
-   #:with-condition-restart-binding #:with-condition-printing #:with-condition-collection
+   #:with-condition-restart-binding #:with-condition-printing #:with-condition-collection #:returning-conditions
    #:condition-bind-default
    ;; functions.lisp
    #:latch-fn #:latch-args #:bukkake-combine #:bukkake-combine-1 #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:iterate-until #:collect-until #:or-p #:and-p

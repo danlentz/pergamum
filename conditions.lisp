@@ -48,6 +48,10 @@
            (push ,cond ,list)))
        (nreverse ,list))))
 
+(defmacro returning-conditions (type &body body)
+  "Catch and return conditions SUBTYPEP to TYPE, during BODY execution."
+  `(handler-case (progn ,@body) (,type (cond) cond)))
+
 (defmacro condition-bind-default ((&rest bindings) &body body)
   "Establish default bindings in the Zetalisp style, as described in the
    2001 Kent Pitman's paper `Condition Handling in the Lisp Language Family.'"

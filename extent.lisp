@@ -1,18 +1,12 @@
 (in-package :pergamum)
 
-(deftype extent () `(cons (integer 0) vector))
+(defclass extent ()
+  ((base :accessor extent-base :type (integer 0) :initarg :base)
+   (data :accessor extent-data :type vector :initarg :data)))
 
 (defun make-extent (base vector)
   (declare (type (integer 0) base) (type vector vector))
-  (cons base vector))
-
-(defun extent-base (extent)
-  (declare (type extent extent))
-  (car extent))
-
-(defun extent-data (extent)
-  (declare (type extent extent))
-  (cdr extent))
+  (make-instance 'extent :base base :vector vector))
 
 (defun extent-length (extent)
   (declare (type extent extent))
@@ -29,7 +23,7 @@
 
 (defun extent-spec (extent)
   (declare (type extent extent))
-  (cons (car extent) (length (cdr extent))))
+  (cons (extent-base extent) (length (extent-data extent))))
 
 (deftype extent-spec () `(cons (integer 0) (integer 0)))
 
@@ -44,6 +38,10 @@
 (defun print-extent (stream extent &optional (endianness :little-endian))
   (print-u8-sequence stream (extent-data extent) :address (extent-base extent) :endianness endianness))
 
+(defgeneric serialize-extent (stream extent)
+  (:method (stream (o extent))
+    (print (cons (extent-base o) (extent-data o)) stream)))
+
 (defun extent-spec-base (spec)
   (car spec))
 
@@ -56,7 +54,7 @@
 (defmacro do-extent-spec-aligned-blocks (alignment (addr len spec) &body body)
   "Execute body with ADDR being set to all successive beginnings of ALIGNMENT-aligned blocks covering the extent specified by SPEC."
   (once-only (alignment spec)
-    `(iter (for ,addr from (align-down ,alignment (car ,spec)) below (extent-spec-end ,spec) by ,alignment)
+    `(iter (for ,addr from (align-down ,alignment (extent-spec-base ,spec)) below (extent-spec-end ,spec) by ,alignment)
            (for ,len = (min ,alignment (- (extent-spec-end ,spec) ,addr)))
            ,@body)))
 

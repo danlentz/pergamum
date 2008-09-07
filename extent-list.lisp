@@ -92,12 +92,12 @@
 	 ,@body))
 
 (defun extent-list-vector-by-base (extent-list base)
-  (cdr (find base (extent-list-extents extent-list) :key #'car)))
+  (extent-data (find base (extent-list-extents extent-list) :key #'extent-base)))
 
 (defun serialize-extent-list (stream extent-list)
   (let ((*print-base* 16) (*print-array* t) (*print-length* nil))
     (and (print (list :extent-list (extent-list-element-type extent-list)) stream)
-	 (print (extent-list-extents extent-list) stream)
+	 (mapcar (curry #'serialize-extent stream) (extent-list-extents extent-list))
 	 t)))
 
 (defun unserialize-extent-list (stream)

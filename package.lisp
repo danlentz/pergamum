@@ -72,7 +72,7 @@
    #:extent-list-insert #:extent-list-adjoin #:extent-list-grow
    #:merge-extent-lists
    #:extent-list-compatible-vector-p
-   #:do-extent-list-vectors
+   #:do-extent-list
    #:extent-list-vector-by-base
    #:serialize-extent-list #:unserialize-extent-list
    #:extent-lists-equal

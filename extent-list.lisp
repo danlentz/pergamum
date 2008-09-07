@@ -87,7 +87,7 @@
 	 (extent-list-adjoin extent-list vector base)
 	 (extent-list-insert extent-list vector base)))))
 
-(defmacro do-extent-list-vectors ((basevar vectorvar) extent-list &body body)
+(defmacro do-extent-list ((basevar vectorvar) extent-list &body body)
   `(iter (for (,basevar . ,vectorvar) in (extent-list-extents ,extent-list))
 	 ,@body))
 

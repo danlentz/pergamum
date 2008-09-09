@@ -8,7 +8,7 @@
   (declare (type (integer 0) base) (type vector vector))
   (apply #'make-instance type
          :base base
-         :data (if (and element-type-p (not (subtypep (array-element-type vector) element-type)))
+         :data (if (and element-type-p (subtypep (array-element-type vector) element-type))
                    vector
                    (make-array (length vector) :element-type element-type :initial-contents vector))
          (remove-from-plist keys :element-type :base :data)))

@@ -60,39 +60,54 @@
             (while extent)
             (format stream " (~X:~X)" (extent-base extent) (+ (extent-base extent) (extent-length extent)))))))
 
-(defun extent-list-insert (extent-list vector base)
+(defun extent-list-push* (extent-list type vector base &key (element-type (array-element-type vector) element-type-p))
   (declare (type extent-list extent-list) (type (unsigned-byte 32) base) (type vector vector))
-  (push (make-extent base vector) (extent-list-extents extent-list)))
+  (push (apply #'make-extent type base vector (when element-type-p (list :element-type element-type))) (extent-list-extents extent-list)))
 
-(defun extent-list-adjoin (extent-list vector base)
+(defun extent-list-grow (extent-list type length base)
+  (declare (type extent-list extent-list) (type (unsigned-byte 32) length) (type (unsigned-byte 32) base))
+  (first (extent-list-push* extent-list type (make-array length :element-type (extent-list-element-type extent-list)) base)))
+
+(defun extent-list-extent-collides-p (extent-list extent)
+  (declare (type extent-list extent-list) (type extent extent))
+  (find-if (curry #'extents-intersect-p extent) (extent-list-extents extent-list)))
+
+(defun extent-list-adjoin (extent-list extent)
+  "Insert the EXTENT into EXTENT-LIST, if only it doesn't intersect any inhabitants to date, in which case an error is raised."
+  (declare (type extent-list extent-list) (type extent extent))
+  (when-let ((collidee (extent-list-extent-collides-p extent-list extent)))
+      (error "extent ~S collides with extent ~S in extent list ~S." extent collidee extent-list))
+  (push extent (extent-list-extents extent-list))
+  extent-list)
+
+(defun extent-list-adjoin* (extent-list type base vector &key (element-type (array-element-type vector) element-type-p))
+  "Like EXTENT-LIST-ADJOIN, but fuse the spread extent constituents."
   (declare (type extent-list extent-list) (type (unsigned-byte 32) base) (type vector vector))
-  (let ((new-extent (make-extent base vector)))
-    (when (find-if (curry #'extents-intersect-p new-extent) (extent-list-extents extent-list))
-      (error "vector ~S at base ~S collides with extent list ~S." vector base extent-list))
-    (push new-extent (extent-list-extents extent-list))))
+  (let ((extent (apply #'make-extent type base vector (when element-type-p (list :element-type element-type)))))
+    (extent-list-adjoin extent-list extent)))
 
 (defun merge-extent-lists (to what)
-  "Adjoin all extents from the list WHAT to the list TO."
+  "Adjoin all extents from the list WHAT to the list TO. Suboptimal."
   (declare (type extent-list what to))
   (dolist (extent (extent-list-extents what))
-    (extent-list-adjoin to (extent-data extent) (extent-base extent))))
+    (extent-list-adjoin to extent))
+  to)
 
-(defun extent-list-compatible-vector-p (extent-list vector)
-  (equal (extent-list-element-type extent-list) (array-element-type vector)))
+(defun extent-list-vector-compatible-p (extent-list vector)
+  "See if VECTOR is compatible with EXTENT-LIST element type -wise."
+  (subtypep (array-element-type vector) (extent-list-element-type extent-list)))
 
-(defun extent-list-grow (extent-list length base &key check-p)
-  (let ((vector (make-array length :element-type (extent-list-element-type extent-list) :initial-element 0)))
-    (first
-     (if check-p
-	 (extent-list-adjoin extent-list vector base)
-	 (extent-list-insert extent-list vector base)))))
-
-(defmacro do-extent-list ((basevar vectorvar) extent-list &body body)
-  `(iter (for (,basevar . ,vectorvar) in (extent-list-extents ,extent-list))
-	 ,@body))
-
-(defun extent-list-vector-by-base (extent-list base)
-  (extent-data (find base (extent-list-extents extent-list) :key #'extent-base)))
+(defmacro do-extent-list ((binding-spec extent-list) &body body)
+  "Iterate over EXTENT-LIST's extents, with optional destructuring."
+  (with-gensyms (extentvar)
+    `(iter (for ,(if (symbolp binding-spec) binding-spec extentvar) in (extent-list-extents ,extent-list))
+           ,(if (symbolp binding-spec)
+                `(progn ,@body)
+                (destructuring-bind (basevar vectorvar &optional desired-extentvar) binding-spec
+                  (declare (ignore desired-extentvar))
+                  `(let ((,basevar (extent-base ,extentvar))
+                         (,vectorvar (extent-data ,extentvar)))
+                     ,@body))))))
 
 (defun serialize-extent-list (stream extent-list)
   (let ((*print-base* 16) (*print-array* t) (*print-length* nil))
@@ -100,22 +115,21 @@
 	 (mapcar (curry #'serialize-extent stream) (extent-list-extents extent-list))
 	 t)))
 
-(defun unserialize-extent-list (stream)
+(defun unserialize-extent-list (stream &optional (type 'extent))
   (let ((*read-base* 10))
     (destructuring-bind (magic element-type) (read stream)
       (unless (eq magic :extent-list)
 	(error "Unrecognized extent list serialization format: magic mismatch: ~S instead of ~S." magic :extent-list))
       (unless (typep element-type 'permissible-extent-list-typespec)
 	(error "Bad extent list element type: ~S." element-type))
-      (let ((*read-base* 16) (*read-eval* nil)
-	    (extent-list (make-instance (ecase (second element-type)
-					  (8 'u8-extent-list)
-					  (32 'u32-extent-list))
-					:element-type element-type)))
-	(loop :for (base . data) :in (read stream) :do
-	  (map-into (extent-data (extent-list-grow extent-list (length data) base)) #'identity data))
-	(setf (extent-list-extents extent-list) (nreverse (extent-list-extents extent-list)))
-	extent-list))))
+      (let ((*read-base* 16) (*read-eval* nil))
+        (make-instance
+         (ecase (second element-type)
+           (8 'u8-extent-list)
+           (32 'u32-extent-list))
+         :element-type element-type
+         :extents (iter (for (base . data) in (read stream))
+                        (collect (make-extent type base data :element-type element-type))))))))
 
 (defun alignment-relaxed-vector-equalp (v1 v2 relax-factor &aux (relax-mask (1- relax-factor)))
   (let ((test-length (logand (length v1) relax-mask)))

@@ -36,7 +36,7 @@
   (declare (u8-extent-list extent-list))
   (unless (extent-list-matches-spec-p extent-list-spec extent-list)
     (error 'extent-list-spec-mismatch :extent-list extent-list :spec extent-list-spec))
-  (mapcar (curry #'set-u8-extent extentable) extent-list-spec (extent-list-extents extent-list))
+  (mapc (curry #'set-u8-extent extentable) extent-list-spec (extent-list-extents extent-list))
   extent-list)
 
 (defsetf u8-extent-list set-u8-extent-list)

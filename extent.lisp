@@ -4,13 +4,22 @@
   ((base :accessor extent-base :type (integer 0) :initarg :base)
    (data :accessor extent-data :type vector :initarg :data)))
 
-(defun make-extent (base vector)
+(defun make-extent (type base vector &rest keys &key (element-type (array-element-type vector) element-type-p) &allow-other-keys)
   (declare (type (integer 0) base) (type vector vector))
-  (make-instance 'extent :base base :vector vector))
+  (apply #'make-instance type
+         :base base
+         :data (if (and element-type-p (not (subtypep (array-element-type vector) element-type)))
+                   vector
+                   (make-array (length vector) :element-type element-type :initial-contents vector))
+         (remove-from-plist keys :element-type :base :data)))
 
 (defun extent-length (extent)
   (declare (type extent extent))
   (array-dimension (extent-data extent) 0))
+
+(defun point-extent-base-p (extent p)
+  (declare (type (integer 0) p) (type extent extent))
+  (= p (extent-base extent)))
 
 (defun point-in-extent-p (extent p)
   (declare (type (integer 0) p) (type extent extent))

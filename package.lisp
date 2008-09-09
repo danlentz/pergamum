@@ -52,8 +52,8 @@
    #:aligned-4 #:aligned-16
    #:check-size-alignment #:check-address-alignment
    ;; extent.lisp
-   #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:point-in-extent-p #:extents-intersect-p
-   #:extent-spec #:make-extent-spec #:print-extent-spec #:print-extent
+   #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:point-extent-base-p #:point-in-extent-p #:extents-intersect-p
+   #:extent-spec #:make-extent-spec #:print-extent-spec #:print-extent #:serialize-extent
    #:extent-spec-base #:extent-spec-length #:extent-spec-length
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
@@ -69,13 +69,12 @@
    #:extent-list #:u32-extent-list #:u8-extent-list
    #:extent-list-extents #:extent-list-element-type
    #:extent-list-spec #:print-extent-list-spec #:extent-list-matches-spec-p #:extent-list-spec-mismatch
-   #:extent-list-insert #:extent-list-adjoin #:extent-list-grow
+   #:extent-list-push* #:extent-list-grow #:extent-list-adjoin #:extent-list-adjoin*
    #:merge-extent-lists
-   #:extent-list-compatible-vector-p
+   #:extent-list-vector-compatible-p
    #:do-extent-list
-   #:extent-list-vector-by-base
    #:serialize-extent-list #:unserialize-extent-list
-   #:extent-lists-equal
+   #:extent-lists-equalp
    #:dump-u8-extent-list
    ;; extentable.lisp
    #:extentable #:u8-extent #:extentable-u8-vector #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#

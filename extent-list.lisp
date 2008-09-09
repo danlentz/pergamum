@@ -136,7 +136,7 @@
     (and (= test-length (logand (length v2) relax-mask))
          (not (mismatch v1 v2 :end1 test-length :end2 test-length)))))
 
-(defun extent-lists-equal (a b &key (relax-alignment 1) report-stream (error-report-limit 16)
+(defun extent-lists-equalp (a b &key (relax-alignment 1) report-stream (error-report-limit 16)
                            (report-format "~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors~%"))
   (and (= (length (extent-list-extents a)) (length (extent-list-extents b)))
        (loop :for (a-base . a-data) :in (extent-list-extents a)

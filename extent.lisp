@@ -1,8 +1,10 @@
 (in-package :pergamum)
 
-(defclass extent ()
-  ((base :accessor extent-base :type (integer 0) :initarg :base)
-   (data :accessor extent-data :type vector :initarg :data)))
+(defclass baseless-extent ()
+  ((data :accessor extent-data :type vector :initarg :data)))
+
+(defclass extent (baseless-extent)
+  ((base :accessor extent-base :type (integer 0) :initarg :base)))
 
 (defun make-extent (type base vector &rest keys &key (element-type (array-element-type vector) element-type-p) &allow-other-keys)
   (declare (type (integer 0) base) (type vector vector))

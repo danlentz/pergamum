@@ -42,6 +42,8 @@
    #:define-evaluation-domain
    #:define-function-evaluations
    #:define-macro-evaluations
+   ;; streams.lisp
+   #:stream-as-vector #:file-as-vector
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
    #:make-hash-table-injector #:hash-table-key-present-p #:maphash*

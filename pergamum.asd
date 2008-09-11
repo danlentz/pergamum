@@ -22,6 +22,7 @@
    (:file "read" :depends-on ("package"))
    ;; tier 2
    (:file "lists" :depends-on ("basis"))
+   (:file "streams" :depends-on ("basis"))
    ;; tier 3
    (:file "extent" :depends-on ("basis" "alignment"))
    (:file "pergamum" :depends-on ("basis"))

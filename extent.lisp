@@ -16,7 +16,7 @@
          (remove-from-plist keys :element-type :base :data)))
 
 (defun extent-length (extent)
-  (declare (type extent extent))
+  (declare (type baseless-extent extent))
   (array-dimension (extent-data extent) 0))
 
 (defun point-extent-base-p (extent p)

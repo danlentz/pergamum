@@ -19,6 +19,10 @@
   (declare (type baseless-extent extent))
   (array-dimension (extent-data extent) 0))
 
+(defun extent-end (extent)
+  (declare (type extent extent))
+  (+ (extent-base extent) (extent-length extent)))
+
 (defun point-extent-base-p (extent p)
   (declare (type (integer 0) p) (type extent extent))
   (= p (extent-base extent)))

@@ -36,3 +36,12 @@
     (apply #'mapqueue fn lists)
     (setf (cdar q) initial)
     (queue-contents q)))
+
+(defun unzip (fn sequence &key (key #'identity))
+  (let (ret-yes ret-no)
+    (iter (for elt in sequence)
+          (if (funcall fn (funcall key elt))
+              (collect elt into yes)
+              (collect elt into no))
+          (finally (setf ret-yes yes ret-no no)))
+    (values ret-yes ret-no)))

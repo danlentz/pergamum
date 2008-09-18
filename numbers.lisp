@@ -1,5 +1,16 @@
 (in-package :pergamum)
 
+(defun power-of-2-p (x)
+  (zerop (logand x (1- x))))
+
+(defun ilog2-ceiling (x)
+  (ash 1 (integer-length x)))
+
+(defun ilog2-cover (x)
+  (if (power-of-2-p x)
+      x
+      (ilog2-ceiling x)))
+
 (defun bisect (test n &optional (base 0))
   "Find, using bisection, the largest positive integer below N and above,
    or equal to BASE, which satisfies TEST of one argument.

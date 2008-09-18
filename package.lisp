@@ -22,7 +22,7 @@
    ;; mop.lisp
    #:rename-class-slot #:slot-definition-documentation
    ;; numbers.lisp
-   #:bisect #:split-number
+   #:power-of-2-p #:ilog2-ceiling #:ilog2-cover #:bisect #:split-number
    ;; pergamum.lisp
    #:progn-1
    #:with-condition-printing

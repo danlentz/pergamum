@@ -4,10 +4,10 @@
   ((data :accessor extent-data :type vector :initarg :data)))
 
 (defclass extent (baseless-extent)
-  ((base :accessor extent-base :type (integer 0) :initarg :base)))
+  ((base :accessor extent-base :type integer :initarg :base)))
 
 (defun make-extent (type base vector &rest keys &key (element-type (array-element-type vector) element-type-p) &allow-other-keys)
-  (declare (type (integer 0) base) (type vector vector))
+  (declare (type integer base) (type vector vector))
   (apply #'make-instance type
          :base base
          :data (if (and element-type-p (subtypep (array-element-type vector) element-type))
@@ -24,11 +24,11 @@
   (+ (extent-base extent) (extent-length extent)))
 
 (defun point-extent-base-p (extent p)
-  (declare (type (integer 0) p) (type extent extent))
+  (declare (type integer p) (type extent extent))
   (= p (extent-base extent)))
 
 (defun point-in-extent-p (extent p)
-  (declare (type (integer 0) p) (type extent extent))
+  (declare (type integer p) (type extent extent))
   (and (>= p (extent-base extent)) (< p (+ (extent-base extent) (extent-length extent)))))
 
 (defun extents-intersect-p (x y)
@@ -39,8 +39,8 @@
 (defun extent-spec (extent)
   (declare (type extent extent))
   (cons (extent-base extent) (length (extent-data extent))))
-
-(deftype extent-spec () `(cons (integer 0) (integer 0)))
+ 
+(deftype extent-spec () `(cons integer (integer 0)))
 
 (defun make-extent-spec (base length)
   (cons base length))

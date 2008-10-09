@@ -42,4 +42,4 @@
 
 (defun check-address-alignment (req value)
   (unless (aligned-p req value)
-    (error 'address-misalignment :alignment-requirement req :size value)))
+    (error 'address-misalignment :alignment-requirement req :address value)))

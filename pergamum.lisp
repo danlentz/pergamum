@@ -16,8 +16,8 @@
 
 (defmacro op-parameter-destructurer ((op params) form &body body)
   (once-only (form)
-    `(let ((,op (if (consp ,form) (first ,form) ,form))
-	   (,params (when (consp ,form) (rest ,form))))
+    `(let (,@(when op `((,op (if (consp ,form) (first ,form) ,form))))
+	   ,@(when params `((,params (when (consp ,form) (rest ,form))))))
        ,@body)))
 
 (defun map-lambda-list (fn spec form &optional acc (mode '&mandatory))

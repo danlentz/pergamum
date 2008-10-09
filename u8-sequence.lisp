@@ -46,6 +46,32 @@
 	  (ash (elt sequence (+ offset 1)) 48)
 	  (ash (elt sequence (+ offset 0)) 56)))
 
+(defun u8-seq-wordle (seq offset length)
+  (declare (type sequence seq) (type unsigned-byte offset))
+  (loop :for i :from 0 :below length
+	:for shift :downfrom 0 :by 8 :with result = 0
+     :do (setf result (logior result (elt seq (+ offset i))))
+     :finally (return result)))
+
+(defun u8-seq-wordbe (seq offset length)
+  (declare (type sequence seq) (type unsigned-byte offset))
+  (loop :for i :downfrom (1- length) :to 0
+	:for shift :downfrom 0 :by 8 :with result = 0
+     :do (setf result (logior result (elt seq (+ offset i))))
+     :finally (return result)))
+
+(defun (setf u8-seq-wordle) (val seq offset &optional (length (ceiling (integer-length val) 8)))
+  (declare (type unsigned-byte val) (type sequence seq) (type unsigned-byte offset))
+  (loop :for i :from 0 :below length
+	:for shift :downfrom 0 :by 8
+     :do (setf (elt seq (+ offset i)) (logand #xff (ash val shift)))))
+
+(defun (setf u8-seq-wordbe) (val seq offset &optional (length (ceiling (integer-length val) 8)))
+  (declare (type unsigned-byte val) (type sequence seq) (type unsigned-byte offset))
+  (loop :for i :downfrom (1- length) :to 0
+	:for shift :downfrom 0 :by 8
+     :do (setf (elt seq (+ offset i)) (logand #xff (ash val shift)))))
+
 (defun u8-vector-word16le (array offset)
   (declare (type (vector (unsigned-byte 8)) array))
   (logior (ash (aref array (+ offset 0)) 0)

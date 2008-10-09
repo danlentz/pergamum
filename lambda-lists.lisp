@@ -10,48 +10,51 @@
 	  ((null spec)
 	   (error "Form has unspecified leftover: ~S ~S." form spec))
 	  (t
-	   (destructuring-bind (elt &rest rest) spec
-	     (if (member elt '(&optional &key &rest &body))
-		 (let ((rest (if (eq elt '&key)
+	   (destructuring-bind (spec-elt &rest rest) spec
+	     (if (member spec-elt '(&optional &key &rest &body))
+		 (let ((rest (if (eq spec-elt '&key)
 				 (loop :for key-val :in rest :nconc
 				    (op-parameter-destructurer (k v) key-val
-				      (list (intern (string k) :keyword) (car v))))
+                                      (when v
+                                        (list (list k (intern (string k) :keyword)) (car v)))))
 				 rest)))
 		   (ecase mode
-		     ((&mandatory &optional) (map-lambda-list fn rest form acc elt))
-		     (&key (case elt
+		     ((&mandatory &optional) (map-lambda-list fn rest form acc spec-elt))
+		     (&key (case spec-elt
 			     ((&optional &key &rest)
-			      (error "Misplaced ~S in lambda list." elt))
-                             (t (map-lambda-list fn rest form acc elt))))
-		     ((&rest &body) (case elt
+			      (error "Misplaced ~S in lambda list." spec-elt))
+                             (t (map-lambda-list fn rest form acc spec-elt))))
+		     ((&rest &body) (case spec-elt
 				      ((&key &optional)
-				       (error "Misplaced ~S in lambda list." elt))
-				      (t (map-lambda-list fn rest form acc elt))))))
+				       (error "Misplaced ~S in lambda list." spec-elt))
+				      (t (map-lambda-list fn rest form acc spec-elt))))))
 		 (ecase mode
 		   (&mandatory
 		    (unless form
 		      (error "Missing mandatory argument."))
-		    (map-lambda-list fn rest (cdr form) (yield acc elt (car form)) mode))
+		    (map-lambda-list fn rest (cdr form) (yield acc spec-elt (car form)) mode))
 		   (&optional
-		    (if form
-			(map-lambda-list fn rest (cdr form) (yield acc elt (car form)) mode)
-			(nreverse acc)))
+                    (op-parameter-destructurer (name default-value) spec-elt
+                      (if form
+                          (map-lambda-list fn rest (cdr form) (yield acc name (car form)) mode)
+                          (nreverse (yield acc name (car default-value))))))
 		   (&key
-                    (destructuring-bind (&optional key val &rest rest) form
+                    (destructuring-bind (&optional key actual-value &rest form-rest) form
                       (unless key
                         (return-from map-lambda-list (nreverse acc)))
-                      (unless val
+                      (unless actual-value
                         (error "odd number of &KEY arguments"))
-                      (multiple-value-bind (property-name value list) (get-properties spec (list key))
-                        (declare (ignore property-name ))
-                        (unless list
+                      (destructuring-bind ((keysym keyword) default-value &rest spec-rest)
+                          (or (member-if (lambda (x) (and (consp x) (eq (second x) key))) spec) (list (list nil nil) nil))
+                        (declare (ignore keyword default-value spec-rest))
+                        (unless keysym
                           (error "unknown &KEY argument: ~S" key))
-                        (map-lambda-list fn (remove-from-plist spec key) rest
-                                         (yield (cons key acc) value val) '&key))))
+                        (map-lambda-list fn (remove-from-plist spec key) form-rest
+                                         (yield (cons key acc) keysym actual-value) '&key))))
 		   ((&body &rest)
 		    (unless (= (length spec) 1)
 		      (error "Bad or missing spec for the rest."))
-		    (nreverse (nconc (nreverse (mapcar (curry (the function fn) elt) form)) acc))))))))))
+		    (nreverse (nconc (nreverse (mapcar (curry (the function fn) spec-elt) form)) acc))))))))))
 
 (defun lambda-list-application-types-match-p (typespec list)
   (every (complement #'null) (map-lambda-list (order typep 1 0) typespec list)))

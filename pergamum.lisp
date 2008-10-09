@@ -28,7 +28,7 @@
    or passed in the order specified by the aforementioned parameter
    specifiers. Example: (funcall (order > 1 0) 1 2) => NIL."
   (op-parameter-destructurer (fnsym length) fnspec
-    (let* ((length (or length (length order)))
+    (let* ((length (or (car length) (length order)))
            (specs (iter (for i below length)
                         (collect (cons (not (null (find i order))) (gensym))))))
       `(lambda ,(mapcar #'cdr specs)

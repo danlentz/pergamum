@@ -30,18 +30,13 @@
    #:nand #:nor #:andf #:orf #:notf #:xorf
    #:quote-when
    #:op-parameter-destructurer
-   #:map-lambda-list
    #:order
-   #:lambda-list-application-types-match-p
    #:ensure-destructurisation #:destructure-binding-form-body #:destructure-def-body
-   #:lambda-list-binds
    #:prepend
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission
    #:emit-declarations
-   #:lambda-list-satisfied-p
-   #:define-evaluation-domain
-   #:define-function-evaluations
-   #:define-macro-evaluations
+   ;; lambda-lists.lisp
+   #:map-lambda-list #:lambda-list-application-types-match-p #:lambda-list-binds
    ;; streams.lisp
    #:stream-as-vector #:file-as-vector
    ;; hash-table.lisp
@@ -88,4 +83,8 @@
    #:mar #:export-unmarred
    #:tunnel-package
    ;; types.lisp
-   #:coerce-to-sequence))
+   #:coerce-to-sequence
+   ;; to-expunge.lisp
+   #:define-evaluation-domain
+   #:define-function-evaluations
+   #:define-macro-evaluations))

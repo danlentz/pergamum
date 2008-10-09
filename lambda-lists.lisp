@@ -66,3 +66,10 @@
 	       (collect (car elt)))
 	      ((not (member elt lambda-list-keywords))
 	       (collect elt)))))
+
+(defun lambda-list-1 (lambda-list-spec lambda-list name)
+  "Retrieve from LAMBDA-LIST the value of parameter with NAME, according to LAMBDA-LIST-SPEC."
+  (unless (find name (lambda-list-binds lambda-list-spec))
+    (error "~S not bound by lambda list spec ~S" name lambda-list-spec))
+  (map-lambda-list (lambda (selt felt) (when (eq selt name) (return-from lambda-list-1 felt))) lambda-list-spec lambda-list)
+  nil)

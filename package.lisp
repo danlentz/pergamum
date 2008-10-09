@@ -36,7 +36,7 @@
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission
    #:emit-declarations
    ;; lambda-lists.lisp
-   #:map-lambda-list #:lambda-list-application-types-match-p #:lambda-list-binds
+   #:map-lambda-list #:lambda-list-application-types-match-p #:lambda-list-binds #:lambda-list-1
    ;; streams.lisp
    #:stream-as-vector #:file-as-vector
    ;; hash-table.lisp

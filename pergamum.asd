@@ -28,6 +28,7 @@
    (:file "pergamum" :depends-on ("basis"))
    (:file "objects" :depends-on ("forms"))
    ;; tier 4
+   (:file "types" :depends-on ("extent"))
    (:file "u8-sequence" :depends-on ("extent"))
    ;; tier 5
    (:file "extent-list" :depends-on ("u8-sequence"))

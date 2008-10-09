@@ -86,4 +86,6 @@
    #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader
    ;; packages.lisp
    #:mar #:export-unmarred
-   #:tunnel-package))
+   #:tunnel-package
+   ;; types.lisp
+   #:coerce-to-sequence))

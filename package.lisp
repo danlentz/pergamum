@@ -2,7 +2,7 @@
   (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
   (:export
    ;; basis.lisp
-   #:xform/filter-if
+   #:fif #:fif-1 #:map-remove-if-not
    ;; forms.lisp
    #:quoted-p #:quoted-form
    ;; binary.lisp

@@ -22,16 +22,34 @@
                    x 
                    (car x)))))
 
-(defun xform/filter-if (xform test &rest sequences)
+(defun fif (if-fn then-fn else-fn)
+  "Return a function APPLYing either THEN-FN or ELSE-FN to its arguments, 
+   depending on the return value of IF-FN, applied to the same arguments."
+  (lambda (&rest x)
+    (if (apply if-fn x)
+        (apply then-fn x)
+        (apply else-fn x))))
+
+(defun fif-1 (if-fn then-fn else-fn)
+  "Return a function FUNCALLing either THEN-FN or ELSE-FN with its argument, 
+   depending on the return value of IF-FN, passed the same argument."
+  (lambda (x)
+    (if (funcall if-fn x)
+        (funcall then-fn x)
+        (funcall else-fn x))))
+
+(defun map-remove-if-not (xform test &rest sequences)
+  "Essentially (mapcar XFORM (remove nil (apply #'mapcar TEST SEQUENCES))), 
+   but works when NIL is present in SEQUENCES."
   (labels ((iterate (acc sequences)
-	     (if (notany #'null sequences)
-		 (let ((crop (mapcar #'car sequences))
-		       (rest (mapcar #'cdr sequences)))
-		   (iterate (if (apply test crop)
-				(cons (apply xform crop) acc)
-				acc)
-			    rest))
-		 acc)))
+                    (if (notany #'null sequences)
+                        (let ((crop (mapcar #'car sequences))
+                              (rest (mapcar #'cdr sequences)))
+                          (iterate (if (apply test crop)
+                                       (cons (apply xform crop) acc)
+                                       acc)
+                                   rest))
+                        acc)))
     (nreverse (iterate nil sequences))))
 
 (defun maybe-capture-subform (condition form accessor)

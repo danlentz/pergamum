@@ -32,7 +32,7 @@
            (specs (iter (for i below length)
                         (collect (cons (not (null (find i order))) (gensym))))))
       `(lambda ,(mapcar #'cdr specs)
-         ,@(if-let ((ignore-list (xform/filter-if #'cdr (compose #'null #'car) specs)))
+         ,@(if-let ((ignore-list (map-remove-if-not #'cdr (compose #'null #'car) specs)))
                    `((declare (ignore ,ignore-list))))
          (,fnsym ,@(mapcar (compose (the function #'cdr) (the function (rcurry #'nth specs))) order))))))
 

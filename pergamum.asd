@@ -1,3 +1,5 @@
+;;; -*- Mode: Lisp -*-
+
 (defpackage :pergamum.system
   (:use :cl :asdf))
 

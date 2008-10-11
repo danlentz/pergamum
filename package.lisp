@@ -30,7 +30,7 @@
    #:nand #:nor #:andf #:orf #:notf #:xorf
    #:quote-when
    #:op-parameter-destructurer
-   #:order
+   #:order #:order-funcalling
    #:ensure-destructurisation #:destructure-binding-form-body #:destructure-def-body
    #:prepend
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission

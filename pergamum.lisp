@@ -20,21 +20,32 @@
 	   ,@(when params `((,params (when (consp ,form) (rest ,form))))))
        ,@body)))
 
-(defmacro order (fnspec &rest order)
-  "Given a function specification (either FNSYM or (FNSYM NPARAMS)),
+(labels ((emit-order (need-funcall-p fnspec order)
+           (op-parameter-destructurer (fnsym length) fnspec
+             (let* ((length (or (car length) (length order)))
+                    (specs (iter (for i below length)
+                                 (collect (cons (find i order) (gensym))))))
+               `(lambda ,(mapcar #'cdr specs)
+                  ,@(if-let ((ignore-list (map-remove-if-not #'cdr (compose #'null #'car) specs)))
+                            `((declare (ignore ,@ignore-list))))
+                  (,@(when need-funcall-p '(funcall)) ,fnsym ,@(mapcar (compose (the function #'cdr) (the function (rcurry #'nth specs))) order)))))))
+ (defmacro order (fnspec &rest order)
+   "Given a function specification (either FNSYM or (FNSYM NPARAMS)),
    and a list of positional parameter specifiers, produce a function
    calling the function FNSYM, with received parameters either ignored
    (if their corresponding positional parameter specifier is omitted),
    or passed in the order specified by the aforementioned parameter
    specifiers. Example: (funcall (order > 1 0) 1 2) => NIL."
-  (op-parameter-destructurer (fnsym length) fnspec
-    (let* ((length (or (car length) (length order)))
-           (specs (iter (for i below length)
-                        (collect (cons (not (null (find i order))) (gensym))))))
-      `(lambda ,(mapcar #'cdr specs)
-         ,@(if-let ((ignore-list (map-remove-if-not #'cdr (compose #'null #'car) specs)))
-                   `((declare (ignore ,ignore-list))))
-         (,fnsym ,@(mapcar (compose (the function #'cdr) (the function (rcurry #'nth specs))) order))))))
+   (emit-order nil fnspec order))
+
+ (defmacro order-funcalling (fnspec &rest order)
+   "Given a function specification (either FNSYM or (FNSYM NPARAMS)),
+   and a list of positional parameter specifiers, produce a function
+   FUNCALLing FNSYM, with received parameters either ignored
+   (if their corresponding positional parameter specifier is omitted),
+   or passed in the order specified by the aforementioned parameter
+   specifiers. Example: (funcall (order > 1 0) 1 2) => NIL."
+   (emit-order t fnspec order)))
 
 (defun ensure-destructurisation (spec form)
   (declare (list spec))

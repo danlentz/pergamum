@@ -56,9 +56,6 @@
 (defun map-lambda-list-bindings-actuals (fn lambda-list application &key insert-keywords)
   (map-lambda-list (order-funcalling (fn 4) 1 3) lambda-list application :insert-keywords insert-keywords))
 
-(defun lambda-list-application-types-match-p (typespec list)
-  (every #'identity (map-lambda-list-defaults-actuals (order typep 1 0) typespec list)))
-
 (defun lambda-list-binds (list)
   "Yield a list of symbols bound by a well-formed lambda LIST."
   (iter (for elt in list)

@@ -38,7 +38,7 @@
    ;; lambda-lists.lisp
    #:&mandatory
    #:map-lambda-list #:map-lambda-list-bindings-actuals #:map-lambda-list-defaults-actuals
-   #:lambda-list-application-types-match-p #:lambda-list-binds #:lambda-list-1
+   #:lambda-list-binds #:lambda-list-1
    ;; streams.lisp
    #:stream-as-vector #:file-as-vector
    ;; hash-table.lisp

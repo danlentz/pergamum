@@ -87,6 +87,4 @@
    ;; types.lisp
    #:coerce-to-sequence
    ;; to-expunge.lisp
-   #:define-evaluation-domain
-   #:define-function-evaluations
-   #:define-macro-evaluations))
+   ))

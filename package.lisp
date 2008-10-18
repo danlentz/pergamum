@@ -40,7 +40,7 @@
    #:map-lambda-list #:map-lambda-list-bindings-actuals #:map-lambda-list-defaults-actuals
    #:lambda-list-binds #:lambda-list-1
    ;; streams.lisp
-   #:stream-as-vector #:file-as-vector
+   #:stream-as-vector #:file-as-vector #:with-output-to-file
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
    #:make-hash-table-injector #:hash-table-key-present-p #:maphash*

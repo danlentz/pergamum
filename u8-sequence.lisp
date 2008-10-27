@@ -1,3 +1,6 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;;
+
 (in-package :pergamum)
 
 (defun u8-seq-word16le (sequence offset)

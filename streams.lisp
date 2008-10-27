@@ -1,3 +1,6 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;;
+
 (in-package :pergamum)
 
 (defun stream-as-vector (stream &optional (size (file-length stream)) &key (element-type '(unsigned-byte 8)))

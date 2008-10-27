@@ -1,3 +1,6 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;;
+
 (in-package :pergamum)
 
 (defun map-lambda-list (fn spec form &key insert-keywords)

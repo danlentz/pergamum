@@ -1,3 +1,6 @@
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;;
+
 (defpackage pergamum
   (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
   (:export
@@ -20,7 +23,7 @@
    ;; lists.lisp
    #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip
    ;; mop.lisp
-   #:rename-class-slot #:slot-definition-documentation
+   #+sbcl #:rename-class-slot #:slot-definition-documentation
    ;; numbers.lisp
    #:power-of-2-p #:ilog2-ceiling #:ilog2-cover #:bisect #:split-number
    ;; pergamum.lisp

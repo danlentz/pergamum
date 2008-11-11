@@ -6,7 +6,7 @@
 (in-package :pergamum.system)
 
 (defsystem :pergamum
-  :depends-on (:alexandria :iterate)
+  :depends-on (:alexandria :iterate :cl-fad)
   :components
   (;; tier 0
    (:file "package")

@@ -2,7 +2,7 @@
 ;;;
 
 (defpackage pergamum
-  (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
+  (:use :common-lisp :alexandria :iterate :cl-fad #+sbcl :sb-mop)
   (:export
    ;; basis.lisp
    #:fif #:fif-1 #:map-remove-if-not
@@ -43,7 +43,10 @@
    #:map-lambda-list #:map-lambda-list-bindings-actuals #:map-lambda-list-defaults-actuals
    #:lambda-list-binds #:lambda-list-1
    ;; streams.lisp
-   #:stream-as-vector #:file-as-vector #:with-output-to-file
+   #:stream-as-vector
+   ;; files.lisp
+   #:pathname-busy #:pathname-not-present #:subdirectory #:subfile #:change-directory #:within-directory
+   #:file-as-vector #:file-as-string #:with-output-to-file
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
    #:make-hash-table-injector #:hash-table-key-present-p #:maphash*

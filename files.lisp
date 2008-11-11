@@ -21,7 +21,7 @@
   (setf *default-pathname-defaults* pathname)
   (zerop (sb-posix:chdir (namestring pathname))))
 
-(defmacro within-directory ((dirvar dirform &key (when-exists :continue) (when-does-not-exist :error)) &body body)
+(defmacro within-directory ((dirvar dirform &key (if-exists :continue) (if-does-not-exist :error)) &body body)
   "Execute BODY with both the Lisp's and POSIX's 
    ideas of current directory set to DIRVAR,
    which is bound to the value of DIRFORM.
@@ -38,10 +38,10 @@
     (with-gensyms (old exists-p)
       `(if-let* ((,dirvar ,dirform)
                  (,exists-p (directory-exists-p ,dirvar)))
-                ,(ecase when-exists
+                ,(ecase if-exists
                         (:continue (wrap-body dirvar old body))
                         (:error `(error 'pathname-busy :pathname ,dirvar)))
-                ,(ecase when-does-not-exist
+                ,(ecase if-does-not-exist
                         (:create `(progn
                                     (ensure-directories-exist ,dirvar)
                                     ,(wrap-body dirvar old body)))

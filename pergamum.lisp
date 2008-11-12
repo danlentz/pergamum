@@ -111,3 +111,12 @@
 
 (defmacro with-defun-emission ((name lambda-list &key documentation declarations) &body body)
   `(emit-defun ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
+
+(defmacro measuring-time-lapse ((time-var) measured-form &body body)
+  "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to
+   amount of seconds it took to execute MEASURED-FORM."
+  (with-gensyms (start-time)
+    `(let ((,start-time (get-internal-real-time)))
+       (prog1 ,measured-form
+         (let* ((,time-var (coerce (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second) 'float)))
+           ,@body)))))

@@ -26,6 +26,12 @@
              (while ,value-p)
              ,@body))))
 
+(defun xform-hash-table (fn hash-table)
+  "Create a copy of HASH-TABLE, with values transformed by FN."
+  (lret ((ret (copy-hash-table hash-table)))
+    (iter (for (key val) in-hashtable hash-table)
+          (setf (gethash key ret) (funcall fn val)))))
+
 (defun make-hash-table-injector (hash-table)
   "Given a HASH-TABLE, return an injector function accepting KEY and VALUE."
   (lambda (k v)

@@ -83,10 +83,22 @@
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
                                           spread-compound-name-p (spread-compound-name-does-not-exist-behavior :error) coercer mapper (when-exists :warn))
   "Define a namespace, either stored in CONTAINER-NAME, or accessible via the first parameter of the accessors, when PARAMETRIZE-CONTAINER is specified.
+
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, with the name also being optionally transformable via NAME-TRANSFORM-FN.
+
    Compound (i.e. of type CONS) names can be used by providing the COMPOUND-NAME-P key. Spread compound name specification
    (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' instead of '(accessor '(name-component-1 name-component-2 ...))
-   can be achieved by specifying the SPREAD-COMPOUND-NAME key. COERCER and MAPPER define optional coercer and mapper."
+   can be achieved by specifying the SPREAD-COMPOUND-NAME key. COERCER and MAPPER define optional coercer and mapper.
+   
+   Typical usages include:
+     - global namespace holder, namespace accessed directly:
+       *NAMESPACE-HOLDER* namespace-accessor-name
+     - global namespace holder, namespaces accessed via selector:
+       *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR
+     - variable namespace holder, namespace accessed directly:
+       IGNORED namespace-accessor-name :parametrize-container t
+     - variable namespace holder, namespaces accessed via selector:
+       IGNORED namespace-accessor-name :container-transform SELECTOR :parametrize-container t"
   (declare (type (member :continue :warn :error) when-exists))
   (let* ((container (if parametrize-container 'container container-name))
          (container-form (if container-transform `(,container-transform ,container) container))

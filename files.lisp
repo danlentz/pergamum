@@ -7,14 +7,6 @@
 
 (define-condition pathname-not-present (file-error) ())
 
-(defun subfile (directory-pathname sub)
-  "Return a file pathname with name SUB in DIRECTORY-PATHNAME."
-  (merge-pathnames (make-pathname :name sub) directory-pathname))
-
-(defun subdirectory (directory-pathname sub)
-  "Return a subdirectory pathname with name SUB in DIRECTORY-PATHNAME."
-  (merge-pathnames (make-pathname :directory `(:relative ,sub)) directory-pathname))
-
 (defun change-directory (pathname)
   "Change both Lisp's and POSIX's ideas of the current directory."
   (declare (type pathname pathname))

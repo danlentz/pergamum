@@ -45,8 +45,11 @@
    #:lambda-list-binds #:lambda-list-1
    ;; streams.lisp
    #:stream-as-vector
+   ;; pathnames.lisp
+   #:flatten-path-list
+   #:subdirectory #:subfile
    ;; files.lisp
-   #:pathname-busy #:pathname-not-present #:subdirectory #:subfile #:change-directory #:within-directory
+   #:pathname-busy #:pathname-not-present #:change-directory #:within-directory
    #:file-as-vector #:file-as-string #:with-output-to-file
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate

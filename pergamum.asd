@@ -17,7 +17,6 @@
    (:file "conditions" :depends-on ("package"))
    (:file "forms" :depends-on ("package"))
    (:file "functions" :depends-on ("package"))
-   (:file "hash-table" :depends-on ("package"))
    (:file "packages" :depends-on ("package"))
    (:file "mop" :depends-on ("package"))
    (:file "numbers" :depends-on ("package"))
@@ -25,6 +24,7 @@
    ;; tier 2
    (:file "lists" :depends-on ("basis"))
    (:file "streams" :depends-on ("basis"))
+   (:file "hash-table" :depends-on ("basis"))
    ;; tier 3
    (:file "extent" :depends-on ("basis" "alignment"))
    (:file "pergamum" :depends-on ("basis"))

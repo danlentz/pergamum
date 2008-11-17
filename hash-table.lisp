@@ -81,15 +81,34 @@
           (collect (funcall function v)))))
 
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
-                                          spread-compound-name-p (spread-compound-name-does-not-exist-behavior :error) coercer mapper (when-exists :warn))
-  "Define a namespace, either stored in CONTAINER-NAME, or accessible via the first parameter of the accessors, when PARAMETRIZE-CONTAINER is specified.
+                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) coercer mapper (if-exists :warn))
+  "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
+   the first parameter of the accessors, when PARAMETRIZE-CONTAINER 
+   is specified.
 
-   Access to the container can optionally be routed via CONTAINER-TRANSFORM, with the name also being optionally transformable via NAME-TRANSFORM-FN.
+   Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
+   with the name also being optionally transformable via NAME-TRANSFORM-FN.
 
-   Compound (i.e. of type CONS) names can be used by providing the COMPOUND-NAME-P key. Spread compound name specification
-   (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' instead of '(accessor '(name-component-1 name-component-2 ...))
-   can be achieved by specifying the SPREAD-COMPOUND-NAME key. COERCER and MAPPER define optional coercer and mapper.
-   
+   Compound (i.e. of type CONS) names can be used by providing 
+   the COMPOUND-NAME-P key. Spread compound name specification
+   (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
+   instead of '(accessor '(name-component-1 name-component-2 ...))
+   can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
+   COERCER and MAPPER define optional coercer and mapper.
+
+   Defined keywords:
+    :TYPE - type of objects stored through defined accessor, 
+            defaults to ACCESSOR-NAME
+    :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
+    :PARAMETRIZE-CONTAINER, :SPREAD-COMPOUND-NAME-P - see above
+    :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
+    :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
+                                         defaults to :ERROR
+    :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
+    :MAPPER - whether (and how) to define a mapper function.
+              The name chosen is the value of the keyword argument, unless
+              it is T, in which case it is MAP-CONTAINER-TRANSFORM.
+
    Typical usages include:
      - global namespace holder, namespace accessed directly:
        *NAMESPACE-HOLDER* namespace-accessor-name
@@ -99,7 +118,8 @@
        IGNORED namespace-accessor-name :parametrize-container t
      - variable namespace holder, namespaces accessed via selector:
        IGNORED namespace-accessor-name :container-transform SELECTOR :parametrize-container t"
-  (declare (type (member :continue :warn :error) when-exists))
+  (declare (type (member :continue :warn :error) if-exists)
+           (type (member :continue :error) if-does-not-exist if-spread-compound-does-not-exist))
   (let* ((container (if parametrize-container 'container container-name))
          (container-form (if container-transform `(,container-transform ,container) container))
          (hash-key-form (cond ((null name-transform-fn) 'name)
@@ -111,24 +131,27 @@
        ,@(if spread-compound-name-p
              `((defun ,accessor-name (,@(when parametrize-container `(,container)) &rest name)
                  (or (gethash ,hash-key-form ,container-form)
-                     ,@(when (eq spread-compound-name-does-not-exist-behavior :error)
-                             `((error "~@<~A ~S not defined in ~S~:@>" ,(string-downcase (string type)) name ,container))))))
+                     ,@(ecase if-spread-compound-does-not-exist
+                        (:error
+                         `((error "~@<~A ~S not defined in ~S~:@>" ,(string-downcase (string type)) name ,container)))
+                        (:continue nil)))))
              `((defun ,accessor-name (,@(when parametrize-container `(,container)) name &key (if-does-not-exist :error))
                  (or (gethash ,hash-key-form ,container-form)
-                     (when (eq if-does-not-exist :error)
-                       (error "~@<~A ~S not defined in ~S~:@>" ,(string-downcase (string type)) name ,container))))))
+                     (ecase if-does-not-exist
+                       (:error (error "~@<~A ~S not defined in ~S~:@>" ,(string-downcase (string type)) name ,container))
+                       (:continue nil))))))
        ,@(if spread-compound-name-p
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) &rest name)
                  (declare (type ,type val))
-                 ,@(unless (eq when-exists :continue)
-                           `((when (,accessor-name name :if-does-not-exist :continue)
-                               (,(ecase when-exists (:warn 'warn) (:error 'error)) "~@<redefining ~A ~S~:@>" ,(string-downcase (string type)) name))))
+                 ,@(unless (eq if-exists :continue)
+                           `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
+                               (,(ecase if-exists (:warn 'warn) (:error 'error)) "~@<redefining ~A ~S~:@>" ,(string-downcase (string type)) name))))
                  (setf (gethash ,hash-key-form ,container-form) val)))
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) name)
                  (declare (type ,type val))
-                 ,@(unless (eq when-exists :continue)
-                           `((when (,accessor-name name :if-does-not-exist :continue)
-                               (,(ecase when-exists (:warn 'warn) (:error 'error)) "~@<redefining ~A ~S~:@>" ,(string-downcase (string type)) name))))
+                 ,@(unless (eq if-exists :continue)
+                           `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
+                               (,(ecase if-exists (:warn 'warn) (:error 'error)) "~@<redefining ~A ~S~:@>" ,(string-downcase (string type)) name))))
                  (setf (gethash ,hash-key-form ,container-form) val))))
        ,@(when coercer
            `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (spec)

@@ -119,7 +119,7 @@
      - variable namespace holder, namespaces accessed via selector:
        IGNORED namespace-accessor-name :container-transform SELECTOR :parametrize-container t"
   (declare (type (member :continue :warn :error) if-exists)
-           (type (member :continue :error) if-does-not-exist if-spread-compound-does-not-exist))
+           (type (member :continue :error) if-spread-compound-does-not-exist))
   (let* ((container (if parametrize-container 'container container-name))
          (container-form (if container-transform `(,container-transform ,container) container))
          (hash-key-form (cond ((null name-transform-fn) 'name)

@@ -25,17 +25,17 @@
    (:file "lists" :depends-on ("basis"))
    (:file "streams" :depends-on ("basis"))
    (:file "hash-table" :depends-on ("basis"))
-   ;; tier 3
-   (:file "extent" :depends-on ("basis" "alignment"))
    (:file "pergamum" :depends-on ("basis"))
    (:file "objects" :depends-on ("forms"))
-   ;; tier 4
+   (:file "extent" :depends-on ("basis" "alignment"))
+   ;; tier 3
+   (:file "files" :depends-on ("streams"))
    (:file "lambda-lists" :depends-on ("pergamum"))
    (:file "types" :depends-on ("extent"))
    (:file "u8-sequence" :depends-on ("extent"))
-   ;; tier 5
+   ;; tier 4
    (:file "extent-list" :depends-on ("u8-sequence"))
-   ;; tier 6
+   ;; tier 5
    (:file "extentable" :depends-on ("extent-list"))
    ;; expunge tier
    (:file "to-expunge" :depends-on ("extentable"))))

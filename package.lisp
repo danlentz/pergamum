@@ -5,7 +5,7 @@
   (:use :common-lisp :alexandria :iterate :cl-fad #+sbcl :sb-mop)
   (:export
    ;; basis.lisp
-   #:fif #:fif-1 #:map-remove-if-not
+   #:progn-1 #:lret #:lret* #:case-let #:fif #:fif-1 #:map-remove-if-not
    ;; forms.lisp
    #:quoted-p #:quoted-form
    ;; binary.lisp
@@ -27,9 +27,7 @@
    ;; numbers.lisp
    #:power-of-2-p #:ilog2-ceiling #:ilog2-cover #:bisect #:split-number
    ;; pergamum.lisp
-   #:progn-1
    #:with-condition-printing
-   #:lret #:lret*
    #:nand #:nor #:andf #:orf #:notf #:xorf
    #:quote-when
    #:op-parameter-destructurer

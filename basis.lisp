@@ -25,6 +25,15 @@
                    x 
                    (car x)))))
 
+(defmacro case-let (binding &body clauses)
+  "BINDING is a single variable binding established for CLAUSES,
+   which are handled as if by CASE.
+
+   WARNING: a better docstring than this one is needed."
+  `(let (,binding)
+     (case ,(first binding)
+       ,@clauses)))
+
 (defun fif (if-fn then-fn else-fn)
   "Return a function APPLYing either THEN-FN or ELSE-FN to its arguments, 
    depending on the return value of IF-FN, applied to the same arguments."

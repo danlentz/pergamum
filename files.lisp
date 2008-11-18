@@ -20,7 +20,7 @@
    Defined keywords:
     :IF-EXISTS - one of :ERROR or :CONTINUE
     :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE
-  See the manual for details."
+   See the manual for details."
   (flet ((wrap-body (dirsym oldsym body)
            `(let ((,oldsym (sb-posix:getcwd))
                   (*default-pathname-defaults* (parse-namestring ,dirsym)))

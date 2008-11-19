@@ -47,7 +47,9 @@
    #:flatten-path-list
    #:subdirectory #:subfile
    ;; files.lisp
-   #:pathname-busy #:pathname-not-present #:change-directory #:within-directory
+   #:pathname-busy #:pathname-not-present
+   #:current-working-directory #:change-working-directory
+   #:within-directory
    #:file-as-vector #:file-as-string #:with-output-to-file
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate

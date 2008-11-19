@@ -7,11 +7,16 @@
 
 (define-condition pathname-not-present (file-error) ())
 
-(defun change-directory (pathname)
-  "Change both Lisp's and POSIX's ideas of the current directory."
-  (declare (type pathname pathname))
-  (setf *default-pathname-defaults* pathname)
-  (zerop (sb-posix:chdir (namestring pathname))))
+(defun current-working-directory ()
+  "Return the current working directory, in the getcwd() sense."
+  #+sbcl (sb-posix:getcwd)
+  #+ecl (si:getcwd))
+
+(defun change-working-directory (pathname)
+  "Change the getcwd() sense of the current directory."
+  (zerop (#+sbcl sb-posix:chdir
+          #+ecl  si:chdir
+                 pathname)))
 
 (defmacro within-directory ((dirvar dirform &key (if-exists :continue) (if-does-not-exist :error)) &body body)
   "Execute BODY with both the Lisp's and POSIX's 
@@ -22,11 +27,11 @@
     :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE
    See the manual for details."
   (flet ((wrap-body (dirsym oldsym body)
-           `(let ((,oldsym (sb-posix:getcwd))
+           `(let ((,oldsym (current-working-directory))
                   (*default-pathname-defaults* (parse-namestring ,dirsym)))
-              (sb-posix:chdir ,dirsym)
+              (change-working-directory ,dirsym)
               (unwind-protect (progn ,@body)
-                (sb-posix:chdir ,oldsym)))))
+                (change-working-directory ,oldsym)))))
     (with-gensyms (old exists-p)
       `(if-let* ((,dirvar ,dirform)
                  (,exists-p (directory-exists-p ,dirvar)))

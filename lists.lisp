@@ -48,3 +48,18 @@
               (collect elt into no))
           (finally (setf ret-yes yes ret-no no)))
     (values ret-yes ret-no)))
+
+(defun diff-lists (list1 list2 &key (skip-mismatches 0))
+  "Recursively look for differences between LIST1 and LIST2.
+   When such a difference is found, its formpath is returned as first value,
+   while the differing leaves are returned as second and third values."
+  (declare (special skip-mismatches))
+  (iter (for f1 in list1)
+        (for f2 in list2)
+        (collect (car (ensure-cons f1)) into path)
+        (unless (or (equal f1 f2) (< 0 (decf skip-mismatches)))
+          (multiple-value-bind (ret diff1 diff2) (when (eq (car (ensure-cons f1)) (car (ensure-cons f2)))
+                                                   (diff-lists f1 f2))
+            (return (values (list (butlast path) ret)
+                            (if ret diff1 f1)
+                            (if ret diff2 f2)))))))

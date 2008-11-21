@@ -160,5 +160,7 @@
                  (,type spec)
                  (symbol (,accessor-name spec))))))
        ,@(when mapper
-           `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" (or container-transform mapper)) (fn ,@(when parametrize-container `(,container)) &rest parameters)
+           `((defun ,(if container-transform
+                         (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
+                         mapper) (fn ,@(when parametrize-container `(,container)) &rest parameters)
                (apply #'maphash-values fn ,container-form parameters)))))))

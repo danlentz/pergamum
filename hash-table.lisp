@@ -81,7 +81,7 @@
           (collect (funcall function v)))))
 
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
-                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) coercer mapper (if-exists :warn))
+                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) coercer iterator mapper (if-exists :warn))
   "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
    the first parameter of the accessors, when PARAMETRIZE-CONTAINER 
    is specified.
@@ -105,6 +105,9 @@
     :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
                                          defaults to :ERROR
     :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
+    :ITERATOR - whether to define an iterator DO-... macro
+              The name chosen is the value of the keyword argument, unless
+              it is T, in which case it is DO-CONTAINER-TRANSFORM.
     :MAPPER - whether (and how) to define a mapper function.
               The name chosen is the value of the keyword argument, unless
               it is T, in which case it is MAP-CONTAINER-TRANSFORM.
@@ -159,6 +162,14 @@
                (etypecase spec
                  (,type spec)
                  (symbol (,accessor-name spec))))))
+       ,@(when iterator
+           (with-gensyms (var)
+             `((defmacro ,(if container-transform
+                              (format-symbol (symbol-package accessor-name) "DO-~A" container-transform)
+                              iterator)
+                   ((,var ,@(when parametrize-container `(,container))) &body body)
+                 `(iter (for ,,var in ,,container-form)
+                        ,@body)))))
        ,@(when mapper
            `((defun ,(if container-transform
                          (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)

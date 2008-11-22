@@ -25,6 +25,37 @@
                    x 
                    (car x)))))
 
+(defmacro if-let* (bindings then-form &optional else-form)
+  "Creates new variable bindings, and conditionally executes either THEN-FORM
+or ELSE-FORM. ELSE-FORM defaults to NIL.
+
+BINDINGS must be either single binding of the form:
+
+ (variable initial-form)
+
+or a list of bindings of the form:
+
+ ((variable-1 initial-form-1)
+  (variable-2 initial-form-2)
+  ...
+  (variable-n initial-form-n))
+
+Each initial-form is executed in turn, and the variable bound to the
+corresponding value. Initial-form expressions can refer to variables
+previously bound by the IF-LET*.
+
+If all variables are true after the bindings are complete, the THEN-FORM is
+executed with the bindings in effect, otherwise the ELSE-FORM is executed with
+the bindings in effect."
+  (let* ((binding-list (if (and (consp bindings) (symbolp (car bindings)))
+                           (list bindings)
+                           bindings))
+         (variables (mapcar #'car binding-list)))
+    `(let* ,binding-list
+       (if (and ,@variables)
+           ,then-form
+           ,else-form))))
+
 (defmacro case-let (binding &body clauses)
   "BINDING is a single variable binding established for CLAUSES,
    which are handled as if by CASE.

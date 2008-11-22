@@ -2,10 +2,11 @@
 ;;;
 
 (defpackage pergamum
-  (:use :common-lisp :alexandria :iterate :cl-fad #+sbcl :sb-mop)
+  (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
+  (:import-from :cl-fad #:directory-exists-p #:file-exists-p)
   (:export
    ;; basis.lisp
-   #:progn-1 #:lret #:lret* #:case-let #:fif #:fif-1 #:map-remove-if-not
+   #:progn-1 #:lret #:lret* #:if-let* #:case-let #:fif #:fif-1 #:map-remove-if-not
    ;; forms.lisp
    #:quoted-p #:quoted-form
    ;; binary.lisp

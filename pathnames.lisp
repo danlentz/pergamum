@@ -1,9 +1,9 @@
 (in-package :pergamum)
 
 
-(defun subfile (directory-pathname sub)
+(defun subfile (directory-pathname &rest sub)
   "Return a file pathname with name SUB in DIRECTORY-PATHNAME."
-  (merge-pathnames (make-pathname :name sub) directory-pathname))
+  (merge-pathnames (make-pathname :directory `(:relative ,@(butlast sub)) :name (lastcar sub)) directory-pathname))
 
 (defun subdirectory (directory-pathname &rest sub)
   "Return a subdirectory pathname with name SUB in DIRECTORY-PATHNAME."

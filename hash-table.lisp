@@ -163,13 +163,12 @@
                  (,type spec)
                  (symbol (,accessor-name spec))))))
        ,@(when iterator
-           (with-gensyms (var)
-             `((defmacro ,(if container-transform
-                              (format-symbol (symbol-package accessor-name) "DO-~A" container-transform)
-                              iterator)
-                   ((,var ,@(when parametrize-container `(,container))) &body body)
-                 `(iter (for ,,var in ,,container-form)
-                        ,@body)))))
+           `((defmacro ,(if container-transform
+                            (format-symbol (symbol-package accessor-name) "DO-~A" container-transform)
+                            iterator)
+                 ((var ,@(when parametrize-container `(,container))) &body body)
+               `(iter (for ,var in ,',container-form)
+                      ,@body))))
        ,@(when mapper
            `((defun ,(if container-transform
                          (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)

@@ -167,7 +167,7 @@
                             (format-symbol (symbol-package accessor-name) "DO-~A" container-transform)
                             iterator)
                  ((var ,@(when parametrize-container `(,container))) &body body)
-               `(iter (for ,var in ,',container-form)
+               `(iter (for (nil ,var) in-hashtable ,',container-form)
                       ,@body))))
        ,@(when mapper
            `((defun ,(if container-transform

@@ -5,9 +5,9 @@
   "Return a file pathname with name SUB in DIRECTORY-PATHNAME."
   (merge-pathnames (make-pathname :name sub) directory-pathname))
 
-(defun subdirectory (directory-pathname sub)
+(defun subdirectory (directory-pathname &rest sub)
   "Return a subdirectory pathname with name SUB in DIRECTORY-PATHNAME."
-  (merge-pathnames (make-pathname :directory `(:relative ,sub)) directory-pathname))
+  (merge-pathnames (make-pathname :directory `(:relative ,@sub)) directory-pathname))
 
 (defun flatten-path-list (path &optional absolute)
   "Transform a list of strings in PATH into a string constituting of 

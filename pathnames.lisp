@@ -14,4 +14,4 @@
    individual strings interspersed with slashes.
    A leading slash is prepended when ABSOLUTE is non-nil."
   (apply #'concatenate 'simple-base-string
-         (xform (not absolute) #'rest (mappend (curry #'list "/") path))))
+         (xform (not absolute) #'rest (mapcan (curry #'list "/") path))))

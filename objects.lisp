@@ -14,9 +14,11 @@
                        (nconcing `((slot-value ,to ',slot) (slot-value ,from ',slot))))))
       whole))
 
-(defun slot-value* (o slot-name &optional (default :unbound-slot))
-  (if (slot-boundp o slot-name)
-      (slot-value o slot-name)
+(defun slot-value* (object slot-name &optional (default :unbound-slot))
+  "Return the value of slot named SLOT-NAME in OBJECT, when it is bound;
+   otherwise return DEFAULT, which defaults to :UNBOUND-SLOT."
+  (if (slot-boundp object slot-name)
+      (slot-value object slot-name)
       default))
 
 (define-method-combination primary-method-not-required ()

@@ -64,3 +64,24 @@
                                                (signal ,cond)
                                                (funcall ,handler ,cond))))))
        ,@body)))
+
+(defun simple-condition-reporter (condition stream)
+  "The should-have-been-defined report function for simple conditions."
+  (declare (stream stream) (simple-condition condition))
+  (apply #'format stream (simple-condition-format-control condition)
+         (simple-condition-format-arguments condition)))
+
+(define-condition redefinition ()
+  ())
+
+(define-condition simple-redefinition (redefinition simple-warning)
+  ())
+
+(define-condition bad-redefinition (redefinition simple-error)
+  ())
+
+(defun warn-redefinition (format-control &rest arguments)
+  (warn 'simple-redefinition :format-control format-control :format-arguments arguments))
+
+(defun bad-redefinition (format-control &rest arguments)
+  (error 'bad-redefinition :format-control format-control :format-arguments arguments))

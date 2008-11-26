@@ -25,7 +25,7 @@
    (:file "lists" :depends-on ("basis"))
    (:file "streams" :depends-on ("basis"))
    (:file "pathnames" :depends-on ("basis"))
-   (:file "hash-table" :depends-on ("basis"))
+   (:file "hash-table" :depends-on ("basis" "conditions"))
    (:file "pergamum" :depends-on ("basis"))
    (:file "objects" :depends-on ("forms"))
    (:file "extent" :depends-on ("basis" "alignment"))

@@ -65,6 +65,22 @@
                                                (funcall ,handler ,cond))))))
        ,@body)))
 
+(defmacro define-reported-condition (name superclasses slots &rest options)
+  "Like DEFINE-CONDITION, but the :REPORT option is handled differently.
+
+   Its format is as follows:
+   (:report (&rest slots) format-control &rest format-arguments)
+   The reporting is established by a call to FORMAT, with SLOTS bound
+   to the slots of the reported condition."
+  (if-let ((report-option (rest (assoc :report options))))
+          (destructuring-bind (bindings format-control &rest format-arguments) report-option
+            (with-gensyms (condition stream)
+              `(define-condition ,name ,superclasses ,slots
+                 (:report (lambda (,condition ,stream)
+                            (with-slots ,bindings ,condition
+                              (format ,stream ,format-control ,@format-arguments)))))))
+          (error "~@<Error while parsing arguments to DEFMACRO DEFINE-REPORTED-CONDITION: an :REPORT option is mandatory.~:@>")))
+
 (defun simple-condition-reporter (condition stream)
   "The should-have-been-defined report function for simple conditions."
   (declare (stream stream) (simple-condition condition))

@@ -174,3 +174,21 @@
                          (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
                          mapper) (fn ,@(when parametrize-container `(,container)) &rest parameters)
                (apply #'maphash-values fn ,container-form parameters)))))))
+
+(defun copy-hash-table-empty (table &key key test size rehash-size rehash-threshold)
+  "Returns an empty copy of hash TABLE. The copy has the same properties
+   as the original, unless overridden by the keyword arguments."
+  (setf key (or key 'identity))
+  (setf test (or test (hash-table-test table)))
+  (setf size (or size (hash-table-size table)))
+  (setf rehash-size (or rehash-size (hash-table-rehash-size table)))
+  (setf rehash-threshold (or rehash-threshold (hash-table-rehash-threshold table)))
+  (make-hash-table :test test :size size
+                   :rehash-size rehash-size
+                   :rehash-threshold rehash-threshold))
+
+(defmacro with-empty-hash-containers ((&rest containers) &body body)
+  "Evaluate BODY with CONTAINERS rebound to empty ones."
+  `(let ,(iter (for container in containers)
+               (collect `(,container (copy-hash-table-empty ,container))))
+     ,@body))

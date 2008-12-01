@@ -12,7 +12,7 @@
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
    ;; objects.lisp
-   #:copy-slots #:slot-value* #:primary-method-not-required #:most-specific-last
+   #:copy-slots #:slot-value* #:define-print-object-method #:primary-method-not-required #:most-specific-last
    ;; conditions.lisp
    #:make-condition-raiser #:make-error-raiser 
    #:with-retry-restart #:with-ignore-restart

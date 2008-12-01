@@ -21,6 +21,18 @@
       (slot-value object slot-name)
       default))
 
+(defmacro define-print-object-method ((object type) slots format-control &rest format-arguments)
+  "Define a PRINT-OBJECT method for objects with TYPE.
+
+   The definition is a call to FORMAT, with FORMAT-CONTROL and 
+   FORMAT-ARGUMENTS, with SLOTS bound to slots of OBJECT, defaulting
+   when the respective slots are unbound, to :UNBOUND-SLOT."
+  (with-gensyms (stream)
+    `(defmethod print-object ((,object ,type) ,stream)
+       (symbol-macrolet ,(iter (for slot in slots)
+                               (collect `(,slot (slot-value* ,object ',slot :unbound-slot))))
+         (format ,stream ,format-control ,@format-arguments)))))
+
 (define-method-combination primary-method-not-required ()
   ((around (:around))
    (before (:before))

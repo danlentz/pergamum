@@ -71,7 +71,7 @@
         (when (satisfies-the-test v)
           (collect (funcall function k)))))
 
-(declaim (inline maphash-values))
+(declaim (notinline maphash-values))
 (defun maphash-values (function table &key key (test nil testp) (test-not nil notp))
   "Like MAPHASH, but calls FUNCTION with each value in the hash table TABLE."
   (when (and testp notp)

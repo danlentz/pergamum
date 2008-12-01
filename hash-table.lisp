@@ -167,8 +167,12 @@
                             (format-symbol (symbol-package accessor-name) "DO-~A" container-transform)
                             iterator)
                  ((var ,@(when parametrize-container `(,container))) &body body)
-               `(iter (for (nil ,var) in-hashtable ,',container-form)
-                      ,@body))))
+               ;; IQ test: do you understand ,',? I don't.
+               ,(if parametrize-container
+                    ``(iter (for (nil ,var) in-hashtable (,',container-transform ,container))
+                            ,@body)
+                    ``(iter (for (nil ,var) in-hashtable ,',container)
+                            ,@body)))))
        ,@(when mapper
            `((defun ,(if container-transform
                          (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)

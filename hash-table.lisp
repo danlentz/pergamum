@@ -81,7 +81,7 @@
           (collect (funcall function v)))))
 
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
-                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) coercer iterator mapper (if-exists :warn))
+                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn))
   "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
    the first parameter of the accessors, when PARAMETRIZE-CONTAINER 
    is specified.
@@ -94,7 +94,9 @@
    (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
    instead of '(accessor '(name-component-1 name-component-2 ...))
    can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
-   COERCER and MAPPER define optional coercer and mapper.
+   REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
+   coerce names/objects to objects, remove, iterate and map over namespace 
+   entries.
 
    Defined keywords:
     :TYPE - type of objects stored through defined accessor, 
@@ -105,6 +107,9 @@
     :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
                                          defaults to :ERROR
     :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
+    :REMOVER - whether to define a function for removal of namespace entries.
+              The name chose is the value of the keyword argument, unless
+              it is T, in which case it is REMOVE-TYPE
     :ITERATOR - whether to define an iterator DO-... macro
               The name chosen is the value of the keyword argument, unless
               it is T, in which case it is DO-CONTAINER-TRANSFORM.
@@ -156,6 +161,15 @@
                            `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
                                (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,(string-downcase (string type)) name 'define-hash-table-accessor))))
                  (setf (gethash ,hash-key-form ,container-form) val))))
+       ,@(when-let ((remover remover)
+                    (name (if (eq remover t)
+                              (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
+                              remover)))
+          (if spread-compound-name-p
+              `((defun ,name (,@(when parametrize-container `(,container)) &rest name)
+                  (remhash ,hash-key-form ,container-form)))
+              `((defun ,name (,@(when parametrize-container `(,container)) name)
+                  (remhash ,hash-key-form ,container-form)))))
        ,@(when coercer
            `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (spec)
                (declare (type (or ,type symbol) spec))
@@ -163,16 +177,17 @@
                  (,type spec)
                  (symbol (,accessor-name spec))))))
        ,@(when iterator
-           `((defmacro ,(if container-transform
-                            (format-symbol (symbol-package accessor-name) "DO-~A" container-transform)
-                            iterator)
-                 ((var ,@(when parametrize-container `(,container))) &body body)
-               ;; IQ test: do you understand ,',? I don't.
-               ,(if parametrize-container
-                    ``(iter (for (nil ,var) in-hashtable (,',container-transform ,container))
-                            ,@body)
-                    ``(iter (for (nil ,var) in-hashtable ,',container)
-                            ,@body)))))
+          `((defmacro ,(cond (iterator iterator)
+                             (container-transform
+                              (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
+                             (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
+                ((var ,@(when parametrize-container `(,container))) &body body)
+              ;; IQ test: do you understand ,',? I don't.
+              ,(if parametrize-container
+                   ``(iter (for (nil ,var) in-hashtable (,',container-transform ,container))
+                           ,@body)
+                   ``(iter (for (nil ,var) in-hashtable ,',container)
+                           ,@body)))))
        ,@(when mapper
            `((defun ,(if container-transform
                          (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)

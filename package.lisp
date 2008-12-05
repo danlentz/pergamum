@@ -73,6 +73,7 @@
    #:u8-vector-word16le #:u8-vector-word16be
    #:u8-vector-word32le #:u8-vector-word32be
    #:u8-vector-word64le #:u8-vector-word64be
+   #:u32le-vector-to-u8 #:u32be-vector-to-u8 #:u8-vector-to-u32le #:u8-vector-to-u32be
    #:u8-seq-word16le #:u8-seq-word16be
    #:u8-seq-word32le #:u8-seq-word32be
    #:u8-seq-word64le #:u8-seq-word64be

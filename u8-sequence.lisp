@@ -115,6 +115,30 @@
 	(aref array (+ offset 0)) (logand #xff (ash val -24)))
   val)
 
+(defun u32le-vector-to-u8 (array)
+  (lret ((u8vec (make-array (ash (length array) 2) :element-type '(unsigned-byte 8))))
+    (iter (for u32 in-vector array)
+          (for j from 0 by 4)
+          (setf (u8-vector-word32le u8vec j) u32))))
+
+(defun u32be-vector-to-u8 (array)
+  (lret ((u8vec (make-array (ash (length array) 2) :element-type '(unsigned-byte 8))))
+    (iter (for u32 in-vector array)
+          (for j from 0 by 4)
+          (setf (u8-vector-word32be u8vec j) u32))))
+
+(defun u8-vector-to-u32le (array)
+  (lret ((u32vec (make-array (ash (length array) -2) :element-type '(unsigned-byte 32))))
+    (iter (for i from 0 below (length array) by 4)
+          (for j from 0)
+          (setf (aref u32vec j) (u8-vector-word32le array i)))))
+
+(defun u8-vector-to-u32be (array)
+  (lret ((u32vec (make-array (ash (length array) -2) :element-type '(unsigned-byte 32))))
+    (iter (for i from 0 below (length array) by 4)
+          (for j from 0)
+          (setf (aref u32vec j) (u8-vector-word32be array i)))))
+
 (defun u8-vector-word64le (array offset)
   (declare (type (vector (unsigned-byte 8)) array))
   (logior (ash (aref array (+ offset 0)) 0)

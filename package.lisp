@@ -17,7 +17,7 @@
    #:make-condition-raiser #:make-error-raiser 
    #:with-retry-restart #:with-ignore-restart
    #:make-fixed-restarter
-   #:with-condition-restart-binding #:with-condition-printing #:with-condition-collection #:returning-conditions
+   #:with-condition-restart-binding #:with-condition-printing #:with-error-resignaling #:with-condition-collection #:returning-conditions
    #:condition-bind-default
    #:define-reported-condition
    #:simple-condition-reporter #:redefinition #:simple-redefinition #:bad-redefinition #:warn-redefinition

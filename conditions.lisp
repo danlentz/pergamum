@@ -37,10 +37,22 @@
      ,@body))
 
 (defmacro with-condition-printing ((stream type) &body body)
+  "Execute BODY with conditions of TYPE being handled by printing them."
   (with-gensyms (cond)
     `(handler-case (progn ,@body)
        (,type (,cond)
 	 (format ,stream "~@<~A~:@>" ,cond)))))
+
+(defmacro with-error-resignaling ((type ((cond) &rest as)) &body body)
+  "Execute BODY with conditions of TYPE being handled by resignaling them
+   by evaluating AS with COND bound to the condition and passed to CL:ERROR.
+
+   When COND equals to NIL, an ignore declaration is emitted."
+  (let ((binding (or cond (gensym "IGNORED"))))
+    `(handler-bind ((,type (lambda (,binding)
+                             ,@(when (null cond) `((declare (ignore ,binding))))
+                             (error ,@as))))
+       ,@body)))
 
 (defmacro with-condition-collection ((type) &body body)
   "Broken."

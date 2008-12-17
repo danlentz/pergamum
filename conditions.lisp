@@ -13,10 +13,12 @@
     (declare (ignore rest))
     (error type params)))
 
-(defmacro with-retry-restart ((restart-name condition-binding &body restart-body) &body body)
+(defmacro with-retry-restarts ((&rest restart-clauses) &body body)
   `(loop (restart-case (return (progn ,@body))
-           (,restart-name (,@condition-binding)
-            ,@restart-body))))
+           ,@(iter (for clause in restart-clauses)
+                   (destructuring-bind (restart-name condition-binding &body restart-body) clause
+                     (collect `(,restart-name (,@condition-binding)
+                                              ,@restart-body)))))))
 
 (defmacro with-ignore-restart ((restart-name condition-binding &body restart-body) &body body)
   (with-gensyms (block)

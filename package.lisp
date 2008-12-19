@@ -40,7 +40,7 @@
    #:prepend
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission
    #:emit-declarations
-   #:measuring-time-lapse
+   #:measuring-time-lapse #:measuring-time-lapse-1
    ;; lambda-lists.lisp
    #:&mandatory
    #:map-lambda-list #:map-lambda-list-bindings-actuals #:map-lambda-list-defaults-actuals

@@ -54,7 +54,7 @@
   (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type)))
     (stream-as-vector s (file-length s) :element-type element-type)))
 
-(defmacro with-output-to-file ((stream filespec &rest options &key (if-does-not-exist :create) (if-exists :supersede)) &body body)
+(defmacro with-output-to-file ((stream filespec &rest options &key (if-does-not-exist :create) (if-exists :supersede) &allow-other-keys) &body body)
   "Like WITH-OPEN-FILE, but with defaults conveniently set for file creation/overwriting."
   `(with-open-file (,stream ,filespec :direction :output :if-does-not-exist ,if-does-not-exist :if-exists ,if-exists
                             ,@(remove-from-plist options :direction :if-does-not-exist :if-exists))

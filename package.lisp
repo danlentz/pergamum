@@ -14,8 +14,9 @@
    ;; objects.lisp
    #:copy-slots #:slot-value* #:define-print-object-method #:primary-method-not-required #:most-specific-last
    ;; conditions.lisp
+   #:*debug-condition* #:dsignal #:derror
    #:make-condition-raiser #:make-error-raiser 
-   #:with-retry-restart #:with-ignore-restart
+   #:with-retry-restarts #:with-ignore-restart
    #:make-fixed-restarter
    #:with-condition-restart-binding #:with-condition-printing #:with-error-resignaling #:with-condition-collection #:returning-conditions
    #:condition-bind-default

@@ -3,6 +3,27 @@
 
 (in-package :pergamum)
 
+(defvar *debug-condition* nil
+  "The condition the debugger was invoked with.")
+
+(defun dsignal (type &rest params)
+  "Raise a condition of TYPE parametrised by PARAMS within a dynamic 
+   context augmented by binding *DEBUG-CONDITION* to that condition."
+  (let ((*debug-condition* (apply #'make-condition type params)))
+    (declare (special *debug-condition*))
+    (signal *debug-condition*)))
+
+(defun derror (type &rest params)
+  "Raise a condition of TYPE parametrised by PARAMS within a dynamic 
+   context augmented by binding *DEBUG-CONDITION* to that condition.
+
+   If the condition is not handled the debugger is entered by passing
+   the condition object to INVOKE-DEBUGGER."
+  (let ((*debug-condition* (apply #'make-condition type params)))
+    (declare (special *debug-condition*))
+    (signal *debug-condition*)
+    (invoke-debugger *debug-condition*)))
+
 (defun make-condition-raiser (type &rest params)
   (lambda (&rest rest)
     (declare (ignore rest))
@@ -13,10 +34,12 @@
     (declare (ignore rest))
     (error type params)))
 
-(defmacro with-retry-restart ((restart-name condition-binding &body restart-body) &body body)
+(defmacro with-retry-restarts ((&rest restart-clauses) &body body)
   `(loop (restart-case (return (progn ,@body))
-           (,restart-name (,@condition-binding)
-            ,@restart-body))))
+           ,@(iter (for clause in restart-clauses)
+                   (destructuring-bind (restart-name condition-binding &body restart-body) clause
+                     (collect `(,restart-name (,@condition-binding)
+                                              ,@restart-body)))))))
 
 (defmacro with-ignore-restart ((restart-name condition-binding &body restart-body) &body body)
   (with-gensyms (block)

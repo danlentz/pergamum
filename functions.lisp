@@ -58,6 +58,27 @@
       (values-list args)
       (apply function args)))
 
+(define-compiler-macro xform (&whole form bool function &rest args)
+  (if (endp (rest args))
+      `(if ,bool
+           (funcall ,function ,(first args))
+           ,(first args))
+      form))
+
+(define-compiler-macro xform-if (&whole form predicate function &rest args)
+  (if (endp (rest args))
+      `(if (funcall ,predicate ,(first args))
+           (funcall ,function ,(first args))
+           ,(first args))
+      form))
+
+(define-compiler-macro xform-if-not (&whole form predicate function &rest args)
+  (if (endp (rest args))
+      `(if (funcall ,predicate ,(first args))
+           ,(first args)
+           (funcall ,function ,(first args)))
+      form))
+
 (defun iterate-until (pred function &rest initial-args)
   "Given an INITIAL parameter value and a FUNCTION, iteratily apply the latter to the parameter, getting the new parameter, returning the last non-NIL one."
   (iter (with params = initial-args)

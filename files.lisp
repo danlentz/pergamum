@@ -60,15 +60,15 @@
                             ,@(remove-from-plist options :direction :if-does-not-exist :if-exists))
      ,@body))
 
-(defun symlink-dead-p (symlink)
-  "See if SYMLINK is a missing path, or when it is pointing at a symlink, whether that symlink is dead."
+(defun symlink-to-p (symlink path)
+  "See if SYMLINK does point at PATH."
   (if-let ((destination (file-exists-p symlink)))
-    (pathname-match-p symlink destination)
-    t))
+    (pathname-match-p symlink path)))
 
-(defun ensure-symlink (target symlink)
+(defun ensure-symlink (symlink target)
   "Ensure that file at SYMLINK is a symbolic link pointing to TARGET."
-  (when (or (symlink-dead-p symlink)
-            (not (equal (truename symlink) target)))
-    (delete-file symlink)
-    (sb-posix:symlink target symlink)))
+  (unless (symlink-to-p symlink target)
+    (when (file-exists-p symlink)
+      (delete-file symlink))
+    (sb-posix:symlink target symlink)
+    t))

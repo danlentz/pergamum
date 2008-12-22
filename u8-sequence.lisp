@@ -215,7 +215,7 @@
   (declare (type sequence seq) (type (integer 0) start end address) (type (member :little-endian :big-endian) endianness))
   (let ((accessor-fn (case endianness (:little-endian #'u8-seq-word32le) (:big-endian #'u8-seq-word32be))))
     (with-aligned-extent-spec-pieces #x10 ((nil prehead) (headbase head) (bodybase body) (tailbase tail))
-        (make-extent-spec start (- end start))
+        (extent start (- end start))
       (unless (zerop head)
         (format stream "~&0x~8,'0X:" (logandc1 #xf (+ address start)))
         (iter (for i below (ash prehead -2))

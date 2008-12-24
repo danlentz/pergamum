@@ -67,8 +67,10 @@
 
 (defun ensure-symlink (symlink target)
   "Ensure that file at SYMLINK is a symbolic link pointing to TARGET."
+  #-win32
   (unless (symlink-to-p symlink target)
     (when (file-exists-p symlink)
       (delete-file symlink))
-    (sb-posix:symlink target symlink)
-    t))
+    #+sbcl (sb-posix:symlink target symlink)
+    t)
+  #+win32 nil)

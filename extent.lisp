@@ -45,7 +45,7 @@
  
 (deftype extent-spec () `(cons integer (integer 0)))
 
-(defun make-extent-spec (base length)
+(defun extent (base length)
   (cons base length))
 
 (defun print-extent-spec (stream spec colon at-sign)

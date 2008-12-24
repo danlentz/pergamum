@@ -1,5 +1,8 @@
 \#*
 *~
+*.c
+*.h
+*.data
 *.o
 *.a
 *.fas
@@ -11,6 +14,7 @@
 # win32
 *.manifest
 *.lib
+*.implib
 *.exp
 *.obj
 *.ilk

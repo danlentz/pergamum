@@ -63,3 +63,20 @@
             (return (values (list (butlast path) ret)
                             (if ret diff1 f1)
                             (if ret diff2 f2)))))))
+
+(define-modify-macro set-differencef (&rest sets) set-difference
+  "Modify-macro for SET-DIFFERENCE. Substracts SETS from the place designated
+   by the first argument.")
+
+(define-modify-macro nset-differencef (&rest sets) nset-difference
+  "Modify-macro for NSET-DIFFERENCE. Substracts SETS from the place designated
+   by the first argument. All arguments are subject to potential mutation.")
+
+(define-modify-macro set-intersectionf (&rest sets) set-intersection
+  "Modify-macro for SET-INTERSECTION. Updates the place designated by the
+   first argument to its union with SETS.")
+
+(define-modify-macro nset-intersectionf (&rest sets) nset-intersection
+  "Modify-macro for NSET-INTERSECTION. Updates the place designated by the
+   first argument to its union with SETS. All arguments are subject to
+   potential mutation.")

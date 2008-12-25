@@ -49,7 +49,7 @@
    ;; streams.lisp
    #:stream-as-vector #:all-stream-forms
    ;; pathnames.lisp
-   #:flatten-path-list
+   #:flatten-path-list #:fuse-downcased-string-path-list
    #:subfile #:subfile* #:subdirectory #:subdirectory* 
    ;; files.lisp
    #:pathname-busy #:pathname-not-present

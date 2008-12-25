@@ -25,3 +25,10 @@
    A leading slash is prepended when ABSOLUTE is non-nil."
   (apply #'concatenate 'simple-base-string
          (xform (not absolute) #'rest (mapcan (curry #'list "/") path))))
+
+(defun fuse-downcased-string-path-list (path &optional absolute)
+  "Transform a list of strings in PATH into a string constituting of 
+   individual strings interspersed with slashes.
+   A leading slash is prepended when ABSOLUTE is non-nil."
+  (apply #'concatenate 'simple-base-string
+         (xform (not absolute) #'rest (mapcan (compose (curry #'list "/") #'string-downcase #'string) path))))

@@ -47,7 +47,7 @@
    #:map-lambda-list #:map-lambda-list-bindings-actuals #:map-lambda-list-defaults-actuals
    #:lambda-list-binds #:lambda-list-1
    ;; streams.lisp
-   #:stream-as-vector
+   #:stream-as-vector #:all-stream-forms
    ;; pathnames.lisp
    #:flatten-path-list
    #:subfile #:subfile* #:subdirectory #:subdirectory* 

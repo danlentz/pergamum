@@ -17,6 +17,9 @@
 (defun quote-when (c form)
   (if c (list 'quote form) form))
 
+(defun quote-if-non-self-evaluating (form)
+  (if (or (typep form 'cons) (typep form 'symbol)) (list 'quote form) form))
+
 (defmacro op-parameter-destructurer ((op params) form &body body)
   (once-only (form)
     `(let (,@(when op `((,op (if (consp ,form) (first ,form) ,form))))

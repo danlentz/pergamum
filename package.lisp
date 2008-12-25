@@ -34,7 +34,7 @@
    ;; pergamum.lisp
    #:with-condition-printing
    #:nand #:nor #:andf #:orf #:notf #:xorf
-   #:quote-when
+   #:quote-when #:quote-if-non-self-evaluating
    #:op-parameter-destructurer
    #:order #:order-funcalling
    #:ensure-destructurisation #:destructure-binding-form-body #:destructure-def-body

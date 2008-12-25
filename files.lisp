@@ -32,17 +32,17 @@
               (change-working-directory ,dirsym)
               (unwind-protect (progn ,@body)
                 (change-working-directory ,oldsym)))))
-    (with-gensyms (old exists-p)
-      `(if-let* ((,dirvar ,dirform)
-                 (,exists-p (directory-exists-p ,dirvar)))
-                ,(ecase if-exists
-                        (:continue (wrap-body dirvar old body))
-                        (:error `(error 'pathname-busy :pathname ,dirvar)))
-                ,(ecase if-does-not-exist
-                        (:create `(progn
-                                    (ensure-directories-exist ,dirvar)
-                                    ,(wrap-body dirvar old body)))
-                        (:error `(error 'pathname-not-present :pathname ,dirvar)))))))
+    (with-gensyms (old)
+      `(let ((,dirvar ,dirform))
+         (if (directory-exists-p ,dirvar)
+             ,(ecase if-exists
+                     (:continue (wrap-body dirvar old body))
+                     (:error `(error 'pathname-busy :pathname ,dirvar)))
+             ,(ecase if-does-not-exist
+                     (:create `(progn
+                                 (ensure-directories-exist ,dirvar)
+                                 ,(wrap-body dirvar old body)))
+                     (:error `(error 'pathname-not-present :pathname ,dirvar))))))))
 
 (defun file-as-vector (filename &rest rest &key (element-type '(unsigned-byte 8)) &allow-other-keys)
   "Return contents of FILENAME as simple vector with element type (UNSIGNED-BYTE 8)."

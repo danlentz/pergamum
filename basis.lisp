@@ -65,6 +65,22 @@ the bindings in effect."
      (case ,(first binding)
        ,@clauses)))
 
+(defun fcase (bool then-fn else-fn)
+  "Return a function APPLYing either THEN-FN, when BOOL is true or ELSE-FN,
+   otherwise."
+  (lambda (&rest x)
+    (if bool
+        (apply then-fn x)
+        (apply else-fn x))))
+
+(defun fcase-1 (bool then-fn else-fn)
+  "Return a function FUNCALLing either THEN-FN, when BOOL is true or ELSE-FN,
+   otherwise."
+  (lambda (x)
+    (if bool
+        (funcall then-fn x)
+        (funcall else-fn x))))
+
 (defun fif (if-fn then-fn else-fn)
   "Return a function APPLYing either THEN-FN or ELSE-FN to its arguments, 
    depending on the return value of IF-FN, applied to the same arguments."

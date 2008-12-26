@@ -19,12 +19,14 @@
   "Return a subdirectory pathname with name SUB in DIRECTORY-PATHNAME."
   (merge-pathnames (make-pathname :directory `(:relative ,@sub)) (or directory-pathname *default-pathname-defaults*)))
 
-(defun flatten-path-list (path &optional absolute)
+(defun flatten-path-list (path &optional absolute directory-p)
   "Transform a list of strings in PATH into a string constituting of 
    individual strings interspersed with slashes.
-   A leading slash is prepended when ABSOLUTE is non-nil."
+   A leading slash is prepended when ABSOLUTE is non-nil.
+   A trailing slash is appended when DIRECTORY-P is non-nil."
   (apply #'concatenate 'simple-base-string
-         (xform (not absolute) #'rest (mapcan (curry #'list "/") path))))
+         (xform directory-p (rcurry #'append (list "/"))
+                (xform (not absolute) #'rest (mapcan (curry #'list "/") path)))))
 
 (defun fuse-downcased-string-path-list (path &optional absolute)
   "Transform a list of strings in PATH into a string constituting of 

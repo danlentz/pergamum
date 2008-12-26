@@ -65,6 +65,11 @@
   (if-let ((destination (file-exists-p symlink)))
     (pathname-match-p symlink path)))
 
+(defun symlink-target-file-present-p (symlink)
+  "See if the file SYMLINK points at exists, and return that."
+  (when-let ((destination (file-exists-p symlink)))
+    (file-exists-p destination)))
+
 (defun ensure-symlink (symlink target)
   "Ensure that file at SYMLINK is a symbolic link pointing to TARGET."
   #-win32

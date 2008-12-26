@@ -56,7 +56,7 @@
    #:current-working-directory #:change-working-directory
    #:within-directory
    #:file-as-vector #:file-as-string #:with-output-to-file
-   #:symlink-to-p #:ensure-symlink
+   #:symlink-to-p #:symlink-target-file-present-p #:ensure-symlink
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
    #:xform-hash-table #:make-hash-table-injector #:hash-table-key-present-p #:maphash*

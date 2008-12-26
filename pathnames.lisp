@@ -7,7 +7,7 @@
 
    When DIRECTORY-PATHNAME is NIL, it is interpreted to be
    *DEFAULT-PATHNAME-DEFAULTS*."
-  (merge-pathnames (apply #'make-pathname :directory `(:relative ,@(butlast sub) :wild-inferiors) make-pathname-keywords)
+  (merge-pathnames (apply #'make-pathname :directory `(:relative ,@sub :wild-inferiors) make-pathname-keywords)
                    (or directory-pathname *default-pathname-defaults*)))
 
 (defun subfile (directory-pathname sub &rest make-pathname-keywords)

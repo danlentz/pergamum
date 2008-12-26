@@ -1,10 +1,17 @@
 (in-package :pergamum)
 
 
+(defun subwild (directory-pathname sub &rest make-pathname-keywords)
+  "Return a wild pathname relative to DIRECTORY-PATHNAME with SUB directory
+   components appended, and with potential MAKE-PATHNAME-KEYWORDS."
+  (merge-pathnames (apply #'make-pathname :directory `(:relative ,@(butlast sub) :wild-inferiors) make-pathname-keywords)
+                   (or directory-pathname *default-pathname-defaults*)))
+
 (defun subfile (directory-pathname sub &rest make-pathname-keywords)
   "Return a file pathname with name SUB in DIRECTORY-PATHNAME.
    MAKE-PATHNAME-KEYWORDS are passed to MAKE-PATHNAME."
-  (merge-pathnames (apply #'make-pathname :directory `(:relative ,@(butlast sub)) :name (lastcar sub) make-pathname-keywords) (or directory-pathname *default-pathname-defaults*)))
+  (merge-pathnames (apply #'make-pathname :directory `(:relative ,@(butlast sub)) :name (lastcar sub) make-pathname-keywords)
+                   (or directory-pathname *default-pathname-defaults*)))
 
 (defun subfile* (directory-pathname &rest sub)
   "Return a file pathname with name SUB in DIRECTORY-PATHNAME."

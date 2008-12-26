@@ -50,7 +50,7 @@
    #:stream-as-vector #:all-stream-forms
    ;; pathnames.lisp
    #:flatten-path-list #:fuse-downcased-string-path-list
-   #:subfile #:subfile* #:subdirectory #:subdirectory* 
+   #:subwild #:subfile #:subfile* #:subdirectory #:subdirectory* 
    ;; files.lisp
    #:pathname-busy #:pathname-not-present
    #:current-working-directory #:change-working-directory

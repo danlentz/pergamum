@@ -80,6 +80,14 @@
         (when (satisfies-the-test v)
           (collect (funcall function v)))))
 
+(define-condition container-condition ()
+  ((container :initarg :container)))
+
+(define-condition container-missing-cell-error (cell-error container-condition)
+  ((type :initarg :type))
+  (:report (lambda (condition stream)
+             (format stream "~@<~A ~S not defined in ~S~:@>" (slot-value condition 'type) (cell-error-name condition) (slot-value condition 'container)))))
+
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
                                           spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn))
   "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
@@ -141,12 +149,12 @@
                  (or (gethash ,hash-key-form ,container-form)
                      ,@(ecase if-spread-compound-does-not-exist
                         (:error
-                         `((error "~@<~A ~S not defined in ~S~:@>" ,(string-downcase (string type)) name ,container)))
+                         `((error 'container-missing-cell-error :type ,(string-downcase (string type)) :name name :container ,container)))
                         (:continue nil)))))
              `((defun ,accessor-name (,@(when parametrize-container `(,container)) name &key (if-does-not-exist :error))
                  (or (gethash ,hash-key-form ,container-form)
                      (ecase if-does-not-exist
-                       (:error (error "~@<~A ~S not defined in ~S~:@>" ,(string-downcase (string type)) name ,container))
+                       (:error (error 'container-missing-cell-error :type ,(string-downcase (string type)) :name name :container ,container))
                        (:continue nil))))))
        ,@(if spread-compound-name-p
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) &rest name)

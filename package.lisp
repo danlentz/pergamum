@@ -25,7 +25,7 @@
    ;; functions.lisp
    #:latch-fn #:latch-args #:bukkake-combine #:bukkake-combine-1 #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:iterate-until #:collect-until #:or-p #:and-p
    ;; lists.lisp
-   #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip #:diff-lists
+   #:nfsubst #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip #:diff-lists
    #:set-differencef #:nset-differencef #:set-intersectionf #:nset-intersectionf
    ;; mop.lisp
    #+sbcl #:rename-class-slot #:slot-definition-documentation

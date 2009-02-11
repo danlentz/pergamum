@@ -3,6 +3,13 @@
 
 (in-package :pergamum)
 
+(defun nfsubst (fn tree)
+  "Pipe non-CONSes in TREE through FN, producing a new one."
+  (cond ((null tree) nil)
+        ((consp tree)
+         (cons (nfsubst fn (car tree)) (nfsubst fn (cdr tree))))
+        (t (funcall fn tree))))
+
 (defun make-queue ()
   "Make a PAIP queue."
   (lret ((q (cons nil nil)))

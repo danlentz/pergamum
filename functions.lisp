@@ -3,12 +3,7 @@
 
 (in-package :pergamum)
 
-(defun latch-fn (fn)
-  "Produce a function which applies FN to its parameters."
-  (lambda (&rest args)
-    (apply fn args)))
-
-(defun latch-args (&rest args)
+(defun latch (&rest args)
   "Produce a function which applies its first parameter to ARGS."
   (lambda (fn)
     (apply fn args)))
@@ -21,14 +16,6 @@
   (lambda (&rest params)
     (mapc (rcurry #'apply params) (butlast functions))
     (apply (lastcar functions) params)))
-
-(defun bukkake-combine-1 (&rest functions)
-  "Return a function accepting one value,  applying all FUNCTIONS
-   to it in turn, returning the value of last application.
-   Name courtesy of Andy Hefner."
-  (lambda (param)
-    (mapc (rcurry #'funcall param) (butlast functions))
-    (funcall (lastcar functions) param)))
 
 (defun maybe (function arg)
   "Given FUNCTION, return the result of applying ARG to it, when the latter is non-NIL."

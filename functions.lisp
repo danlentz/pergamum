@@ -3,6 +3,26 @@
 
 (in-package :pergamum)
 
+(defun feq (val)
+  "An EQ currier."
+  (lambda (x) (eq x val)))
+
+(defun feql (val)
+  "An EQL currier."
+  (lambda (x) (eql x val)))
+
+(defun fequal (val)
+  "An EQUAL currier."
+  (lambda (x) (equal x val)))
+
+(defun fequalp (val)
+  "An EQUALP currier."
+  (lambda (x) (equalp x val)))
+
+(defun f= (val)
+  "A = currier."
+  (lambda (x) (= x val)))
+
 (defun latch (&rest args)
   "Produce a function which applies its first parameter to ARGS."
   (lambda (fn)

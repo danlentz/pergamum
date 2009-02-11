@@ -23,6 +23,7 @@
    #:define-reported-condition
    #:simple-condition-reporter #:redefinition #:simple-redefinition #:bad-redefinition #:warn-redefinition
    ;; functions.lisp
+   #:feq #:feql #:fequal #:fequalp #:f=
    #:latch #:bukkake-combine #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:iterate-until #:collect-until #:or-p #:and-p
    ;; lists.lisp
    #:nfsubst #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip #:diff-lists

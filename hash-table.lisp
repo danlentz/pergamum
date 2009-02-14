@@ -89,7 +89,8 @@
              (format stream "~@<~A ~S not defined in ~S~:@>" (slot-value condition 'type) (cell-error-name condition) (slot-value condition 'container)))))
 
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
-                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn))
+                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
+                                          (description (string-downcase (string type))))
   "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
    the first parameter of the accessors, when PARAMETRIZE-CONTAINER 
    is specified.
@@ -124,6 +125,8 @@
     :MAPPER - whether (and how) to define a mapper function.
               The name chosen is the value of the keyword argument, unless
               it is T, in which case it is MAP-CONTAINER-TRANSFORM.
+    :DESCRIPTION - specify the printed description of the stored semantic 
+              objects.
 
    Typical usages include:
      - global namespace holder, namespace accessed directly:
@@ -135,7 +138,8 @@
      - variable namespace holder, namespaces accessed via selector:
        IGNORED namespace-accessor-name :container-transform SELECTOR :parametrize-container t"
   (declare (type (member :continue :warn :error) if-exists)
-           (type (member :continue :error) if-spread-compound-does-not-exist))
+           (type (member :continue :error) if-spread-compound-does-not-exist)
+           (type (or null string) description))
   (let* ((container (if parametrize-container 'container container-name))
          (container-form (if container-transform `(,container-transform ,container) container))
          (hash-key-form (cond ((null name-transform-fn) 'name)
@@ -149,25 +153,25 @@
                  (or (gethash ,hash-key-form ,container-form)
                      ,@(ecase if-spread-compound-does-not-exist
                         (:error
-                         `((error 'container-missing-cell-error :type ,(string-downcase (string type)) :name name :container ,container)))
+                         `((error 'container-missing-cell-error :type ,description :name name :container ,container)))
                         (:continue nil)))))
              `((defun ,accessor-name (,@(when parametrize-container `(,container)) name &key (if-does-not-exist :error))
                  (or (gethash ,hash-key-form ,container-form)
                      (ecase if-does-not-exist
-                       (:error (error 'container-missing-cell-error :type ,(string-downcase (string type)) :name name :container ,container))
+                       (:error (error 'container-missing-cell-error :type ,description :name name :container ,container))
                        (:continue nil))))))
        ,@(if spread-compound-name-p
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) &rest name)
                  (declare (type ,type val))
                  ,@(unless (eq if-exists :continue)
                            `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
-                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,(string-downcase (string type)) name 'define-hash-table-accessor))))
+                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-hash-table-accessor))))
                  (setf (gethash ,hash-key-form ,container-form) val)))
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) name)
                  (declare (type ,type val))
                  ,@(unless (eq if-exists :continue)
                            `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
-                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,(string-downcase (string type)) name 'define-hash-table-accessor))))
+                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-hash-table-accessor))))
                  (setf (gethash ,hash-key-form ,container-form) val))))
        ,@(when-let ((remover remover)
                     (name (if (eq remover t)

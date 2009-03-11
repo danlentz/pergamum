@@ -142,14 +142,17 @@
 (defun extent-lists-equalp (a b &key (relax-alignment 1) report-stream (error-report-limit 16)
                            (report-format "~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors~%"))
   (and (= (length (extent-list-extents a)) (length (extent-list-extents b)))
-       (loop :for (a-base . a-data) :in (extent-list-extents a)
-	     :for (b-base . b-data) :in (extent-list-extents b)
-	  :do (unless (and (= a-base b-base)
-                           (alignment-relaxed-vector-equalp a-data b-data relax-alignment))
-                (when report-stream
-                  (print-u8-sequence-diff report-stream a-data b-data report-format
-                   :error-report-limit error-report-limit))
-		(return nil))
+       (loop :for ex-a :in (extent-list-extents a)
+	     :for ex-b :in (extent-list-extents b)
+	  :do (with-slots ((a-data data) (a-base base)) ex-a
+		(with-slots ((b-data data) (b-base base)) ex-b
+		  (unless (and (= a-base b-base)
+			       (alignment-relaxed-vector-equalp a-data b-data relax-alignment)
+			       (equalp a-data b-data))
+		    (when report-stream
+		      (print-u8-sequence-diff report-stream a-data b-data report-format
+					      :error-report-limit error-report-limit))
+		    (return nil))))
 	  :finally (return t))))
 
 (defun dump-u8-extent-list (stream extent-list &key (endianness :little-endian))

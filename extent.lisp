@@ -9,6 +9,10 @@
 (defclass extent (baseless-extent)
   ((base :accessor extent-base :type integer :initarg :base)))
 
+(defmethod print-object ((o extent) stream)
+  (print-unreadable-object (o stream)
+    (format stream "EXTENT ~X:~X" (extent-base o) (extent-end o))))
+
 (defun make-extent (type base vector &rest keys &key (element-type (array-element-type vector) element-type-p) &allow-other-keys)
   (declare (type integer base) (type vector vector))
   (apply #'make-instance type

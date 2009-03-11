@@ -151,6 +151,7 @@
 			       (alignment-relaxed-vector-equalp a-data b-data relax-alignment)
 			       (equalp a-data b-data))
 		    (when report-stream
+		      (format report-stream "Error in ~S:~%" ex-a)
 		      (print-u8-sequence-diff report-stream a-data b-data
 					      :base a-base 
 					      :format report-format

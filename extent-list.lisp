@@ -144,16 +144,19 @@
   (and (= (length (extent-list-extents a)) (length (extent-list-extents b)))
        (loop :for ex-a :in (extent-list-extents a)
 	     :for ex-b :in (extent-list-extents b)
+             :with status = t
 	  :do (with-slots ((a-data data) (a-base base)) ex-a
 		(with-slots ((b-data data) (b-base base)) ex-b
 		  (unless (and (= a-base b-base)
 			       (alignment-relaxed-vector-equalp a-data b-data relax-alignment)
 			       (equalp a-data b-data))
 		    (when report-stream
-		      (print-u8-sequence-diff report-stream a-data b-data report-format
+		      (print-u8-sequence-diff report-stream a-data b-data
+					      :base a-base 
+					      :format report-format
 					      :error-report-limit error-report-limit))
-		    (return nil))))
-	  :finally (return t))))
+		    (setf status nil))))
+	  :finally (return status))))
 
 (defun dump-u8-extent-list (stream extent-list &key (endianness :little-endian))
   (dolist (extent (extent-list-extents extent-list))

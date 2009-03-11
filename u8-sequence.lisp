@@ -235,7 +235,7 @@
               (format stream " ~8,'0X" (funcall accessor-fn seq i)))
         (format stream "~%")))))
 
-(defun print-u8-sequence-diff (stream x y &optional (fmtstr "~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors~%") &key (error-report-limit 16))
+(defun print-u8-sequence-diff (stream x y &key (base 0) (format "~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors~%") (error-report-limit 16))
   (declare (type (array (unsigned-byte 8)) x y))
   (loop :with errors = 0 :with length = (min (length x) (length y))
 	:for i :from 0 :below (ash length -2) :do
@@ -243,8 +243,8 @@
 		(u8-seq-word32le y (ash i 2)))
        (incf errors)
        (unless (and error-report-limit (>= errors error-report-limit))
-	 (format stream fmtstr
-		 (ash i 2) (u8-seq-word32le x (ash i 2))
+	 (format stream format
+		 (+ base (ash i 2)) (u8-seq-word32le x (ash i 2))
 		 (when (plusp i)
 		   (u8-seq-word32le y (ash (1- i) 2)))
 		 (u8-seq-word32le y (ash i 2))

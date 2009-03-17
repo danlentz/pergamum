@@ -235,7 +235,7 @@
               (format stream " ~8,'0X" (funcall accessor-fn seq i)))
         (format stream "~%")))))
 
-(defun print-u8-sequence-diff (stream x y &key (base 0) (format "~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors~%") (error-report-limit 16))
+(defun print-u8-sequence-diff (stream x y &key (base 0) (format "~&~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors") (error-report-limit 16))
   (declare (type (array (unsigned-byte 8)) x y))
   (loop :with errors = 0 :with length = (min (length x) (length y))
 	:for i :from 0 :below (ash length -2) :do
@@ -251,4 +251,4 @@
 		 (when (< i (length y))
 		   (u8-seq-word32le y (ash (1+ i) 2)))
 		 (/ errors (1+ i) 0.01))))
-     :finally (return errors)))
+     :finally (progn (terpri stream) (return errors))))

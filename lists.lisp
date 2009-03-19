@@ -56,6 +56,22 @@
           (finally (setf ret-yes yes ret-no no)))
     (values ret-yes ret-no)))
 
+(defun plist-difference (plist keys)
+  "Return a copy of PLIST with all key-value pairs present in KEYS
+   removed."
+  (iter (for (key value . rest) on plist by #'cddr)
+        (unless (find key keys :test #'eq)
+          (collect key)
+          (collect value))))
+
+(defun plist-intersection (plist keys)
+  "Return a copy of PLIST with all key-value pairs not present in KEYS
+   removed."
+  (iter (for (key value . rest) on plist by #'cddr)
+        (when (find key keys :test #'eq)
+          (collect key)
+          (collect value))))
+
 (defun diff-lists (list1 list2 &key (skip-mismatches 0))
   "Recursively look for differences between LIST1 and LIST2.
    When such a difference is found, its formpath is returned as first value,

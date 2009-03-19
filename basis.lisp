@@ -125,3 +125,8 @@ the bindings NOT in effect."
                                     (list var (maybe-capture-subform condition form accessor)))
                                   vars accessors)))
      ,@body))
+
+(defun syncformat (stream format-control &rest args)
+  "Same as FORMAT, but also call FINISH-OUTPUT on STREAM."
+  (apply #'format stream format-control args)
+  (finish-output stream))

@@ -54,7 +54,7 @@
    #:subwild #:subfile #:subfile* #:subdirectory #:subdirectory* 
    ;; files.lisp
    #:pathname-busy #:pathname-not-present
-   #:current-working-directory #:change-working-directory
+   #:posix-working-directory #:set-posix-working-directory
    #:within-directory
    #:file-as-vector #:file-as-string #:with-output-to-file
    #:symlink-to-p #:symlink-target-file-present-p #:ensure-symlink

@@ -3,6 +3,11 @@
 
 (in-package :pergamum)
 
+(defun symbol-macro-p (x env)
+  "See if X denotes a symbol macro within ENV."
+  (and (symbolp x)
+       (nth-value 1 (macroexpand-1 x env))))
+
 (defmacro progn-1 (&body body)
   `(prog1
        (progn

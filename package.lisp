@@ -6,7 +6,7 @@
   (:import-from :cl-fad #:directory-exists-p #:file-exists-p)
   (:export
    ;; basis.lisp
-   #:progn-1 #:lret #:lret* #:if-let* #:case-let #:fcase #:fcase-1 #:fif #:fif-1 #:map-remove-if-not #:syncformat
+   #:symbol-macro-p #:progn-1 #:lret #:lret* #:if-let* #:case-let #:fcase #:fcase-1 #:fif #:fif-1 #:map-remove-if-not #:syncformat
    ;; forms.lisp
    #:quoted-p #:quoted-form
    ;; binary.lisp

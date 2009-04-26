@@ -8,7 +8,7 @@
 (define-condition pathname-not-present (file-error) ())
 
 (defun posix-working-directory ()
-  "Return the current working directory, in the getcwd() sense."
+  "Return the POSIX idea of the current working directory."
   #+sbcl (sb-posix:getcwd)
   #+ecl (si:getcwd))
 
@@ -20,30 +20,39 @@
 
 (defsetf posix-working-directory set-posix-working-directory)
 
-  "Execute BODY with both the Lisp's and POSIX's 
-   ideas of current directory set to DIRVAR,
-   which is bound to the value of DIRFORM.
+(defmacro within-directory ((directory-form &key (as (gensym)) (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) &body body)
+  "Execute BODY with the idea of current directory changed to the
+   value of DIRECTORY-FORM, which must evaluate to a string, which is 
+   optionally captured in the binding of a variable named by AS.
+
    Defined keywords:
+    :AS - a symbol, optionally specifying the name of the variable
+          to be bound to the value of DIRECTORY-FORM
+    :LISP - a boolean, indicating a request to bind *D-P-D*
+    :POSIX - a boolean, indicating a request to change POSIX's idea
+             of the current directory
     :IF-EXISTS - one of :ERROR or :CONTINUE
     :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE
    See the manual for details."
   (flet ((wrap-body (dirsym oldsym body)
-           `(let ((,oldsym (posix-working-directory))
-                  (*default-pathname-defaults* (parse-namestring ,dirsym)))
-              (set-posix-working-directory ,dirsym)
-              (unwind-protect (progn ,@body)
-                (set-posix-working-directory ,oldsym)))))
+           `(let (,@(when posix `((,oldsym (posix-working-directory))))
+                  ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,dirsym)))))
+              ,@(if posix
+                    `((set-posix-working-directory ,dirsym)
+                      (unwind-protect (progn ,@body)
+                        (set-posix-working-directory ,oldsym)))
+                    body))))
     (with-gensyms (old)
-      `(let ((,dirvar ,dirform))
-         (if (directory-exists-p ,dirvar)
+      `(let ((,as ,directory-form))
+         (if (directory-exists-p ,as)
              ,(ecase if-exists
-                     (:continue (wrap-body dirvar old body))
-                     (:error `(error 'pathname-busy :pathname ,dirvar)))
+                     (:continue (wrap-body as old body))
+                     (:error `(error 'pathname-busy :pathname ,as)))
              ,(ecase if-does-not-exist
                      (:create `(progn
-                                 (ensure-directories-exist ,dirvar)
-                                 ,(wrap-body dirvar old body)))
-                     (:error `(error 'pathname-not-present :pathname ,dirvar))))))))
+                                 (ensure-directories-exist ,as)
+                                 ,(wrap-body as old body)))
+                     (:error `(error 'pathname-not-present :pathname ,as))))))))
 
 (defun file-as-vector (filename &rest rest &key (element-type '(unsigned-byte 8)) &allow-other-keys)
   "Return contents of FILENAME as simple vector with element type (UNSIGNED-BYTE 8)."

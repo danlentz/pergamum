@@ -90,7 +90,7 @@
 
 (defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
                                           spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
-                                          (description (string-downcase (string type))))
+                                          (description (string-downcase (string type))) type-allow-nil-p)
   "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
    the first parameter of the accessors, when PARAMETRIZE-CONTAINER 
    is specified.
@@ -127,6 +127,7 @@
               it is T, in which case it is MAP-CONTAINER-TRANSFORM.
     :DESCRIPTION - specify the printed description of the stored semantic 
               objects.
+    :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
 
    Typical usages include:
      - global namespace holder, namespace accessed directly:
@@ -162,13 +163,13 @@
                        (:continue nil))))))
        ,@(if spread-compound-name-p
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) &rest name)
-                 (declare (type ,type val))
+                 (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)
                            `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
                                (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-hash-table-accessor))))
                  (setf (gethash ,hash-key-form ,container-form) val)))
              `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) name)
-                 (declare (type ,type val))
+                 (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)
                            `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
                                (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-hash-table-accessor))))

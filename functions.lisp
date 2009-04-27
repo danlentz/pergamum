@@ -86,6 +86,22 @@
            (funcall ,function ,(first args)))
       form))
 
+(defun apply/find-if (pred fn &rest args)
+  "Return the first member of a set computed by application of FN to ARGS,
+   which also satisfies PRED. The second value indicates whether the set
+   returned by FN was non-empty."
+  (declare (type (function (*) list) fn))
+  (let ((set (apply fn args)))
+    (values (find-if pred set) (not (null set)))))
+
+(define-compiler-macro apply/find-if (&whole whole pred fn &rest args)
+  (if (null (cdr args))
+      (with-gensyms (set)
+        (once-only (pred fn)
+         `(let ((,set (funcall ,fn ,(car args))))
+            (values (find-if ,pred ,set) (not (null ,set))))))
+      whole))
+
 (defun iterate-until (pred function &rest initial-args)
   "Given an INITIAL parameter value and a FUNCTION, iteratily apply the latter to the parameter, getting the new parameter, returning the last non-NIL one."
   (iter (with params = initial-args)

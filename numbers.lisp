@@ -14,16 +14,16 @@
       x
       (ilog2-ceiling x)))
 
-(defun bcd-integer-length (n)
+(defun bcd-integer-length (digits)
   "Return the maximum number of bits needed to store the
-   result of decoding of a N-byte long BCD integer."
-  (declare (type (integer 0)))
-  (nth-value 0 (ceiling (log (1- (expt 10 n)) 2) 1)))
+   result of decoding of a DIGITS long BCD integer."
+  (declare (type (integer 0) digits))
+  (nth-value 0 (ceiling (log (1- (expt 10 digits)) 2) 1)))
 
-(defun decode-bcd (bytes bcd &aux (decoded (ldb (byte 4 0) bcd)))
-  "Decode a BYTES-long BCD."
-  (declare (type (integer 0) bcd decoded) (fixnum bytes))
-  (iter (repeat bytes)
+(defun decode-bcd (digits bcd &aux (decoded (ldb (byte 4 0) bcd)))
+  "Decode a DIGITS-long BCD."
+  (declare (type (integer 0) bcd decoded) (fixnum digits))
+  (iter (repeat digits)
         (for position from 4 by 4)
         (for base initially 10 then (* base 10))
         (incf decoded (* base (ldb (byte 4 position) bcd)))

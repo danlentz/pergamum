@@ -20,6 +20,15 @@
   (declare (type (integer 0)))
   (nth-value 0 (ceiling (log (1- (expt 10 n)) 2) 1)))
 
+(defun decode-bcd (bytes bcd &aux (decoded (ldb (byte 4 0) bcd)))
+  "Decode a BYTES-long BCD."
+  (declare (type (integer 0) bcd decoded) (fixnum bytes))
+  (iter (repeat bytes)
+        (for position from 4 by 4)
+        (for base initially 10 then (* base 10))
+        (incf decoded (* base (ldb (byte 4 position) bcd)))
+        (finally (return decoded))))
+
 (defun bisect (test n &optional (base 0))
   "Find, using bisection, the largest positive integer below N and above,
    or equal to BASE, which satisfies TEST of one argument.

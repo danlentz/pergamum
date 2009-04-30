@@ -14,6 +14,12 @@
       x
       (ilog2-ceiling x)))
 
+(defun bcd-integer-length (n)
+  "Return the maximum number of bits needed to store the
+   result of decoding of a N-byte long BCD integer."
+  (declare (type (integer 0)))
+  (nth-value 0 (ceiling (log (1- (expt 10 n)) 2) 1)))
+
 (defun bisect (test n &optional (base 0))
   "Find, using bisection, the largest positive integer below N and above,
    or equal to BASE, which satisfies TEST of one argument.

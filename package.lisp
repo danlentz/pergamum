@@ -15,6 +15,7 @@
    #:copy-slots #:slot-value* #:define-print-object-method #:primary-method-not-required #:most-specific-last
    ;; conditions.lisp
    #:*debug-condition* #:dsignal #:derror
+   #:with-condition-recourses #:call-next-recourse-and-retry
    #:make-condition-raiser #:make-error-raiser 
    #:with-retry-restarts #:with-ignore-restart
    #:make-fixed-restarter

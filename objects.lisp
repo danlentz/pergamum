@@ -21,7 +21,7 @@
       (slot-value object slot-name)
       default))
 
-(defmacro define-print-object-method ((object type) slots format-control &rest format-arguments)
+(defmacro define-print-object-method (((object type) &rest slots) format-control &rest format-arguments)
   "Define a PRINT-OBJECT method for objects with TYPE.
 
    The definition is a call to FORMAT, with FORMAT-CONTROL and 

@@ -167,7 +167,7 @@
 function, analogous to ERROR, but also optionally taking the object 
 against which to err, and passing it to ERROR via the OBJECT-INITARG
 keyword. The name of the simple error is constructed by prepending
- 'SIMPLE-' to BASE-TYPE.
+'SIMPLE-' to BASE-TYPE.
 Whether or not the error signaller will require and pass the
 object is specified by OBJECT-INITARG being non-NIL."
   (let ((type (format-symbol t "SIMPLE-~A" base-type)))
@@ -175,7 +175,7 @@ object is specified by OBJECT-INITARG being non-NIL."
        (define-condition ,type (,base-type simple-error)
          ()
          (:report (lambda (cond stream)
-                    (apply #'format stream (slot-value cond 'format-control) (slot-value cond 'format-arguments)))))
+                    (apply #'format stream (simple-condition-format-control cond) (simple-condition-format-arguments cond)))))
        (defun ,base-type (,@(when object-initarg `(o)) format-control &rest format-arguments)
          (error ',type ,@(when object-initarg `(,object-initarg o)) :format-control format-control :format-arguments format-arguments)))))
 

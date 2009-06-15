@@ -9,7 +9,7 @@
        (nth-value 1 (macroexpand-1 x env))))
 
 (defmacro progn-1 (&body body)
-  `(prog1
+  `(multiple-value-prog1
        (progn
          ,@(butlast body))
      ,(lastcar body)))

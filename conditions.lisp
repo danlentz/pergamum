@@ -33,9 +33,10 @@
    the return value.
    Whenever CONDITION arises, the control is transferred to the
    common recourse, which can be specified in the following form:
-      (:common ([var]) declaration* form*)
-   where VAR is optionally bound to the condition for which a recourse is 
-   sought.
+      (:common ([var] [recourse-name]) declaration* form*)
+   where VAR is optionally bound to the condition for which a recourse is
+   sought and RECOURSE-NAME is optionally bound to the name of the
+   activated recourse.
    FORM*s are executed in the scope where CALL-NEXT-RECOURSE-AND-RETRY
    is lexically bound to a function of no arguments, which, depending on
    whether there are any remaining recourses, either invokes one, 
@@ -46,29 +47,32 @@
    not provided, is to invoke CALL-NEXT-RECOURSE-AND-RETRY, and, 
    if it returns, return NIL.
    Recourses are specified by RECOURSE clauses, in the following form: 
-      (:recourse ([var]) declaration* form*)
+      (<recourse-name> ([var]) declaration* form*)
    where VAR is optionally bound to the condition for which a recourse is 
    sought."
-  (let ((common-clause (cdr (assoc :common clauses)))
-        (recourse-clauses (mapcar #'cdr (remove :recourse clauses :key #'car :test (complement #'eq)))))
-    (flet ((emit-1lam (maybe-arg body &aux (unmaybe-arg (gensym)))
-             `(lambda (,(or maybe-arg unmaybe-arg))
-                ,@(unless maybe-arg `((declare (ignore ,unmaybe-arg))))
-                ,@body)))
-      (with-gensyms (block recourses retry-tag condvar)
-        `(block ,block
-           (let ((,recourses (list ,@(iter (for (binding . body) in recourse-clauses)
-                                           (collect (emit-1lam (car binding) body))))))
-             (tagbody ,retry-tag
-                (handler-case (return-from ,block ,form)
-                  (,condition (,(if common-clause (caar common-clause) condvar))
-                    (flet ((call-next-recourse-and-retry ()
-                             (when-let ((recourse (pop ,recourses)))
-                               (funcall recourse ,(if common-clause (caar common-clause) condvar))
-                               (go ,retry-tag))))
-                      ,@(if common-clause
-                            `(,@(butlast (cdr common-clause)) (return-from ,block ,(car (last (cdr common-clause)))))
-                            `((return-from ,block (call-next-recourse-and-retry))))))))))))))
+  (let* ((common-clause (or (cdr (assoc :common clauses))
+                            `(() (call-next-recourse-and-retry))))
+         (recourse-clauses (remove :common clauses :key #'car)))
+    (destructuring-bind ((&optional (condition-var (gensym)) (recourse-name-var (gensym))) &body common-clause-body) common-clause
+      (flet ((emit-1lam (maybe-arg body &aux (unmaybe-arg (gensym)))
+               `(lambda (,(or maybe-arg unmaybe-arg))
+                  ,@(unless maybe-arg `((declare (ignore ,unmaybe-arg))))
+                  ,@body)))
+        (with-gensyms (block recourses retry-tag)
+          `(block ,block
+             (let ((,recourses (list ,@(iter (for (name binding . body) in recourse-clauses)
+                                             (collect `(cons ',name ,(emit-1lam (car binding) body)))))))
+               (tagbody ,retry-tag
+                  (handler-case (return-from ,block ,form)
+                    (,condition (,condition-var)
+                      (flet ((call-next-recourse-and-retry ()
+                               (when-let ((recourse (pop ,recourses)))
+                                 (funcall (cdr recourse) ,condition-var)
+                                 (go ,retry-tag))))
+                        (let ((,recourse-name-var (caar ,recourses)))
+                          (declare (ignorable ,recourse-name-var))
+                          ,@(butlast common-clause-body)
+                          (return-from ,block ,(car (last common-clause-body)))))))))))))))
 
 (defun make-condition-raiser (type &rest params)
   (lambda (&rest rest)

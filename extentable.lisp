@@ -29,7 +29,7 @@
 (defsetf u8-extent set-u8-extent)
 
 (defun (setf extentable-u8-vector) (vector extentable base)
-  (set-u8-extent extentable (cons base (length vector)) (make-extent 'extent :base base :vector vector)))
+  (set-u8-extent extentable (cons base (length vector)) (make-extent 'extent base vector)))
 
 (defun u8-extent-list (extentable extent-list-spec)
   (make-instance 'u8-extent-list

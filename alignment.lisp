@@ -36,7 +36,7 @@
 
 (defun align-up (alignment value)
   (let ((tail (logand (1- alignment) value)))
-    (+ (align-down value alignment)
+    (+ (align-down alignment value)
        (if (zerop tail) 0 alignment))))
 
 (defun check-size-alignment (req value)

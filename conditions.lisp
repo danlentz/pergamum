@@ -45,13 +45,13 @@
    provides the return value of the whole WITH-CONDITION-RECOURSES form.
    The default action of the common recourse, when the COMMON clause is
    not provided, is to invoke CALL-NEXT-RECOURSE-AND-RETRY, and, 
-   if it returns, return NIL.
+   if it returns, resignal the condition using ERROR.
    Recourses are specified by RECOURSE clauses, in the following form: 
       (<recourse-name> ([var]) declaration* form*)
    where VAR is optionally bound to the condition for which a recourse is 
    sought."
   (let* ((common-clause (or (cdr (assoc :common clauses))
-                            `(() (call-next-recourse-and-retry))))
+                            `((condition) (call-next-recourse-and-retry) (error condition))))
          (recourse-clauses (remove :common clauses :key #'car)))
     (destructuring-bind ((&optional (condition-var (gensym)) (recourse-name-var (gensym))) &body common-clause-body) common-clause
       (flet ((emit-1lam (maybe-arg body &aux (unmaybe-arg (gensym)))

@@ -238,7 +238,7 @@
                 (format stream "~2,'0X" (aref seq i))))
         (format stream "~%")))))
 
-(defun print-u8-sequence-diff (stream baseline actual &key (base 0) (format "~&~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2,'0D% errors") (error-report-limit 16))
+(defun print-u8-sequence-diff (stream baseline actual &key (base 0) (format "~&~8,'0X:  -> ~8,'0X  <- ~8,'0X, ~8,'0X, ~8,'0X,  ~2F% errors") (error-report-limit 16))
   (declare (type (array (unsigned-byte 8)) baseline actual))
   (loop :with errors = 0 :with length = (min (length baseline) (length actual)) :with word-length = (ash length -2)
         :for i :below word-length :do

@@ -21,7 +21,7 @@
    #:make-fixed-restarter
    #:with-condition-restart-binding #:with-condition-printing #:with-error-resignaling #:with-condition-collection #:returning-conditions
    #:condition-bind-default
-   #:define-reported-condition #:define-simple-error
+   #:define-reported-condition #:report-simple-condition #:define-simple-error
    #:simple-condition-reporter #:redefinition #:simple-redefinition #:bad-redefinition #:warn-redefinition
    ;; functions.lisp
    #:feq #:feql #:fequal #:fequalp #:f=

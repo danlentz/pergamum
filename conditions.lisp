@@ -166,6 +166,9 @@
                               (format ,stream ,format-control ,@format-arguments)))))))
           (error "~@<Error while parsing arguments to DEFMACRO DEFINE-REPORTED-CONDITION: an :REPORT option is mandatory.~:@>")))
 
+(defun report-simple-condition (condition stream)
+  (apply #'format stream (simple-condition-format-control condition) (simple-condition-format-arguments condition)))
+
 (defmacro define-simple-error (base-type &key object-initarg)
   "Define a simple error subclassing from BASE-TYPE and a corresponding
 function, analogous to ERROR, but also optionally taking the object 
@@ -178,8 +181,7 @@ object is specified by OBJECT-INITARG being non-NIL."
     `(progn
        (define-condition ,type (,base-type simple-error)
          ()
-         (:report (lambda (cond stream)
-                    (apply #'format stream (simple-condition-format-control cond) (simple-condition-format-arguments cond)))))
+         (:report report-simple-condition))
        (defun ,base-type (,@(when object-initarg `(o)) format-control &rest format-arguments)
          (error ',type ,@(when object-initarg `(,object-initarg o)) :format-control format-control :format-arguments format-arguments)))))
 

@@ -101,6 +101,7 @@
    ;; extentable.lisp
    #:extentable #:u8-extent #:extentable-u8-vector #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#
    #:subextent #:subextent-extent #:subextent-parent #:subextent-absolutize #:subextent-relativize
+   #:write-u8-extents
    ;; read.lisp
    #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader
    ;; packages.lisp

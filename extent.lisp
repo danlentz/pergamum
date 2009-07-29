@@ -43,6 +43,17 @@
   (and (plusp (extent-length x)) (plusp (extent-length y))
        (or (point-in-extent-p x (extent-base y)) (point-in-extent-p x (+ (extent-base y) (extent-length y) -1)))))
 
+(defun split-extent (extent offset &optional ignore-head ignore-tail)
+  (values (unless ignore-head (make-extent 'extent (extent-base extent) (subseq (extent-data extent) 0 offset)))
+          (unless ignore-tail (make-extent 'extent (+ (extent-base extent) offset) (subseq (extent-data extent) offset)))))
+
+(defmacro with-split-extent ((head tail) extent offset &body body)
+  (let ((headvar (or head (gensym)))
+        (tailvar (or tail (gensym))))
+    `(multiple-value-bind (,headvar ,tailvar) (split-extent ,extent ,offset ,(null head) ,(null tail))
+       ,@(unless (and head tail) `((declare (ignore ,@(unless head `(,headvar)) ,@(unless tail `(,tailvar))))))
+       ,@body)))
+
 (defun extent-spec (extent)
   (declare (type extent extent))
   (cons (extent-base extent) (length (extent-data extent))))

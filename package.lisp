@@ -72,6 +72,7 @@
    #:check-size-alignment #:check-address-alignment
    ;; extent.lisp
    #:baseless-extent #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:extent-end #:point-extent-base-p #:point-in-extent-p #:extents-intersect-p
+   #:split-extent #:with-split-extent
    #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent
    #:extent-spec-base #:extent-spec-length #:extent-spec-length
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces

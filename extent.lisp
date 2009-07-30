@@ -55,10 +55,27 @@
        ,@body)))
 
 (defun rebase-extent (fn extent)
-  "Call FN on EXTENT's address, combining the result with its data for
-making of a new extent."
   (declare (type (function (integer) integer) fn) (type extent extent))
+  "Call FN on EXTENT's base, combining the result with its data for
+making of a new extent."
   (make-extent (type-of extent) (funcall fn (extent-base extent)) (extent-data extent)))
+
+(defun rebase-extent-inplace (fn extent)
+  "Replace EXTENT's base with result of calling FN on it."
+  (declare (type (function (integer) integer) fn) (type extent extent))
+  (setf (extent-base extent) (funcall fn (extent-base extent)))
+  extent)
+
+(defun coerce-extent (extent type)
+  "Create a new extent with EXTENT's data vector coerced to TYPE."
+  (declare (type extent extent))
+  (make-extent (type-of extent) (extent-base extent) (coerce (extent-data extent) type)))
+
+(defun coerce-extent-inplace (extent type)
+  "Replace the data vector in EXTENT with one coerced to TYPE."
+  (declare (type extent extent))
+  (setf (extent-data extent) (coerce (extent-data extent) type))
+  extent)
 
 (defun extent-data-equalp (e1 e2)
   "Return T if data vectors of E1 and E2 match according to EQUALP."

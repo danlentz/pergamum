@@ -73,7 +73,7 @@
    ;; extent.lisp
    #:baseless-extent #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:extent-end #:point-extent-base-p #:point-in-extent-p #:extents-intersect-p
    #:split-extent #:with-split-extent
-   #:rebase-extent
+   #:rebase-extent #:rebase-extent-inplace #:coerce-extent #:coerce-extent-inplace
    #:extent-data-equalp #:extent-equalp
    #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent
    #:extent-spec-base #:extent-spec-length #:extent-spec-length

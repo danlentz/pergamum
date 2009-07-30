@@ -136,7 +136,7 @@
   (with-gensyms (start-time)
     `(let ((,start-time (get-internal-real-time)))
        ,measured-form
-       (let* ((,time-var (coerce (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second) 'float)))
+       (let ((,time-var (float (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second))))
          ,@body))))
 
 (defmacro measuring-performance ((unit-var units &key (rounds 8) (strategy 'minimize) (scale :unit) (type 'float)) &body body)

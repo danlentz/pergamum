@@ -54,6 +54,44 @@
        ,@(unless (and head tail) `((declare (ignore ,@(unless head `(,headvar)) ,@(unless tail `(,tailvar))))))
        ,@body)))
 
+(defun rebase-extent (fn extent)
+  (declare (type (function (integer) integer) fn) (type extent extent))
+  "Call FN on EXTENT's base, combining the result with its data for
+making of a new extent."
+  (make-extent (type-of extent) (funcall fn (extent-base extent)) (extent-data extent)))
+
+(defun rebase-extent-inplace (fn extent)
+  "Replace EXTENT's base with result of calling FN on it."
+  (declare (type (function (integer) integer) fn) (type extent extent))
+  (setf (extent-base extent) (funcall fn (extent-base extent)))
+  extent)
+
+(defun coerce-extent (extent type)
+  "Create a new extent with EXTENT's data vector coerced to TYPE."
+  (declare (type extent extent))
+  (make-extent (type-of extent) (extent-base extent) (coerce (extent-data extent) type)))
+
+(defun coerce-extent-inplace (extent type)
+  "Replace the data vector in EXTENT with one coerced to TYPE."
+  (declare (type extent extent))
+  (setf (extent-data extent) (coerce (extent-data extent) type))
+  extent)
+
+(defun extent-data-equalp (e1 e2)
+  "Return T if data vectors of E1 and E2 match according to EQUALP."
+  (declare (type extent e1 e2))
+  (equalp (extent-data e1) (extent-data e2)))
+
+(defun extent-equalp (e1 e2)
+  "Return T if data vectors of E1 and E2 match according to EQUALP,
+and their base addresses match as well."
+  (declare (type extent e1 e2))
+  (and (extent-data-equalp e1 e2)
+       (= (extent-base e1) (extent-base e2))))
+
+;;;
+;;; Extent specs.
+;;;
 (defun extent-spec (extent)
   (declare (type extent extent))
   (cons (extent-base extent) (length (extent-data extent))))
@@ -84,6 +122,32 @@
 (defun extent-spec-end (spec)
   (+ (car spec) (cdr spec)))
 
+(defun rebase-extent-spec (fn extent-spec)
+  "Call FN on EXTENT-SPEC's address and combine the result with 
+its length to create a new extent spec."
+  (declare (type (function (integer) integer) fn) (type cons extent-spec))
+  (cons (funcall fn (car extent-spec)) (cdr extent-spec)))
+
+;;;
+;;; Subextents.
+;;;
+(defclass subextent ()
+  ((parent :accessor subextent-parent :type bioable :initarg :parent)
+   (extent :accessor subextent-extent :type cons :initarg :extent)))
+
+(defmethod print-object ((subextent subextent) stream)
+  (format stream "~@<#<SUBEXTENT~; extent: ~S  parent: ~S~;>~:@>"
+          (slot-value subextent 'extent) (slot-value subextent 'parent)))
+
+(defun subextent-absolutize (subex val)
+  (+ val (extent-spec-base (subextent-extent subex))))
+
+(defun subextent-relativize (subex val)
+  (- val (extent-spec-base (subextent-extent subex))))
+
+;;;
+;;; Utilities. Crap ones, admittedly.
+;;;
 (defmacro do-extent-spec-aligned-blocks (alignment (addr len spec) &body body)
   "Execute body with ADDR being set to all successive beginnings of ALIGNMENT-aligned blocks covering the extent specified by SPEC."
   (once-only (alignment spec)

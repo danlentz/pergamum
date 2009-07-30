@@ -75,8 +75,12 @@
    ;; extent.lisp
    #:baseless-extent #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:extent-end #:point-extent-base-p #:point-in-extent-p #:extents-intersect-p
    #:split-extent #:with-split-extent
+   #:rebase-extent #:rebase-extent-inplace #:coerce-extent #:coerce-extent-inplace
+   #:extent-data-equalp #:extent-equalp
    #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent
    #:extent-spec-base #:extent-spec-length #:extent-spec-length
+   #:rebase-extent-spec
+   #:subextent #:subextent-extent #:subextent-parent #:subextent-absolutize #:subextent-relativize
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe
@@ -89,21 +93,11 @@
    #:u8-seq-word64le #:u8-seq-word64be
    #:u8-seq-wordle #:u8-seq-wordbe
    #:print-u8-sequence #:print-u8-sequence-diff
-   ;; extent-list.lisp
-   #:extent-list #:u32-extent-list #:u8-extent-list
-   #:extent-list-extents #:extent-list-element-type
-   #:extent-list-spec #:print-extent-list-spec #:extent-list-matches-spec-p #:extent-list-spec-mismatch
-   #:extent-list-push* #:extent-list-grow #:extent-list-adjoin #:extent-list-adjoin*
-   #:merge-extent-lists
-   #:extent-list-vector-compatible-p
-   #:do-extent-list
-   #:serialize-extent-list #:unserialize-extent-list
-   #:extent-lists-equalp
-   #:dump-u8-extent-list
-   ;; extentable.lisp
-   #:extentable #:u8-extent #:extentable-u8-vector #:set-u8-extent #:set-u8-extent-list #| #:u8-extent-list -- generic function |#
-   #:subextent #:subextent-extent #:subextent-parent #:subextent-absolutize #:subextent-relativize
-   #:write-u8-extents
+   ;; bioable.lisp
+   #:bioable #:bioable-range
+   #:read-block #:write-block #:write-blocks
+   #:u8-extent #:write-u8-extent
+   #:u8-extents #:write-u8-extents
    ;; read.lisp
    #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader
    ;; packages.lisp

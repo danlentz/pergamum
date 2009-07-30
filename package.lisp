@@ -11,6 +11,8 @@
    #:quoted-p #:quoted-form
    ;; binary.lisp
    #:logandf #:logiorf #:logandcf
+   ;; classes.lisp
+   #:define-protocol-class
    ;; objects.lisp
    #:copy-slots #:slot-value* #:define-print-object-method #:primary-method-not-required #:most-specific-last
    ;; conditions.lisp

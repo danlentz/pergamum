@@ -14,6 +14,7 @@
    (:file "alignment" :depends-on ("package"))
    (:file "basis" :depends-on ("package"))
    (:file "binary" :depends-on ("package"))
+   (:file "classes" :depends-on ("package"))
    (:file "conditions" :depends-on ("package"))
    (:file "forms" :depends-on ("package"))
    (:file "functions" :depends-on ("package"))

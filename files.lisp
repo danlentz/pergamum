@@ -79,7 +79,7 @@
 (defun symlink-to-p (symlink path)
   "See if SYMLINK does point at PATH."
   (if-let ((destination (file-exists-p symlink)))
-    (pathname-match-p symlink path)))
+    (pathname-match-p destination path)))
 
 (defun symlink-target-file-present-p (symlink)
   "See if the file SYMLINK points at exists, and return that."

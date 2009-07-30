@@ -39,15 +39,9 @@
     (dolist (e extents)
       (set-u8-extent o (extent (extent-base e) (extent-length e)) e))))
 
-(defun u8-extent-list (extentable extent-list-spec)
-  (make-instance 'u8-extent-list
-                 :extents (mapcar (curry #'u8-extent extentable) extent-list-spec)))
+(defgeneric u8-extents (extentable extent-specs)
+  (:method ((o extentable) extent-specs)
+    (iter (for exspec in extent-specs)
+          (collect (u8-extent o exspec)))))
 
-(defun set-u8-extent-list (extentable extent-list-spec extent-list)
-  (declare (u8-extent-list extent-list))
-  (unless (extent-list-matches-spec-p extent-list-spec extent-list)
-    (error 'extent-list-spec-mismatch :extent-list extent-list :spec extent-list-spec))
-  (mapc (curry #'set-u8-extent extentable) extent-list-spec (extent-list-extents extent-list))
-  extent-list)
-
-(defsetf u8-extent-list set-u8-extent-list)
+(defsetf u8-extents write-u8-extents)

@@ -35,8 +35,6 @@
    (:file "types" :depends-on ("extent"))
    (:file "u8-sequence" :depends-on ("extent"))
    ;; tier 4
-   (:file "extent-list" :depends-on ("u8-sequence"))
-   ;; tier 5
-   (:file "extentable" :depends-on ("extent-list"))
+   (:file "bioable" :depends-on ("extent" "objects" "u8-sequence"))
    ;; expunge tier
-   (:file "to-expunge" :depends-on ("extentable"))))
+   (:file "to-expunge" :depends-on ("bioable"))))

@@ -34,7 +34,7 @@ and interpreted as end of the vector.")
 
 (defgeneric u8-extent (bioable extent-spec)
   (:method ((o bioable) (extent extent))
-    (call-next-method o (extent-spec extent)))
+    (u8-extent o (extent-spec extent)))
   (:method ((o bioable) (spec cons))
     (make-extent 'extent (car spec) (lret ((iovec (make-array (cdr spec) :element-type '(unsigned-byte 8))))
                                       (read-block o (car spec) iovec)))))

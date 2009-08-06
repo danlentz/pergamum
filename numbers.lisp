@@ -69,6 +69,24 @@ VALUE and the sum of ALIGNED and ALIGNMENT."
             ,@(when right `((,right (logand ,mask (- ,mask -1 ,(if left left `(logand ,mask ,once-value))))))))
        ,@body)))
 
+(defun map-alignment-head (left right fn)
+  (let ((granule-start left)
+        (inner-part right)
+        (inner-start 0))
+    (iter (for g from granule-start)
+          (for i from inner-start)
+          (repeat inner-part)
+          (funcall fn g i))))
+
+(defun map-alignment-tail (length left fn)
+  (let* ((granule-start 0)
+         (inner-part left)
+         (inner-start (- length inner-part)))
+    (iter (for g from granule-start)
+          (for i from inner-start)
+          (repeat inner-part)
+          (funcall fn g i))))
+
 (defun operate-on-extremity (length rightp left right fn)
   "Given the split of an alignment granule to LEFT and RIGHT and an extent
 LENGTH, map FN over the granule-local and absolute sets of offsets within

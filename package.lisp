@@ -36,7 +36,8 @@
    ;; mop.lisp
    #+sbcl #:rename-class-slot #:slot-definition-documentation
    ;; numbers.lisp
-   #:power-of-2-p #:ilog2-ceiling #:ilog2-cover #:bcd-integer-length #:decode-bcd #:bisect #:split-number #:with-alignment #:operate-on-extremity
+   #:power-of-2-p #:ilog2-ceiling #:ilog2-cover #:bcd-integer-length #:decode-bcd #:bisect #:split-number
+   #:with-alignment #:map-alignment-left #:map-alignment-right #:operate-on-extremity
    ;; pergamum.lisp
    #:with-condition-printing
    #:nand #:nor #:andf #:orf #:notf #:xorf

@@ -53,3 +53,33 @@
                  (collect coll)
                  (decf x (* expt coll))))
          (list x)))
+
+(defmacro with-alignment ((aligned &optional left right mask) alignment value &body body)
+  "Execute BODY with ALIGNED, LEFT, RIGHT and MASK bound to various
+products of applying ALIGNMENT to VALUE.
+ALIGNED denotes the floor alignment, LEFT denotes the difference
+between VALUE and ALIGNED and RIGHT denotes the difference between
+VALUE and the sum of ALIGNED and ALIGNMENT."
+  (let ((once-value (gensym))
+        (mask (or mask (gensym))))
+    `(let* ((,once-value ,value)
+            (,mask (1- ,alignment))
+            ,@(when aligned `((,aligned (logandc1 ,mask ,once-value))))
+            ,@(when left `((,left (logand ,mask ,once-value))))
+            ,@(when right `((,right (logand ,mask (- ,mask -1 ,(if left left `(logand ,mask ,once-value))))))))
+       ,@body)))
+
+(defun operate-on-extremity (length rightp left right fn)
+  "Given the split of an alignment granule to LEFT and RIGHT and an extent
+LENGTH, map FN over the granule-local and absolute sets of offsets within
+intersection of that granule and either the leftmost or rightmost 
+corresponding part of the extent, depending on whetner RIGHTP is non-NIL.
+FN must accept two arguments: the intra-granule offset, and extent offset."
+  (let* ((inner-part (if rightp right left))
+         (inner-boundary-offset (if rightp (1- inner-part) (- length inner-part)))
+         (granule-start (if rightp (+ left right -1) 0))
+         (step (if rightp -1 1)))
+    (iter (for g from granule-start by step)
+          (for i from inner-boundary-offset by step)
+          (repeat inner-part)
+          (funcall fn g i))))

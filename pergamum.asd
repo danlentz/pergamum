@@ -18,6 +18,7 @@
    (:file "conditions" :depends-on ("package"))
    (:file "forms" :depends-on ("package"))
    (:file "functions" :depends-on ("package"))
+   (:file "numbers" :depends-on ("package"))
    (:file "packages" :depends-on ("package"))
    (:file "mop" :depends-on ("package"))
    (:file "read" :depends-on ("package"))
@@ -30,11 +31,10 @@
    (:file "objects" :depends-on ("forms"))
    (:file "extent" :depends-on ("basis" "alignment"))
    ;; tier 3
-   (:file "numbers" :depends-on ("pergamum"))
    (:file "files" :depends-on ("streams"))
    (:file "lambda-lists" :depends-on ("pergamum"))
    (:file "types" :depends-on ("extent"))
-   (:file "u8-sequence" :depends-on ("extent"))
+   (:file "u8-sequence" :depends-on ("alignment" "extent"))
    ;; tier 4
    (:file "bioable" :depends-on ("extent" "objects" "u8-sequence"))
    ;; expunge tier

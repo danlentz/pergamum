@@ -20,7 +20,6 @@
    (:file "functions" :depends-on ("package"))
    (:file "packages" :depends-on ("package"))
    (:file "mop" :depends-on ("package"))
-   (:file "numbers" :depends-on ("package"))
    (:file "read" :depends-on ("package"))
    ;; tier 2
    (:file "lists" :depends-on ("basis"))
@@ -31,6 +30,7 @@
    (:file "objects" :depends-on ("forms"))
    (:file "extent" :depends-on ("basis" "alignment"))
    ;; tier 3
+   (:file "numbers" :depends-on ("pergamum"))
    (:file "files" :depends-on ("streams"))
    (:file "lambda-lists" :depends-on ("pergamum"))
    (:file "types" :depends-on ("extent"))

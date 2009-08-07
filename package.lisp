@@ -93,6 +93,7 @@
    #:u8-seq-word32le #:u8-seq-word32be
    #:u8-seq-word64le #:u8-seq-word64be
    #:u8-seq-wordle #:u8-seq-wordbe
+   #:align-extend-u8-extent #:align-extend-u8-extent-inplace
    #:print-u8-sequence #:print-u8-sequence-diff
    ;; bioable.lisp
    #:bioable #:bioable-range

@@ -217,9 +217,9 @@
         (always (= (aref a1 i) (aref a2 i)))))
 
 (defun write-column-value (stream i x) 
-  (write-string x stream)
+  (format stream "~A" x stream)
   (when (= #x3 (logand i #x3))
-    (write-string " " stream)))
+    (format stream " " stream)))
 
 (defun write-column (stream vector base)
   (dotimes (i 16) (write-column-value stream i (format nil "~2,'0X" (aref vector (+ base i))))))
@@ -240,7 +240,7 @@
       (unless (= granule-base extremity)
         (format stream "~&~8,'0X:  " granule-base)
         (write-u8-16-segment stream vector left right length headp)
-        (terpri stream)))))
+        (format stream "~%")))))
 
 (defun print-u8-extremity-diff (stream baseline actual base headp &aux (length (length baseline)))
   (let ((extremity (if headp base (+ base length))))
@@ -251,7 +251,7 @@
           (write-u8-16-segment stream baseline left right length headp)
           (format stream " <= ")
           (write-u8-16-segment stream actual left right length headp)
-          (terpri stream))))))
+          (format stream "~%"))))))
 
 (defun print-u8-sequence (stream vector &key (address 0) &aux (base address))
   (print-u8-extremity stream vector base t)
@@ -262,7 +262,7 @@
               (for internal from head by 16)
               (format stream "~&~8,'0X:  " (+ base internal))
               (write-column stream vector internal)
-              (terpri stream)))))
+              (format stream "~%")))))
   (print-u8-extremity stream vector base nil))
 
 (defun print-u8-sequence-diff (stream baseline actual &key (base 0) (error-report-limit 16))

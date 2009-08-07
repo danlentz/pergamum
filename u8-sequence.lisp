@@ -222,22 +222,19 @@
       (if (and (= aligned-base (extent-base extent))
                (= aligned-end (extent-end extent)))
           extent
-          (make-extent 'extent aligned-base (concatenate '(simple-array (unsigned-byte 8) 1)
-                                                         (unless (= aligned-base (extent-base extent)) (make-list prehead :initial-element 0))
-                                                         (extent-data extent)
-                                                         (unless (= aligned-end (extent-end extent)) (make-list posttail :initial-element 0))))))))
-
-(defun align-extend-u8-extent-inplace (alignment extent)
-  (with-alignment (aligned-base prehead) alignment (extent-base extent)
-    (with-alignment (aligned-end tail posttail) alignment (extent-end extent)
-      (unless (and (= aligned-base (extent-base extent))
-                   (= aligned-end (extent-end extent)))
-        (setf (extent-base extent) aligned-base
-              (extent-data extent) (concatenate '(simple-array (unsigned-byte 8) 1)
-                                                (unless (= aligned-base (extent-base extent)) (make-list prehead :initial-element 0))
-                                                (extent-data extent)
-                                                (unless (= aligned-end (extent-end extent)) (make-list posttail :initial-element 0)))))
-      extent)))
+          (make-extent 'extent aligned-base
+                       #-ecl
+                       (concatenate '(simple-array (unsigned-byte 8) 1)
+                                    (unless (= aligned-base (extent-base extent)) (make-list prehead :initial-element 0))
+                                    (extent-data extent)
+                                    (unless (= aligned-end (extent-end extent)) (make-list posttail :initial-element 0)))
+                       #+ecl
+                       (make-array (+ prehead (extent-length extent) posttail)
+                                   :element-type '(unsigned-byte 8)
+                                   :initial-contents (concatenate 'vector
+                                                                  (unless (= aligned-base (extent-base extent)) (make-list prehead :initial-element 0))
+                                                                  (extent-data extent)
+                                                                  (unless (= aligned-end (extent-end extent)) (make-list posttail :initial-element 0)))))))))
 
 (defun write-column-value (stream i x) 
   (format stream "~A" x stream)

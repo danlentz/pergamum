@@ -48,16 +48,16 @@ and interpreted as end of the vector.")
     (iter (for exspec in extent-specs)
           (collect (u8-extent o exspec)))))
 
-(defgeneric write-u8-extents (bioable extents &key preserve-around before-fn stream)
+(defgeneric write-u8-extents (bioable extents &key preserve-holes before-fn stream)
   (:documentation
    "Write a list of EXTENTS into BIOABLE.
-When PRESERVE-AROUNDS is non-NIL, specific methods attempt, if applicable, 
+When PRESERVE-HOLES is non-NIL, specific methods attempt, if applicable, 
 to preserve the data surrounding the written BIOABLE's regions.
 The generic method specifically does not try to do that.
 BEFORE-FN, when non-NIL, is called before each extent write
 with two arguments: the output STREAM and extent.")
-  (:method ((o bioable) (extents list) &key preserve-around before-fn (stream t))
-    (declare (ignore preserve-arounds))
+  (:method ((o bioable) (extents list) &key preserve-holes before-fn (stream t))
+    (declare (ignore preserve-holes))
     (dolist (e extents)
       (funcall (or before-fn #'values) e stream)
       (write-block o (extent-base e) (extent-data e)))

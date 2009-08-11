@@ -74,14 +74,14 @@
    #:aligned-4 #:aligned-16
    #:check-size-alignment #:check-address-alignment
    ;; extent.lisp
-   #:baseless-extent #:extent #:make-extent #:extent-base #:extent-data #:extent-length #:extent-end #:point-extent-base-p #:point-in-extent-p #:extents-intersect-p
+   #:baseless-extent #:extent #:make-extent #:base #:size #:end #:extent-data #:inp #:intersectp
+   #:coerce-to-sequence
+   #:subextent* #:subextent-abs* #:subextent #:subextent-abs
    #:split-extent #:with-split-extent
-   #:rebase-extent #:rebase-extent-inplace #:coerce-extent #:coerce-extent-inplace
+   #:extent-mask
+   #:rebase #:nrebase #:coerce-extent #:ncoerce-extent
    #:extent-data-equalp #:extent-equalp
    #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent
-   #:extent-spec-base #:extent-spec-length #:extent-spec-length
-   #:rebase-extent-spec
-   #:subextent #:subextent-extent #:subextent-parent #:subextent-absolutize #:subextent-relativize
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe
@@ -105,7 +105,5 @@
    ;; packages.lisp
    #:mar #:export-unmarred
    #:tunnel-package
-   ;; types.lisp
-   #:coerce-to-sequence
    ;; to-expunge.lisp
    ))

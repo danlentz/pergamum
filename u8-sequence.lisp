@@ -217,24 +217,24 @@
         (always (= (aref a1 i) (aref a2 i)))))
 
 (defun align-extend-u8-extent (alignment extent)
-  (with-alignment (aligned-base prehead) alignment (extent-base extent)
-    (with-alignment (aligned-end tail posttail) alignment (extent-end extent)
-      (if (and (= aligned-base (extent-base extent))
-               (= aligned-end (extent-end extent)))
+  (with-alignment (aligned-base prehead) alignment (base extent)
+    (with-alignment (aligned-end tail posttail) alignment (end extent)
+      (if (and (= aligned-base (base extent))
+               (= aligned-end (end extent)))
           extent
           (make-extent 'extent aligned-base
                        #-ecl
                        (concatenate '(simple-array (unsigned-byte 8) 1)
-                                    (unless (= aligned-base (extent-base extent)) (make-list prehead :initial-element 0))
+                                    (unless (= aligned-base (base extent)) (make-list prehead :initial-element 0))
                                     (extent-data extent)
-                                    (unless (= aligned-end (extent-end extent)) (make-list posttail :initial-element 0)))
+                                    (unless (= aligned-end (end extent)) (make-list posttail :initial-element 0)))
                        #+ecl
-                       (make-array (+ prehead (extent-length extent) posttail)
+                       (make-array (+ prehead (size extent) posttail)
                                    :element-type '(unsigned-byte 8)
                                    :initial-contents (concatenate 'vector
-                                                                  (unless (= aligned-base (extent-base extent)) (make-list prehead :initial-element 0))
+                                                                  (unless (= aligned-base (base extent)) (make-list prehead :initial-element 0))
                                                                   (extent-data extent)
-                                                                  (unless (= aligned-end (extent-end extent)) (make-list posttail :initial-element 0)))))))))
+                                                                  (unless (= aligned-end (end extent)) (make-list posttail :initial-element 0)))))))))
 
 (defun write-column-value (stream i x) 
   (format stream "~A" x stream)

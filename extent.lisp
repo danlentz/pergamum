@@ -21,7 +21,7 @@
 
 (defmethod print-object ((o extent) stream)
   (print-unreadable-object (o stream)
-    (format stream "EXTENT ~X:~X" (extent-base o) (end o))))
+    (format stream "~A ~X:~X" (type-of o) (extent-base o) (end o))))
 
 (defun make-extent (type base vector &rest keys &key (element-type (array-element-type vector) element-type-p) &allow-other-keys)
   "Make an extent of TYPE with BASE and a data VECTOR with ELEMENT-TYPE,

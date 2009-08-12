@@ -14,9 +14,9 @@
 
 (defun check-extent (extent)
   "See if EXTENT is a valid extentile."
-  (unless (etypecase extentile
-            (cons (and (real (car extentile)) (real (cdr extentile)) (>= (cdr extentile) 0)))
-            (extent (and (real (extent-base extent)) (typep (extent-data extent) 'vector))))
+  (unless (etypecase extent
+            (cons (and (realp (car extent)) (realp (cdr extent)) (>= (cdr extent) 0)))
+            (extent (and (realp (extent-base extent)) (typep (extent-data extent) 'vector))))
     (error "~@<~S is neither a valid extent nor a valid extent spec.~:@>" extent)))
 
 (defmethod print-object ((o extent) stream)
@@ -76,7 +76,7 @@ the result is an extent spec."
 
 (defun inp (extent p)
   "Given EXTENT, see if absolute value P is within it."
-  (declare (type extentile extentile) (type integer p))
+  (declare (type extentile extent) (type integer p))
   (let ((base (base extent)))
     (and (>= p base) (< p (+ base (size extent))))))
 

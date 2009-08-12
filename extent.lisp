@@ -110,7 +110,7 @@ of EXTENT. The returned extent is of most generic type."
   (if (consp extent)
       (extent (+ (car extent) start) (- (or end (cdr extent)) start))
       (make-extent 'extent (+ (extent-base extent) start)
-                   (subseq (extent-data extent) start (or end (array-dimension-size (extent-data extent) 0))))))
+                   (subseq (extent-data extent) start (or end (array-dimension (extent-data extent) 0))))))
 
 (defun subextent (extent spec)
   "Produce a subextent covering a part of EXTENT specified by SPEC,
@@ -212,8 +212,8 @@ and their base addresses match as well."
 (defmacro do-extent-spec-aligned-blocks (alignment (addr len spec) &body body)
   "Execute body with ADDR being set to all successive beginnings of ALIGNMENT-aligned blocks covering the extent specified by SPEC."
   (once-only (alignment spec)
-    `(iter (for ,addr from (align-down ,alignment (extent-spec-base ,spec)) below (extent-spec-end ,spec) by ,alignment)
-           (for ,len = (min ,alignment (- (extent-spec-end ,spec) ,addr)))
+    `(iter (for ,addr from (align-down ,alignment (base ,spec)) below (end ,spec) by ,alignment)
+           (for ,len = (min ,alignment (- (end ,spec) ,addr)))
            ,@body)))
 
 (defmacro with-aligned-extent-spec-pieces (alignment (prehead head body tail &optional posttail) extent-spec &body innards)

@@ -211,11 +211,6 @@
 	:for shift :downfrom 0 :by 8
      :do (setf (aref array (+ offset i)) (logand #xff (ash val shift)))))
 
-(defun array-displacement-equalp (a1 a2 offset count)
-  (iter (for i from offset)
-        (repeat count)
-        (always (= (aref a1 i) (aref a2 i)))))
-
 (defun align-extend-u8-extent (alignment extent)
   (with-alignment (aligned-base prehead) alignment (base extent)
     (with-alignment (aligned-end tail posttail) alignment (end extent)
@@ -241,7 +236,7 @@
   (when (= #x3 (logand i #x3))
     (format stream " " stream)))
 
-(defun write-column (stream vector base)
+(defun write-16byte-hex-column (stream vector base)
   (dotimes (i 16) (write-column-value stream i (format nil "~2,'0X" (aref vector (+ base i))))))
 
 (defun write-u8-16-segment (stream vector left right length headp)
@@ -266,12 +261,13 @@
   (let ((extremity (if headp base (+ base length))))
     (with-alignment (granule-base left right mask) 16 extremity
       (unless (= granule-base extremity)
-        (unless (array-displacement-equalp baseline actual (if headp 0 (- length left)) (if headp right left))
-          (format stream "~&~8,'0X:  => " granule-base)
-          (write-u8-16-segment stream baseline left right length headp)
-          (format stream " <= ")
-          (write-u8-16-segment stream actual left right length headp)
-          (format stream "~%"))))))
+        (let ((start (if headp 0 (- length left))))
+          (unless (vector-= baseline actual start (+ start (if headp right left)))
+            (format stream "~&~8,'0X:  => " granule-base)
+            (write-u8-16-segment stream baseline left right length headp)
+            (format stream " <= ")
+            (write-u8-16-segment stream actual left right length headp)
+            (format stream "~%")))))))
 
 (defun print-u8-sequence (stream vector &key (address 0) &aux (base address))
   (print-u8-extremity stream vector base t)
@@ -281,7 +277,7 @@
         (iter (for line below (ash core-length -4))
               (for internal from head by 16)
               (format stream "~&~8,'0X:  " (+ base internal))
-              (write-column stream vector internal)
+              (write-16byte-hex-column stream vector internal)
               (format stream "~%")))))
   (print-u8-extremity stream vector base nil))
 
@@ -295,12 +291,12 @@
             (core-length (- (length baseline) head tail)))
         (iter (for line below (ash core-length -4))
               (for internal from head by 16)
-              (unless (array-displacement-equalp baseline actual internal 16)
+              (unless (vector-= baseline actual internal (+ internal 16))
                 (unless (and error-report-limit (>= (incf errors) error-report-limit))
                   (format stream "~&~8,'0X:  => " (+ base internal))
-                  (write-column stream baseline internal)
+                  (write-16byte-hex-column stream baseline internal)
                   (format stream " <= ")
-                  (write-column stream actual internal)
+                  (write-16byte-hex-column stream actual internal)
                   (format stream " ~2F% errors~%" (/ errors (1+ line) 0.01))))
               (finally (return errors))))))
   (print-u8-extremity-diff stream baseline actual base nil))

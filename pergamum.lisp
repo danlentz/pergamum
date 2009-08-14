@@ -53,6 +53,13 @@
    specifiers. Example: (funcall (order > 1 0) 1 2) => NIL."
    (emit-order t fnspec order)))
 
+(defun vector-= (a1 a2 &optional (start 0) end)
+  "Determine whether subsequences of vectors A1 and A2 test positively,
+according to #'=, elementwise, in the range determined by START and END.
+When END is NIL, it is interpreted as the minimum of lengths of A1 and A2."
+  (iter (for i from start below (or end (min (length a1) (length a2))))
+        (always (= (aref a1 i) (aref a2 i)))))
+
 (defun ensure-destructurisation (spec form)
   (declare (list spec))
   (cond ((atom form) `(,@(iter (for i below (length spec)) (collect `(nth ,i ,form)))))

@@ -44,6 +44,7 @@
    #:quote-when #:quote-if-non-self-evaluating
    #:op-parameter-destructurer
    #:order #:order-funcalling
+   #:vector-=
    #:ensure-destructurisation #:destructure-binding-form-body #:destructure-def-body
    #:prepend
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission

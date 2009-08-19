@@ -129,7 +129,7 @@ as absolute end of EXTENT. The returned extent is of most generic type."
   "Produce a subextent covering a part of EXTENT specified by SPEC, whose 
 size might be NIL, which is interpreted as the end of EXTENT. The returned
 extent is of most generic type."
-  (subextent-abs extent (car spec) (cdr spec)))
+  (subextent-abs* extent (car spec) (cdr spec)))
 
 (defun extent-mask (extent extents)
   "Produce an extentile list consisting of EXTENT's subextentiles not present

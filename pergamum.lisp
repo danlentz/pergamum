@@ -14,18 +14,6 @@
 (define-modify-macro xorf (&rest params) xor)
 (define-modify-macro notf () not)
 
-(defun quote-when (c form)
-  (if c (list 'quote form) form))
-
-(defun quote-if-non-self-evaluating (form)
-  (if (or (typep form 'cons) (typep form 'symbol)) (list 'quote form) form))
-
-(defmacro op-parameter-destructurer ((op params) form &body body)
-  (once-only (form)
-    `(let (,@(when op `((,op (if (consp ,form) (first ,form) ,form))))
-	   ,@(when params `((,params (when (consp ,form) (rest ,form))))))
-       ,@body)))
-
 (labels ((emit-order (need-funcall-p fnspec order)
            (op-parameter-destructurer (fnsym length) fnspec
              (let* ((length (or (car length) (length order)))
@@ -59,70 +47,6 @@ according to #'=, elementwise, in the range determined by START and END.
 When END is NIL, it is interpreted as the minimum of lengths of A1 and A2."
   (iter (for i from start below (or end (min (length a1) (length a2))))
         (always (= (aref a1 i) (aref a2 i)))))
-
-(defun ensure-destructurisation (spec form)
-  (declare (list spec))
-  (cond ((atom form) `(,@(iter (for i below (length spec)) (collect `(nth ,i ,form)))))
-        ((= (length form) (length spec)) form)
-        (t (error "form ~S doesn't match destructurisation ~S" form spec))))
-
-(defun emit-declaration (type symbols)
-  (when symbols (list (list* type symbols))))
-
-(defun emit-declarations (&key ignore special)
-  (when (or ignore special)
-    (append (emit-declaration 'ignore ignore)
-            (emit-declaration 'special special))))
-
-(defun prepend (something list &key (test (complement #'null)) (key #'identity))
-  (if (funcall test (funcall key something))
-      (list* something list)
-      list))
-
-(defun emit-binding-form-body (body &key declarations)
-  (prepend (list* 'declare declarations) body :key #'rest))
-
-(defun destructure-binding-form-body (body)
-  (labels ((do-destructure (body declarations)
-             (if (and (consp body) (consp (car body)) (eq (caar body) 'declare))
-                 (do-destructure (cdr body) (append declarations (cdar body)))
-                 (values declarations body))))
-    (do-destructure body nil)))
-
-(defun destructure-def-body (body)
-  (destructuring-bind (documentation body) (if (stringp (first body))
-                                               (list (first body) (rest body))
-                                               (list nil body))
-    (multiple-value-bind (declarations body) (destructure-binding-form-body body)
-      (values documentation declarations body))))
-
-(defun emit-let (bindings body &key declarations)
-  (declare (list bindings))
-  (if bindings
-      (append `(let ,bindings)
-	      (emit-binding-form-body body :declarations declarations))
-      `(progn ,@body)))
-
-(defun emit-lambda-body (body &key documentation declarations)
-  (prepend documentation (emit-binding-form-body body :declarations declarations)))
-
-(defun emit-lambda (list body &key documentation declarations)
-  (append `(lambda ,list)
-	  (emit-lambda-body body :documentation documentation :declarations declarations)))
-
-(defun emit-named-lambda (name list body &key documentation declarations)
-  `(labels ((,name ,list
-	      ,@(emit-lambda-body body :documentation documentation :declarations declarations))) #',name))
-
-(defmacro with-named-lambda-emission ((name lambda-list &key documentation declarations) &body body)
-  `(emit-named-lambda ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
-
-(defun emit-defun (name list body &key documentation declarations)
-  `(defun ,name ,list
-     ,@(emit-lambda-body body :documentation documentation :declarations declarations)))
-
-(defmacro with-defun-emission ((name lambda-list &key documentation declarations) &body body)
-  `(emit-defun ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
 
 (defmacro measuring-time-lapse-1 ((time-var) measured-form &body body)
   "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to

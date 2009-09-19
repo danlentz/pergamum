@@ -135,3 +135,8 @@ the bindings NOT in effect."
   "Same as FORMAT, but also call FINISH-OUTPUT on STREAM."
   (apply #'format stream format-control args)
   (finish-output stream))
+
+(defun prepend (something list &key (test (complement #'null)) (key #'identity))
+  (if (funcall test (funcall key something))
+      (list* something list)
+      list))

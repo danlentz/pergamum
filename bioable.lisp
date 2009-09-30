@@ -59,7 +59,7 @@ with two arguments: the output STREAM and extent.")
   (:method ((o bioable) (extents list) &key preserve-holes before-fn (stream t))
     (declare (ignore preserve-holes))
     (dolist (e extents)
-      (funcall (or before-fn #'values) e stream)
+      (funcall (or before-fn #'values) stream e)
       (write-block o (extent-base e) (extent-data e)))
     extents))
 

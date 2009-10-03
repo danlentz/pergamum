@@ -76,22 +76,28 @@
                             ,@(remove-from-plist options :direction :if-does-not-exist :if-exists))
      ,@body))
 
-(defun symlink-to-p (symlink path)
-  "See if SYMLINK does point at PATH."
+(defun remove-file (p)
+  #+sbcl (sb-posix:unlink p)
+  #-sbcl (error "~@<Not implemented: REMOVE-FILE.~:@>"))
+
+(defun symlink-to-p (symlink target)
+  "See if SYMLINK does point at TARGET."
   (if-let ((destination (file-exists-p symlink)))
-    (pathname-match-p destination path)))
+    (pathname-match-p destination target)))
+
+(defun make-symlink (symlink target)
+  #+sbcl (sb-posix:symlink target symlink)
+  #-sbcl (error "~@<Not implemented: MAKE-SYMLINK.~:@>"))
 
 (defun symlink-target-file-present-p (symlink)
   "See if the file SYMLINK points at exists, and return that."
   (when-let ((destination (file-exists-p symlink)))
-    (file-exists-p destination)))
+    (not (pathname-match-p destination symlink))))
 
 (defun ensure-symlink (symlink target)
   "Ensure that file at SYMLINK is a symbolic link pointing to TARGET."
-  #-win32
   (unless (symlink-to-p symlink target)
     (when (file-exists-p symlink)
-      (delete-file symlink))
-    #+sbcl (sb-posix:symlink target symlink)
-    t)
-  #+win32 nil)
+      (remove-file symlink))
+    (make-symlink symlink target)
+    t))

@@ -206,6 +206,10 @@ and their base addresses match as well."
   (:method (stream (o extent))
     (print (cons (extent-base o) (extent-data o)) stream)))
 
+(defun extent-reader (stream)
+  (destructuring-bind (base . data) (read stream)
+    (make-extent 'extent base data :element-type '(unsigned-byte 8))))
+
 ;;;
 ;;; Utilities. Crap ones, admittedly.
 ;;;

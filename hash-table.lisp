@@ -88,13 +88,15 @@
   (:report (lambda (condition stream)
              (format stream "~@<~A ~S not defined in ~S~:@>" (slot-value condition 'type) (cell-error-name condition) (slot-value condition 'container)))))
 
-(defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn
+(defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
                                spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
                                (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace accessible via the first parameter of the accessors.
 
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
    with the name also being optionally transformable via NAME-TRANSFORM-FN.
+   As a variation on this, CONTAINER-SLOT specifies that the container storage
+   is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
 
    Compound (i.e. of type CONS) names can be used by providing 
    the COMPOUND-NAME-P key. Spread compound name specification
@@ -115,7 +117,7 @@
     :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
                 in the coercer type dispatch
     :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
-    :PARAMETRIZE-CONTAINER, :SPREAD-COMPOUND-NAME-P - see above
+    :SPREAD-COMPOUND-NAME-P - see above
     :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
     :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
                                          defaults to :ERROR
@@ -142,7 +144,9 @@
   (declare (type (member :continue :warn :error) if-exists)
            (type (member :continue :error) if-spread-compound-does-not-exist)
            (type (or null string) description))
-  (let* ((container-form (if container-transform `(,container-transform container) 'container))
+  (let* ((container-form (cond (container-transform `(,container-transform container))
+                               (container-slot `(slot-value container ',container-slot))
+                               (t 'container)))
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
@@ -189,13 +193,15 @@
                `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" container-transform) (fn container &rest parameters)
                    (apply #'maphash-values fn ,container-form parameters)))))))
 
-(defmacro define-root-container (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn
+(defmacro define-root-container (container-name accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
                                  spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
                                  (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace stored in CONTAINER-NAME.
 
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
    with the name also being optionally transformable via NAME-TRANSFORM-FN.
+   As a variation on this, CONTAINER-SLOT specifies that the container storage
+   is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
 
    Compound (i.e. of type CONS) names can be used by providing 
    the COMPOUND-NAME-P key. Spread compound name specification
@@ -216,7 +222,7 @@
     :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
                 in the coercer type dispatch
     :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
-    :PARAMETRIZE-CONTAINER, :SPREAD-COMPOUND-NAME-P - see above
+    :SPREAD-COMPOUND-NAME-P - see above
     :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
     :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
                                          defaults to :ERROR
@@ -243,7 +249,9 @@
   (declare (type (member :continue :warn :error) if-exists)
            (type (member :continue :error) if-spread-compound-does-not-exist)
            (type (or null string) description))
-  (let* ((container-form (if container-transform `(,container-transform ,container-name) container-name))
+  (let* ((container-form (cond (container-transform `(,container-transform ,container-name))
+                               (container-slot `(slot-value ,container-name ',container-slot))
+                               (t container-name)))
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))

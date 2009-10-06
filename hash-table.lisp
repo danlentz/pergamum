@@ -93,55 +93,55 @@
                                (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace accessible via the first parameter of the accessors.
 
-   Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
-   with the name also being optionally transformable via NAME-TRANSFORM-FN.
-   As a variation on this, CONTAINER-SLOT specifies that the container storage
-   is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
+Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
+with the name also being optionally transformable via NAME-TRANSFORM-FN.
+As a variation on this, CONTAINER-SLOT specifies that the container storage
+is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
 
-   Compound (i.e. of type CONS) names can be used by providing 
-   the COMPOUND-NAME-P key. Spread compound name specification
-   (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
-   instead of '(accessor '(name-component-1 name-component-2 ...))
-   can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
-   REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
-   coerce names/objects to objects, remove, iterate and map over namespace 
-   entries.
+Compound (i.e. of type CONS) names can be used by providing 
+the COMPOUND-NAME-P key. Spread compound name specification
+(i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
+instead of '(accessor '(name-component-1 name-component-2 ...))
+can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
+REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
+coerce names/objects to objects, remove, iterate and map over namespace 
+entries.
 
-   IF-DOES-NOT-EXIST, when specified, seals the runtime behaviour of the
-   accessor to the value of the key.
-   Note that spread compound name reader methods do not allow runtime
-   customisation of the IF-DOES-NOT-EXIST accessor action, and relies on the
-   compile-time value of IF-DOES-NOT-EXIST passed to DEFINE-SUBCONTAINER,
-   absent which it defaults to :ERROR. 
+IF-DOES-NOT-EXIST, when specified, seals the runtime behaviour of the
+accessor to the value of the key.
+Note that spread compound name reader methods do not allow runtime
+customisation of the IF-DOES-NOT-EXIST accessor action, and relies on the
+compile-time value of IF-DOES-NOT-EXIST passed to DEFINE-SUBCONTAINER,
+absent which it defaults to :ERROR. 
 
-   Defined keywords:
-    :TYPE - type of objects stored through defined accessor, 
-            defaults to ACCESSOR-NAME
-    :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
-                in the coercer type dispatch
-    :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
-    :SPREAD-COMPOUND-NAME-P - see above
-    :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
-    :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
-    :REMOVER - whether to define a function for removal of namespace entries.
-              The name chose is the value of the keyword argument, unless
-              it is T, in which case it is REMOVE-TYPE
-    :ITERATOR - whether to define an iterator DO-... macro
-              The name chosen is the value of the keyword argument, unless
-              it is T, in which case it is DO-CONTAINER-TRANSFORM.
-    :MAPPER - whether (and how) to define a mapper function.
-              The name chosen is the value of the keyword argument, unless
-              it is T, in which case it is MAP-CONTAINER-TRANSFORM.
-    :DESCRIPTION - specify the printed description of the stored semantic 
-              objects.
-    :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
-    :ITERATOR-BIND-KEY - whether to bind the key in the defined iterator
+Defined keywords:
+ :TYPE - type of objects stored through defined accessor, 
+         defaults to ACCESSOR-NAME
+ :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
+             in the coercer type dispatch
+ :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
+ :SPREAD-COMPOUND-NAME-P - see above
+ :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
+ :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
+ :REMOVER - whether to define a function for removal of namespace entries.
+           The name chose is the value of the keyword argument, unless
+           it is T, in which case it is REMOVE-TYPE
+ :ITERATOR - whether to define an iterator DO-... macro
+           The name chosen is the value of the keyword argument, unless
+           it is T, in which case it is DO-CONTAINER-TRANSFORM.
+ :MAPPER - whether (and how) to define a mapper function.
+           The name chosen is the value of the keyword argument, unless
+           it is T, in which case it is MAP-CONTAINER-TRANSFORM.
+ :DESCRIPTION - specify the printed description of the stored semantic 
+           objects.
+ :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
+ :ITERATOR-BIND-KEY - whether to bind the key in the defined iterator
 
-   Typical usages include:
-     - variable namespace holder, namespace accessed directly:
-       namespace-accessor-name
-     - variable namespace holder, namespaces accessed via selector:
-       namespace-accessor-name :container-transform SELECTOR"
+Typical usages include:
+  - variable namespace holder, namespace accessed directly:
+    namespace-accessor-name
+  - variable namespace holder, namespaces accessed via selector:
+    namespace-accessor-name :container-transform SELECTOR"
   (declare (type (member :continue :warn :error) if-exists)
            (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))
@@ -206,57 +206,57 @@
                                  (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace stored in CONTAINER.
 
-   Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
-   with the name also being optionally transformable via NAME-TRANSFORM-FN.
-   As a variation on this, CONTAINER-SLOT specifies that the container storage
-   is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
+Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
+with the name also being optionally transformable via NAME-TRANSFORM-FN.
+As a variation on this, CONTAINER-SLOT specifies that the container storage
+is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
 
-   Compound (i.e. of type CONS) names can be used by providing 
-   the COMPOUND-NAME-P key. Spread compound name specification
-   (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
-   instead of '(accessor '(name-component-1 name-component-2 ...))
-   can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
-   REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
-   coerce names/objects to objects, remove, iterate and map over namespace 
-   entries.
+Compound (i.e. of type CONS) names can be used by providing 
+the COMPOUND-NAME-P key. Spread compound name specification
+(i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
+instead of '(accessor '(name-component-1 name-component-2 ...))
+can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
+REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
+coerce names/objects to objects, remove, iterate and map over namespace 
+entries.
 
-   IF-DOES-NOT-EXIST, when specified, seals the runtime behaviour of the
-   accessor to the value of the key.
-   Note that spread compound name reader methods do not allow runtime
-   customisation of the IF-DOES-NOT-EXIST accessor action, and relies on the
-   compile-time value of IF-DOES-NOT-EXIST passed to DEFINE-SUBCONTAINER,
-   absent which it defaults to :ERROR. 
+IF-DOES-NOT-EXIST, when specified, seals the runtime behaviour of the
+accessor to the value of the key.
+Note that spread compound name reader methods do not allow runtime
+customisation of the IF-DOES-NOT-EXIST accessor action, and relies on the
+compile-time value of IF-DOES-NOT-EXIST passed to DEFINE-SUBCONTAINER,
+absent which it defaults to :ERROR. 
 
-   Defined keywords:
-    :TYPE - type of objects stored through defined accessor, 
-            defaults to ACCESSOR-NAME
-    :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
-                in the coercer type dispatch
-    :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
-    :SPREAD-COMPOUND-NAME-P - see above
-    :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
-    :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
-                                         defaults to :ERROR
-    :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
-    :REMOVER - whether to define a function for removal of namespace entries.
-              The name chose is the value of the keyword argument, unless
-              it is T, in which case it is REMOVE-TYPE
-    :ITERATOR - whether to define an iterator DO-... macro
-              The name chosen is the value of the keyword argument, unless
-              it is T, in which case it is DO-CONTAINER-TRANSFORM.
-    :MAPPER - whether (and how) to define a mapper function.
-              The name chosen is the value of the keyword argument, unless
-              it is T, in which case it is MAP-CONTAINER-TRANSFORM.
-    :DESCRIPTION - specify the printed description of the stored semantic 
-              objects.
-    :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
-    :ITERATOR-BIND-KEY - whether to bind the key in the defined iterator
+Defined keywords:
+ :TYPE - type of objects stored through defined accessor, 
+         defaults to ACCESSOR-NAME
+ :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
+             in the coercer type dispatch
+ :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
+ :SPREAD-COMPOUND-NAME-P - see above
+ :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
+ :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
+                                      defaults to :ERROR
+ :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
+ :REMOVER - whether to define a function for removal of namespace entries.
+           The name chose is the value of the keyword argument, unless
+           it is T, in which case it is REMOVE-TYPE
+ :ITERATOR - whether to define an iterator DO-... macro
+           The name chosen is the value of the keyword argument, unless
+           it is T, in which case it is DO-CONTAINER-TRANSFORM.
+ :MAPPER - whether (and how) to define a mapper function.
+           The name chosen is the value of the keyword argument, unless
+           it is T, in which case it is MAP-CONTAINER-TRANSFORM.
+ :DESCRIPTION - specify the printed description of the stored semantic 
+           objects.
+ :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
+ :ITERATOR-BIND-KEY - whether to bind the key in the defined iterator
 
-   Typical usages include:
-     - global namespace holder, namespace accessed directly:
-       *NAMESPACE-HOLDER* namespace-accessor-name
-     - global namespace holder, namespaces accessed via selector:
-       *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR"
+Typical usages include:
+  - global namespace holder, namespace accessed directly:
+    *NAMESPACE-HOLDER* namespace-accessor-name
+  - global namespace holder, namespaces accessed via selector:
+    *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR"
   (declare (type (member :continue :warn :error) if-exists)
            (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))

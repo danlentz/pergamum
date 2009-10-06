@@ -177,7 +177,7 @@
                      (,type spec)
                      (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) container spec) `(,accessor-name container spec)))))))
        ,@(when iterator
-               `((defmacro ,(cond (iterator iterator)
+               `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
                                   (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
                      ((var container) &body body)
@@ -280,7 +280,7 @@
                      (,type spec)
                      (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) spec) `(,accessor-name spec)))))))
        ,@(when iterator
-               `((defmacro ,(cond (iterator iterator)
+               `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
                                   (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
                      ((var) &body body)

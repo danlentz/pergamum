@@ -90,7 +90,7 @@
 
 (defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn
                                spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
-                               (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol))
+                               (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace accessible via the first parameter of the accessors.
 
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
@@ -132,6 +132,7 @@
     :DESCRIPTION - specify the printed description of the stored semantic 
               objects.
     :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
+    :ITERATOR-BIND-KEY - whether to bind the key in the defined iterator
 
    Typical usages include:
      - variable namespace holder, namespace accessed directly:
@@ -180,17 +181,17 @@
                `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
                                   (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
-                     ((var container) &body body)
+                     ((,@(when iterator-bind-key '(key)) var container) &body body)
                    ;; IQ test: do you understand ,',? I don't.
-                   ``(iter (for (nil ,var) in-hashtable (,',container-transform ,container))
-                           ,@body))))
+                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable (,',container-transform ,container))
+                          ,@body))))
        ,@(when mapper
                `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" container-transform) (fn container &rest parameters)
                    (apply #'maphash-values fn ,container-form parameters)))))))
 
 (defmacro define-root-container (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn
                                  spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
-                                 (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol))
+                                 (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace stored in CONTAINER-NAME.
 
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
@@ -232,6 +233,7 @@
     :DESCRIPTION - specify the printed description of the stored semantic 
               objects.
     :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
+    :ITERATOR-BIND-KEY - whether to bind the key in the defined iterator
 
    Typical usages include:
      - global namespace holder, namespace accessed directly:
@@ -283,9 +285,9 @@
                `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
                                   (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
-                     ((var) &body body)
+                     ((,@(when iterator-bind-key '(key)) var) &body body)
                    ;; IQ test: do you understand ,',? I don't.
-                   `(iter (for (nil ,var) in-hashtable ,',container-form)
+                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,',container-form)
                           ,@body))))
        ,@(when mapper
                `((defun ,(if container-transform

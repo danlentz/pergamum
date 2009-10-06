@@ -88,12 +88,10 @@
   (:report (lambda (condition stream)
              (format stream "~@<~A ~S not defined in ~S~:@>" (slot-value condition 'type) (cell-error-name condition) (slot-value condition 'container)))))
 
-(defmacro define-container-hash-accessor (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn parametrize-container
-                                          spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
-                                          (description (string-downcase (string type))) type-allow-nil-p)
-  "Define a namespace, either stored in CONTAINER-NAME, or accessible via 
-   the first parameter of the accessors, when PARAMETRIZE-CONTAINER 
-   is specified.
+(defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn
+                               spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
+                               (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol))
+  "Define a namespace accessible via the first parameter of the accessors.
 
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
    with the name also being optionally transformable via NAME-TRANSFORM-FN.
@@ -107,9 +105,115 @@
    coerce names/objects to objects, remove, iterate and map over namespace 
    entries.
 
+   Note that spread compound name reader methods do not allow runtime
+   customisation of the IF-DOES-NOT-EXIST action, and that the
+   compile-time IF-SPREAD-COMPOUND-DOES-NOT-EXIST must be used instead. 
+
    Defined keywords:
     :TYPE - type of objects stored through defined accessor, 
             defaults to ACCESSOR-NAME
+    :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
+                in the coercer type dispatch
+    :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
+    :PARAMETRIZE-CONTAINER, :SPREAD-COMPOUND-NAME-P - see above
+    :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
+    :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
+                                         defaults to :ERROR
+    :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
+    :REMOVER - whether to define a function for removal of namespace entries.
+              The name chose is the value of the keyword argument, unless
+              it is T, in which case it is REMOVE-TYPE
+    :ITERATOR - whether to define an iterator DO-... macro
+              The name chosen is the value of the keyword argument, unless
+              it is T, in which case it is DO-CONTAINER-TRANSFORM.
+    :MAPPER - whether (and how) to define a mapper function.
+              The name chosen is the value of the keyword argument, unless
+              it is T, in which case it is MAP-CONTAINER-TRANSFORM.
+    :DESCRIPTION - specify the printed description of the stored semantic 
+              objects.
+    :TYPE-ALLOW-NIL-P - Whether to allow store of NIL values.
+
+   Typical usages include:
+     - variable namespace holder, namespace accessed directly:
+       namespace-accessor-name
+     - variable namespace holder, namespaces accessed via selector:
+       namespace-accessor-name :container-transform SELECTOR"
+  (declare (type (member :continue :warn :error) if-exists)
+           (type (member :continue :error) if-spread-compound-does-not-exist)
+           (type (or null string) description))
+  (let* ((container-form (if container-transform `(,container-transform container) 'container))
+         (hash-key-form (cond ((null name-transform-fn) 'name)
+                              ((null compound-name-p) `(,name-transform-fn name))
+                              (t `(mapcar #',name-transform-fn name)))))
+    `(progn
+       ,@(if spread-compound-name-p
+             `((defun ,accessor-name (container &rest name)
+                 (or (gethash ,hash-key-form ,container-form)
+                     ,@(ecase if-spread-compound-does-not-exist
+                              (:error
+                               `((error 'container-missing-cell-error :type ,description :name name :container container)))
+                              (:continue nil)))))
+             `((defun ,accessor-name (container name &key (if-does-not-exist :error))
+                 (or (gethash ,hash-key-form ,container-form)
+                     (ecase if-does-not-exist
+                       (:error (error 'container-missing-cell-error :type ,description :name name :container container))
+                       (:continue nil))))))
+       (defun (setf ,accessor-name) (val container ,@(when spread-compound-name-p '(&rest)) name)
+                 (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
+                 ,@(unless (eq if-exists :continue)
+                           `((when (,accessor-name container name :if-does-not-exist :continue)
+                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-sub-container))))
+                 (setf (gethash ,hash-key-form ,container-form) val))
+       ,@(when-let ((remover remover)
+                    (name (if (eq remover t)
+                              (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
+                              remover)))
+                   `((defun ,name (container ,@(when spread-compound-name-p '(&rest)) name)
+                       (remhash ,hash-key-form ,container-form))))
+       ,@(when coercer
+               `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (container ,@(when spread-compound-name-p '(&rest)) spec)
+                   (declare (type (or ,type symbol) spec))
+                   (etypecase spec
+                     (,type spec)
+                     (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) container spec) `(,accessor-name container spec)))))))
+       ,@(when iterator
+               `((defmacro ,(cond (iterator iterator)
+                                  (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
+                                  (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
+                     ((var container) &body body)
+                   ;; IQ test: do you understand ,',? I don't.
+                   ``(iter (for (nil ,var) in-hashtable (,',container-transform ,container))
+                           ,@body))))
+       ,@(when mapper
+               `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" container-transform) (fn container &rest parameters)
+                   (apply #'maphash-values fn ,container-form parameters)))))))
+
+(defmacro define-root-container (container-name accessor-name &key (type accessor-name) compound-name-p container-transform name-transform-fn
+                                 spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
+                                 (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol))
+  "Define a namespace stored in CONTAINER-NAME.
+
+   Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
+   with the name also being optionally transformable via NAME-TRANSFORM-FN.
+
+   Compound (i.e. of type CONS) names can be used by providing 
+   the COMPOUND-NAME-P key. Spread compound name specification
+   (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
+   instead of '(accessor '(name-component-1 name-component-2 ...))
+   can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
+   REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
+   coerce names/objects to objects, remove, iterate and map over namespace 
+   entries.
+
+   Note that spread compound name reader methods do not allow runtime
+   customisation of the IF-DOES-NOT-EXIST action, and that the
+   compile-time IF-SPREAD-COMPOUND-DOES-NOT-EXIST must be used instead. 
+
+   Defined keywords:
+    :TYPE - type of objects stored through defined accessor, 
+            defaults to ACCESSOR-NAME
+    :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
+                in the coercer type dispatch
     :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
     :PARAMETRIZE-CONTAINER, :SPREAD-COMPOUND-NAME-P - see above
     :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
@@ -133,79 +237,61 @@
      - global namespace holder, namespace accessed directly:
        *NAMESPACE-HOLDER* namespace-accessor-name
      - global namespace holder, namespaces accessed via selector:
-       *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR
-     - variable namespace holder, namespace accessed directly:
-       IGNORED namespace-accessor-name :parametrize-container t
-     - variable namespace holder, namespaces accessed via selector:
-       IGNORED namespace-accessor-name :container-transform SELECTOR :parametrize-container t"
+       *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR"
   (declare (type (member :continue :warn :error) if-exists)
            (type (member :continue :error) if-spread-compound-does-not-exist)
            (type (or null string) description))
-  (let* ((container (if parametrize-container 'container container-name))
-         (container-form (if container-transform `(,container-transform ,container) container))
+  (let* ((container-form (if container-transform `(,container-transform ,container-name) container-name))
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
-    (when (and parametrize-container coercer)
-      (error "~@<cannot define coercers for accessors with parametrized containers in DEFINE-CONTAINER-ACCESSOR~:@>"))
     `(progn
        ,@(if spread-compound-name-p
-             `((defun ,accessor-name (,@(when parametrize-container `(,container)) &rest name)
+             `((defun ,accessor-name (&rest name)
                  (or (gethash ,hash-key-form ,container-form)
                      ,@(ecase if-spread-compound-does-not-exist
-                        (:error
-                         `((error 'container-missing-cell-error :type ,description :name name :container ,container)))
-                        (:continue nil)))))
-             `((defun ,accessor-name (,@(when parametrize-container `(,container)) name &key (if-does-not-exist :error))
+                              (:error
+                               `((error 'container-missing-cell-error :type ,description :name name :container ,container-name)))
+                              (:continue nil)))))
+             `((defun ,accessor-name (name &key (if-does-not-exist :error))
                  (or (gethash ,hash-key-form ,container-form)
                      (ecase if-does-not-exist
-                       (:error (error 'container-missing-cell-error :type ,description :name name :container ,container))
+                       (:error (error 'container-missing-cell-error :type ,description :name name :container ,container-name))
                        (:continue nil))))))
-       ,@(if spread-compound-name-p
-             `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) &rest name)
+       (defun (setf ,accessor-name) (val ,@(when spread-compound-name-p '(&rest)) name)
                  (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)
-                           `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
-                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-hash-table-accessor))))
-                 (setf (gethash ,hash-key-form ,container-form) val)))
-             `((defun (setf ,accessor-name) (val ,@(when parametrize-container `(,container)) name)
-                 (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
-                 ,@(unless (eq if-exists :continue)
-                           `((when (,accessor-name ,@(when parametrize-container `(,container)) name :if-does-not-exist :continue)
-                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-hash-table-accessor))))
-                 (setf (gethash ,hash-key-form ,container-form) val))))
+                           `((when (,accessor-name name :if-does-not-exist :continue)
+                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-root-container))))
+                 (setf (gethash ,hash-key-form ,container-form) val))
        ,@(when-let ((remover remover)
                     (name (if (eq remover t)
                               (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
                               remover)))
-          (if spread-compound-name-p
-              `((defun ,name (,@(when parametrize-container `(,container)) &rest name)
-                  (remhash ,hash-key-form ,container-form)))
-              `((defun ,name (,@(when parametrize-container `(,container)) name)
-                  (remhash ,hash-key-form ,container-form)))))
+                   (if spread-compound-name-p
+                       `((defun ,name (rest name)
+                           (remhash ,hash-key-form ,container-form)))
+                       `((defun ,name (name)
+                           (remhash ,hash-key-form ,container-form)))))
        ,@(when coercer
-           `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (spec)
-               (declare (type (or ,type symbol) spec))
-               (etypecase spec
-                 (,type spec)
-                 (symbol (,accessor-name spec))))))
+               `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (spec)
+                   (declare (type (or ,type symbol) spec))
+                   (etypecase spec
+                     (,type spec)
+                     (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) spec) `(,accessor-name spec)))))))
        ,@(when iterator
-          `((defmacro ,(cond (iterator iterator)
-                             (container-transform
-                              (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
-                             (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
-                ((var ,@(when parametrize-container `(,container))) &body body)
-              ;; IQ test: do you understand ,',? I don't.
-              ,(if parametrize-container
-                   ``(iter (for (nil ,var) in-hashtable (,',container-transform ,container))
-                           ,@body)
-                   ``(iter (for (nil ,var) in-hashtable ,',container)
-                           ,@body)))))
+               `((defmacro ,(cond (iterator iterator)
+                                  (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
+                                  (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
+                     ((var) &body body)
+                   ;; IQ test: do you understand ,',? I don't.
+                   `(iter (for (nil ,var) in-hashtable ,',container-form)
+                          ,@body))))
        ,@(when mapper
-           `((defun ,(if container-transform
-                         (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
-                         mapper) (fn ,@(when parametrize-container `(,container)) &rest parameters)
-               (apply #'maphash-values fn ,container-form parameters)))))))
+               `((defun ,(if container-transform
+                             (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
+                             mapper) (fn &rest parameters)
+                   (apply #'maphash-values fn ,container-form parameters)))))))
 
 (defun copy-hash-table-empty (table &key key test size rehash-size rehash-threshold)
   "Returns an empty copy of hash TABLE. The copy has the same properties

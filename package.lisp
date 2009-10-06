@@ -68,6 +68,7 @@
    ;; hash-table.lisp
    #:hash-table-next #:hash-table-pop #:hash-table-itearate
    #:xform-hash-table #:make-hash-table-injector #:hash-table-key-present-p #:maphash*
+   #:puthash-unique #:gethash-unique
    #:define-subcontainer #:define-root-container #:container-condition #:container-missing-cell-error #:copy-hash-table-empty #:with-empty-hash-containers
    ;; alignment.lisp
    #:alignment-condition #:address-misalignment #:size-misalignment

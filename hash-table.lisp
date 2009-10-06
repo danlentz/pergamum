@@ -80,6 +80,16 @@
         (when (satisfies-the-test v)
           (collect (funcall function v)))))
 
+(defun puthash-unique (key hash-table value)
+  "Only store VALUE under KEY in HASH-TABLE when there's nothing
+occupying KEY. The second return value indicates success."
+  (declare (type hash-table hash-table))
+  (multiple-value-bind (key present-p) (gethash key hash-table)
+    (unless present-p
+      (values (setf (gethash key hash-table) value)))))
+
+(defsetf gethash-unique puthash-unique)
+
 (define-condition container-condition ()
   ((container :initarg :container)))
 

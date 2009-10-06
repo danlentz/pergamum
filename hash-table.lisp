@@ -209,7 +209,9 @@ Typical usages include:
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
                      ((,@(when iterator-bind-key '(key)) var container) &body body)
                    ;; IQ test: do you understand ,',? I don't.
-                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable (,',container-transform ,container))
+                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform ,container))
+                                                                                             (container-slot ``(slot-value ,container ,'',container-slot))
+                                                                                             (t 'container)))
                           ,@body))))
        ,@(when mapper
                `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" container-transform) (fn container &rest parameters)
@@ -331,7 +333,9 @@ Typical usages include:
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
                      ((,@(when iterator-bind-key '(key)) var) &body body)
                    ;; IQ test: do you understand ,',? I don't.
-                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,',container-form)
+                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
+                                                                                             (container-slot ``(slot-value container ,'',container-slot))
+                                                                                             (t `',container)))
                           ,@body))))
        ,@(when mapper
                `((defun ,(if container-transform

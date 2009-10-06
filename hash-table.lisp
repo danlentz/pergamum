@@ -121,7 +121,7 @@ Defined keywords:
              in the coercer type dispatch
  :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
  :SPREAD-COMPOUND-NAME-P - see above
- :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
+ :IF-EXISTS - one of :ERROR, :WARN, :RETURN-NIL or :CONTINUE, defaults to :WARN
  :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
  :REMOVER - whether to define a function for removal of namespace entries.
            The name chose is the value of the keyword argument, unless
@@ -142,7 +142,7 @@ Typical usages include:
     namespace-accessor-name
   - variable namespace holder, namespaces accessed via selector:
     namespace-accessor-name :container-transform SELECTOR"
-  (declare (type (member :continue :warn :error) if-exists)
+  (declare (type (member :continue :return-nil :warn :error) if-exists)
            (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))
   (let* ((container-form (cond (container-transform `(,container-transform container))
@@ -175,8 +175,12 @@ Typical usages include:
                  (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)
                            `((when (nth-value 1 (gethash ,hash-key-form ,container-form))
-                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-sub-container))))
-                 (setf (gethash ,hash-key-form ,container-form) val))
+                               ,(ecase if-exists
+                                  (:return-nil `(return-from ,accessor-name))
+                                  (:warn `(warn-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-subcontainer)) 
+                                  (:error `(bad-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-subcontainer))))))
+                 (values (setf (gethash ,hash-key-form ,container-form) val)
+                         t))
        ,@(when-let ((remover remover)
                     (name (if (eq remover t)
                               (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
@@ -234,7 +238,7 @@ Defined keywords:
              in the coercer type dispatch
  :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
  :SPREAD-COMPOUND-NAME-P - see above
- :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
+ :IF-EXISTS - one of :ERROR, :WARN, :RETURN-NIL or :CONTINUE, defaults to :WARN
  :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
                                       defaults to :ERROR
  :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
@@ -257,7 +261,7 @@ Typical usages include:
     *NAMESPACE-HOLDER* namespace-accessor-name
   - global namespace holder, namespaces accessed via selector:
     *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR"
-  (declare (type (member :continue :warn :error) if-exists)
+  (declare (type (member :continue :return-nil :warn :error) if-exists)
            (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))
   (let* ((container-form (cond (container-transform `(,container-transform ,container))
@@ -290,8 +294,12 @@ Typical usages include:
                  (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)
                            `((when (nth-value 1 (gethash ,hash-key-form ,container-form))
-                               (,(ecase if-exists (:warn 'warn-redefinition) (:error 'bad-redefinition)) "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-root-container))))
-                 (setf (gethash ,hash-key-form ,container-form) val))
+                               ,(ecase if-exists
+                                  (:return-nil `(return-from ,accessor-name))
+                                  (:warn `(warn-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-root-container)) 
+                                  (:error `(bad-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-root-container))))))
+                 (values (setf (gethash ,hash-key-form ,container-form) val)
+                         t))
        ,@(when-let ((remover remover)
                     (name (if (eq remover t)
                               (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)

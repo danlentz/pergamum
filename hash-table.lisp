@@ -89,7 +89,7 @@
              (format stream "~@<~A ~S not defined in ~S~:@>" (slot-value condition 'type) (cell-error-name condition) (slot-value condition 'container)))))
 
 (defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
-                               spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
+                               spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
                                (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace accessible via the first parameter of the accessors.
 
@@ -107,9 +107,12 @@
    coerce names/objects to objects, remove, iterate and map over namespace 
    entries.
 
+   IF-DOES-NOT-EXIST, when specified, seals the runtime behaviour of the
+   accessor to the value of the key.
    Note that spread compound name reader methods do not allow runtime
-   customisation of the IF-DOES-NOT-EXIST action, and that the
-   compile-time IF-SPREAD-COMPOUND-DOES-NOT-EXIST must be used instead. 
+   customisation of the IF-DOES-NOT-EXIST accessor action, and relies on the
+   compile-time value of IF-DOES-NOT-EXIST passed to DEFINE-SUBCONTAINER,
+   absent which it defaults to :ERROR. 
 
    Defined keywords:
     :TYPE - type of objects stored through defined accessor, 
@@ -119,8 +122,6 @@
     :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
     :SPREAD-COMPOUND-NAME-P - see above
     :IF-EXISTS - one of :ERROR, :WARN or :CONTINUE, defaults to :WARN
-    :IF-SPREAD-COMPOUND-DOES-NOT-EXIST - one of :ERROR or :CONTINUE,
-                                         defaults to :ERROR
     :COERCER - whether to define a coercer function, called COERCE-TO-TYPE
     :REMOVER - whether to define a function for removal of namespace entries.
               The name chose is the value of the keyword argument, unless
@@ -142,7 +143,7 @@
      - variable namespace holder, namespaces accessed via selector:
        namespace-accessor-name :container-transform SELECTOR"
   (declare (type (member :continue :warn :error) if-exists)
-           (type (member :continue :error) if-spread-compound-does-not-exist)
+           (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))
   (let* ((container-form (cond (container-transform `(,container-transform container))
                                (container-slot `(slot-value container ',container-slot))
@@ -153,16 +154,23 @@
     `(progn
        ,@(if spread-compound-name-p
              `((defun ,accessor-name (container &rest name)
-                 (or (gethash ,hash-key-form ,container-form)
-                     ,@(ecase if-spread-compound-does-not-exist
-                              (:error
-                               `((error 'container-missing-cell-error :type ,description :name name :container container)))
-                              (:continue nil)))))
-             `((defun ,accessor-name (container name &key (if-does-not-exist :error))
-                 (or (gethash ,hash-key-form ,container-form)
-                     (ecase if-does-not-exist
-                       (:error (error 'container-missing-cell-error :type ,description :name name :container container))
-                       (:continue nil))))))
+                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
+                   (if presentp
+                       value
+                       ,(ecase (or if-does-not-exist :error)
+                               (:error `(error 'container-missing-cell-error :type ,description :name name :container container))
+                               (:continue nil))))))
+             `((defun ,accessor-name (container name ,@(unless if-does-not-exist '(&key (if-does-not-exist :error))))
+                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
+                   (if presentp
+                       value
+                       ,(ecase if-does-not-exist
+                               (:error `(error 'container-missing-cell-error :type ,description :name name :container container))
+                               (:continue nil)
+                               ((nil)
+                                `(ecase if-does-not-exist
+                                   (:error (error 'container-missing-cell-error :type ,description :name name :container container))
+                                   (:continue nil)))))))))
        (defun (setf ,accessor-name) (val container ,@(when spread-compound-name-p '(&rest)) name)
                  (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)
@@ -193,10 +201,10 @@
                `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" container-transform) (fn container &rest parameters)
                    (apply #'maphash-values fn ,container-form parameters)))))))
 
-(defmacro define-root-container (container-name accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
-                                 spread-compound-name-p (if-spread-compound-does-not-exist :error) remover coercer iterator mapper (if-exists :warn)
+(defmacro define-root-container (container accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
+                                 spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
                                  (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
-  "Define a namespace stored in CONTAINER-NAME.
+  "Define a namespace stored in CONTAINER.
 
    Access to the container can optionally be routed via CONTAINER-TRANSFORM, 
    with the name also being optionally transformable via NAME-TRANSFORM-FN.
@@ -212,9 +220,12 @@
    coerce names/objects to objects, remove, iterate and map over namespace 
    entries.
 
+   IF-DOES-NOT-EXIST, when specified, seals the runtime behaviour of the
+   accessor to the value of the key.
    Note that spread compound name reader methods do not allow runtime
-   customisation of the IF-DOES-NOT-EXIST action, and that the
-   compile-time IF-SPREAD-COMPOUND-DOES-NOT-EXIST must be used instead. 
+   customisation of the IF-DOES-NOT-EXIST accessor action, and relies on the
+   compile-time value of IF-DOES-NOT-EXIST passed to DEFINE-SUBCONTAINER,
+   absent which it defaults to :ERROR. 
 
    Defined keywords:
     :TYPE - type of objects stored through defined accessor, 
@@ -247,27 +258,34 @@
      - global namespace holder, namespaces accessed via selector:
        *NAMESPACE-HOLDER* namespace-accessor-name :container-transform SELECTOR"
   (declare (type (member :continue :warn :error) if-exists)
-           (type (member :continue :error) if-spread-compound-does-not-exist)
+           (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))
-  (let* ((container-form (cond (container-transform `(,container-transform ,container-name))
-                               (container-slot `(slot-value ,container-name ',container-slot))
-                               (t container-name)))
+  (let* ((container-form (cond (container-transform `(,container-transform ,container))
+                               (container-slot `(slot-value ,container ',container-slot))
+                               (t container)))
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
     `(progn
        ,@(if spread-compound-name-p
              `((defun ,accessor-name (&rest name)
-                 (or (gethash ,hash-key-form ,container-form)
-                     ,@(ecase if-spread-compound-does-not-exist
-                              (:error
-                               `((error 'container-missing-cell-error :type ,description :name name :container ,container-name)))
-                              (:continue nil)))))
+                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
+                   (if presentp
+                       value
+                       ,(ecase (or if-does-not-exist :error)
+                               (:error `(error 'container-missing-cell-error :type ,description :name name :container ,container))
+                               (:continue nil))))))
              `((defun ,accessor-name (name &key (if-does-not-exist :error))
-                 (or (gethash ,hash-key-form ,container-form)
-                     (ecase if-does-not-exist
-                       (:error (error 'container-missing-cell-error :type ,description :name name :container ,container-name))
-                       (:continue nil))))))
+                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
+                   (if presentp
+                       value
+                       ,(ecase if-does-not-exist
+                               (:error `(error 'container-missing-cell-error :type ,description :name name :container ,container))
+                               (:continue nil)
+                               ((nil)
+                                `(ecase if-does-not-exist
+                                   (:error (error 'container-missing-cell-error :type ,description :name name :container ,container))
+                                   (:continue nil)))))))))
        (defun (setf ,accessor-name) (val ,@(when spread-compound-name-p '(&rest)) name)
                  (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
                  ,@(unless (eq if-exists :continue)

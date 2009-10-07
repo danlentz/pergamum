@@ -23,15 +23,24 @@
   (print-unreadable-object (o stream)
     (format stream "~A ~X:~X" (type-of o) (extent-base o) (end o))))
 
-(defun make-extent (type base vector &rest keys &key (element-type (array-element-type vector) element-type-p) &allow-other-keys)
-  "Make an extent of TYPE with BASE and a data VECTOR with ELEMENT-TYPE,
-by passing passing KEYS (without ELEMENT-TYPE) to MAKE-INSTANCE for TYPE."
-  (declare (type integer base) (type vector vector))
+(defun make-extent (type base vector-or-size &rest keys &key element-type &allow-other-keys)
+  "Make an extent of TYPE with BASE and, depending on whether VECTOR-OR-DATA
+is a positive integer, or a vector, either the value of VECTOR-OF-DATA, or
+a new data vector of length VECTOR-OR-SIZE, with optionally specified
+ELEMENT-TYPE, which defaults either to the element type of VECTOR-OR-SIZE,
+when appropriate, or to '(UNSIGNED-BYTE 8), when VECTOR-OR-SIZE is an integer.
+KEYS, except ELEMENT-TYPE, are passed as-is to MAKE-INSTANCE."
+  (declare (type integer base) (type (or vector (integer (0))) vector-or-size))
   (apply #'make-instance type
          :base base
-         :data (if (and element-type-p (subtypep (array-element-type vector) element-type))
-                   vector
-                   (make-array (length vector) :element-type element-type :initial-contents vector))
+         :data (let* ((vectorp (vectorp vector-or-size))
+                      (element-type (or element-type
+                                        (if vectorp
+                                            (array-element-type vector-or-size)
+                                            '(unsigned-byte 8)))))
+                 (if (and vectorp (subtypep (array-element-type vector-or-size) element-type))
+                     vector-or-size
+                     (apply #'make-array (if vectorp (length vector-or-size) vector-or-size) :element-type element-type (when vectorp `(:initial-contents ,vector-or-size)))))
          (remove-from-plist keys :element-type :base :data)))
 
 (defun extent (base size-or-data)

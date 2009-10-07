@@ -215,6 +215,12 @@ and their base addresses match as well."
   (:method (stream (o extent))
     (print (cons (extent-base o) (extent-data o)) stream)))
 
+(defun serialize-extent-list (stream extents)
+  (write-char #\( stream)
+  (dolist (e extents)
+    (serialize-extent stream e))
+  (write-char #\) stream))
+
 (defun extent-reader (stream)
   (destructuring-bind (base . data) (read stream)
     (make-extent 'extent base data :element-type '(unsigned-byte 8))))

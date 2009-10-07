@@ -216,10 +216,19 @@ and their base addresses match as well."
     (print (cons (extent-base o) (extent-data o)) stream)))
 
 (defun serialize-extent-list (stream extents)
+  "Write out EXTENTS as a list of base/data conses into STREAM."
   (write-char #\( stream)
   (dolist (e extents)
     (serialize-extent stream e))
   (write-char #\) stream))
+
+(defun read-extent-list (stream &key (type 'extent) (element-type '(unsigned-byte 8)) (initarg-generator-fn (constantly nil)))
+  "Construct a list of extents of TYPE by calling READ on STREAM.
+The extent data vectors will have ELEMENT-TYPE property, defaulting
+to (UNSIGNED-BYTE 8). Extent object initargs are produced by calling
+INITARG-GENERATOR-FN with base and data arguments."
+  (iter (for (base . data) in (read stream))
+        (collect (apply #'make-extent type base data :element-type element-type (funcall initarg-generator-fn base data)))))
 
 (defun extent-reader (stream)
   (destructuring-bind (base . data) (read stream)

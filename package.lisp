@@ -83,7 +83,7 @@
    #:extent-mask
    #:rebase #:nrebase #:coerce-extent #:ncoerce-extent
    #:extent-data-equalp #:extent-equalp
-   #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent #:serialize-extent-list #:extent-reader
+   #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent #:serialize-extent-list #:extent-reader #:read-extent-list
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
    #:u8-vector-wordle #:u8-vector-wordbe

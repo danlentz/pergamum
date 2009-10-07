@@ -86,8 +86,8 @@
     (pathname-match-p destination target)))
 
 (defun make-symlink (symlink target)
-  #+sbcl (sb-posix:symlink target symlink)
-  #-sbcl (error "~@<Not implemented: MAKE-SYMLINK.~:@>"))
+  #+(and sbcl (not win32)) (sb-posix:symlink target symlink)
+  #+(or (not sbcl) win32) (error "~@<Not implemented: MAKE-SYMLINK.~:@>"))
 
 (defun symlink-target-file-present-p (symlink)
   "See if the file SYMLINK points at exists, and return that."

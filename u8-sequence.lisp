@@ -232,9 +232,9 @@
                                                                   (unless (= aligned-end (end extent)) (make-list posttail :initial-element 0)))))))))
 
 (defun write-column-value (stream i x) 
-  (format stream "~A" x stream)
+  (format stream "~A" x)
   (when (= #x3 (logand i #x3))
-    (format stream " " stream)))
+    (format stream " ")))
 
 (defun write-16byte-hex-column (stream vector base)
   (dotimes (i 16) (write-column-value stream i (format nil "~2,'0X" (aref vector (+ base i))))))

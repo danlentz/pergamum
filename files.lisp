@@ -89,10 +89,11 @@
   #+(and sbcl (not win32)) (sb-posix:symlink target symlink)
   #+(or (not sbcl) win32) (error "~@<Not implemented: MAKE-SYMLINK.~:@>"))
 
-(defun symlink-target-file-present-p (symlink)
+(defun symlink-target-file (symlink)
   "See if the file SYMLINK points at exists, and return that."
   (when-let ((destination (file-exists-p symlink)))
-    (not (pathname-match-p destination symlink))))
+    (when (not (pathname-match-p destination symlink))
+      destination)))
 
 (defun ensure-symlink (symlink target)
   "Ensure that file at SYMLINK is a symbolic link pointing to TARGET."

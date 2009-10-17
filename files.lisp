@@ -60,15 +60,17 @@
                                    ,(wrap-body as old body)))
                        (:error `(error 'pathname-not-present :pathname ,as)))))))))
 
-(defun file-as-vector (filename &rest rest &key (element-type '(unsigned-byte 8)) &allow-other-keys)
-  "Return contents of FILENAME as simple vector with element type (UNSIGNED-BYTE 8)."
-  (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type)))
-    (stream-as-vector s (file-length s) :element-type element-type)))
+(defun file-as-vector (filename &rest rest &key (element-type '(unsigned-byte 8)) position &allow-other-keys)
+  "Return contents of FILENAME, starting from POSITION, as simple vector
+with ELEMENT-TYPE, defaulting to (UNSIGNED-BYTE 8)."
+  (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type :position)))
+    (stream-as-vector s (file-length s) :element-type element-type :position position)))
 
-(defun file-as-string (filename &rest rest &key (element-type 'character) &allow-other-keys)
-  "Return contents of FILENAME as simple vector with element type CHARACTER."
-  (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type)))
-    (stream-as-vector s (file-length s) :element-type element-type)))
+(defun file-as-string (filename &rest rest &key (element-type 'character) position &allow-other-keys)
+  "Return contents of FILENAME, starting from POSITION, as simple vector
+with ELEMENT-TYPE, defaulting to CHARACTER."
+  (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type :position)))
+    (stream-as-vector s (file-length s) :element-type element-type :position position)))
 
 (defmacro with-output-to-file ((stream filespec &rest options &key (if-does-not-exist :create) (if-exists :supersede) &allow-other-keys) &body body)
   "Like WITH-OPEN-FILE, but with defaults conveniently set for file creation/overwriting."

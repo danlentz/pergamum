@@ -123,3 +123,15 @@
 
 (defun and-p (a b)
   (and a b))
+
+#+sbcl
+(defun function-insn-vector (name)
+  (sb-sys:without-gcing
+    (let* ((function (fdefinition name))
+           (object (sb-disassem::fun-code function))
+           (vector-sap (sb-kernel:code-instructions object))
+           (vector-length (sb-disassem::code-inst-area-length object)))
+      (let ((final-vec (make-array vector-length :element-type '(unsigned-byte 8))))
+        (iter (for i below vector-length)
+              (setf (aref final-vec i) (sb-vm::sap-ref-8 vector-sap i)))
+        final-vec))))

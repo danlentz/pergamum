@@ -30,6 +30,7 @@
    #:latch #:bukkake-combine #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:apply/find-if
    #:iterate-until #:collect-until #:or-p #:and-p
    #:define-execute-with-special
+   #:function-insn-vector
    ;; lists.lisp
    #:nfsubst #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip #:diff-lists
    #:plist-difference #:plist-intersection #:set-differencef #:nset-differencef #:set-intersectionf #:nset-intersectionf

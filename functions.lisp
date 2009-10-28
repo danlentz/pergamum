@@ -135,3 +135,8 @@
         (iter (for i below vector-length)
               (setf (aref final-vec i) (sb-vm::sap-ref-8 vector-sap i)))
         final-vec))))
+
+#+sbcl
+(defun disassemble-insn-vector (vector &optional (start 0) end)
+  (sb-sys:without-gcing
+    (sb-disassem:disassemble-memory (sb-vm::sap+ (sb-sys:vector-sap vector) start) (- (or end (length vector)) start))))

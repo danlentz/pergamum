@@ -31,7 +31,7 @@ otherwise the ELSE-FORM is executed with the bindings in effect."
          (variables (mapcar #'car binding-list)))
     `(let ,binding-list
        (if (and ,@variables)
-           (progn ,then-form ,(lastcar binding-list))
+           (progn ,then-form ,(car (lastcar binding-list)))
            ,else-form))))
 
 (defmacro if-lret* (bindings then-form &optional else-form)

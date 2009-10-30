@@ -321,6 +321,42 @@ Typical usages include:
        ,@(when mapper
               (emit-mapper t t mapper accessor-name container-form container-transform)))))
 
+(defmacro with-container (accessor-name (container &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
+                                                   spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
+                                                   (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
+                          &body body)
+  "Execute BODY within context where various accessors to CONTAINER
+are established, as if by DEFINE-ROOT-CONTAINER.  All keyword options
+are as per DEFINE-ROOT-CONTAINER."
+  (declare (type (member :continue :return-nil :warn :error) if-exists)
+           (type (member :continue :error nil) if-does-not-exist)
+           (type (or null string) description))
+  (let* ((container-form (cond (container-transform `(,container-transform ,container))
+                               (container-slot `(slot-value ,container ',container-slot))
+                               (t container)))
+         (hash-key-form (cond ((null name-transform-fn) 'name)
+                              ((null compound-name-p) `(,name-transform-fn name))
+                              (t `(mapcar #',name-transform-fn name)))))
+    `(labels (,@(emit-getter nil t accessor-name container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+              ,@(emit-setter nil t 'define-root-container accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+                ,@(when remover
+                        (emit-remover nil t remover accessor-name container-form hash-key-form spread-compound-name-p type))
+                ,@(when coercer
+                        (emit-coercer nil t accessor-name spread-compound-name-p type key-type))
+                ,@(when mapper
+                        (emit-mapper nil t mapper accessor-name container-form container-transform)))
+       (macrolet (,@(when iterator
+                          `((,(cond ((and iterator (not (eq iterator t))) iterator)
+                                    (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
+                                    (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
+                                ((,@(when iterator-bind-key '(key)) var) &body body)
+                              ;; IQ test: do you understand ,',? I don't. ; ;
+                              `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
+                                                                                                        (container-slot ``(slot-value container ,'',container-slot))
+                                                                                                        (t `',container)))
+                                     ,@body)))))
+         ,@body))))
+
 (defun copy-hash-table-empty (table &key key test size rehash-size rehash-threshold)
   "Returns an empty copy of hash TABLE. The copy has the same properties
    as the original, unless overridden by the keyword arguments."

@@ -4,6 +4,34 @@
 (in-package :pergamum)
 
 
+(defmacro when-lret (bindings &body forms)
+    "Creates new variable bindings, and conditionally executes FORMS.
+
+BINDINGS must be either single binding of the form:
+
+ (variable initial-form)
+
+or a list of bindings of the form:
+
+ ((variable-1 initial-form-1)
+  (variable-2 initial-form-2)
+  ...
+  (variable-n initial-form-n))
+
+All initial-forms are executed sequentially in the specified order. Then all
+the variables are bound to the corresponding values.
+
+If all variables were bound to true values, then FORMS are executed as an
+implicit PROGN."
+  (let* ((binding-list (if (and (consp bindings) (symbolp (car bindings)))
+                           (list bindings)
+                           bindings))
+         (variables (mapcar #'car binding-list)))
+    `(let ,binding-list
+       (when (and ,@variables)
+         ,@forms
+         ,(car (lastcar binding-list))))))
+
 (defmacro if-lret (bindings &body (then-form &optional else-form))
   "Creates new variable bindings, and conditionally executes either
 THEN-FORM or ELSE-FORM. ELSE-FORM defaults to NIL.

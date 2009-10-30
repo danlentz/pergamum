@@ -24,6 +24,7 @@
    (:file "mop" :depends-on ("package"))
    (:file "read" :depends-on ("package"))
    ;; tier 2
+   (:file "control-flow" :depends-on ("basis"))
    (:file "lists" :depends-on ("basis"))
    (:file "streams" :depends-on ("basis"))
    (:file "pathnames" :depends-on ("basis"))

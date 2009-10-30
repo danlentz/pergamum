@@ -7,6 +7,8 @@
   (:export
    ;; basis.lisp
    #:symbol-macro-p #:progn-1 #:lret #:lret* #:if-let* #:case-let #:fcase #:fcase-1 #:fif #:fif-1 #:map-remove-if-not #:syncformat
+   ;; control-flow.lisp
+   #:if-lret #:if-lret*
    ;; forms.lisp
    #:quoted-p #:quoted-form
    ;; binary.lisp

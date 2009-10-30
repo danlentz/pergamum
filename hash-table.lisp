@@ -98,6 +98,69 @@ occupying KEY. The second return value indicates success."
   (:report (lambda (condition stream)
              (format stream "~@<~A ~S not defined in ~S~:@>" (slot-value condition 'type) (cell-error-name condition) (slot-value condition 'container)))))
 
+(defun emit-getter (globalp rootp accessor-name container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+  `((,@(when globalp '(defun)) ,accessor-name (,@(unless rootp '(container)) ,@(if spread-compound-name-p
+                                                                                   '(&rest name)
+                                                                                   `(name ,@(unless if-does-not-exist '(&key (if-does-not-exist :error))))))
+       (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
+         (if presentp
+             value
+             ,(ecase (or if-does-not-exist (when spread-compound-name-p :error))
+                     (:error `(error 'container-missing-cell-error :type ,description :name name :container ,(if rootp container 'container)))
+                     (:continue nil)
+                     ((nil)
+                      (if spread-compound-name-p
+                          (error "~@<In EMIT-GETTER: NIL was specified as spread-compound IF-DOES-NOT-EXIST keyword.~:@>")
+                          `(ecase if-does-not-exist
+                             (:error (error 'container-missing-cell-error :type ,description :name name :container ,(if rootp container 'container)))
+                             (:continue nil))))))))))
+
+(defun emit-setter (globalp rootp def-name accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+  `((,@(when globalp '(defun)) (setf ,accessor-name) (val ,@(unless rootp '(container)) ,@(when spread-compound-name-p '(&rest)) name)
+       (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
+       ,@(unless (eq if-exists :continue)
+                 `((when (nth-value 1 (gethash ,hash-key-form ,container-form))
+                     ,(ecase if-exists
+                             (:return-nil `(return-from ,accessor-name))
+                             (:warn `(warn-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name ',def-name)) 
+                             (:error `(bad-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name ',def-name))))))
+       (values (setf (gethash ,hash-key-form ,container-form) val)
+               t))))
+
+(defun emit-remover (globalp rootp remover accessor-name container-form hash-key-form spread-compound-name-p type)
+  (let ((name (if (eq remover t)
+                  (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
+                  remover)))
+    `((,@(when globalp '(defun)) ,name (,@(unless rootp '(container)) ,@(when spread-compound-name-p '(&rest)) name)
+         (remhash ,hash-key-form ,container-form)))))
+
+(defun emit-coercer (globalp rootp accessor-name spread-compound-name-p type key-type)
+  `((,@(when globalp '(defun))
+       ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type)
+       (,@(unless rootp '(container)) ,@(when spread-compound-name-p '(&rest)) spec)
+       (declare (type (or ,type symbol) spec))
+       (etypecase spec
+         (,type spec)
+         (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) ,@(unless rootp '(container)) spec) `(,accessor-name ,@(unless rootp '(container)) spec)))))))
+
+(defun emit-iterator (globalp iterator accessor-name container-transform container-slot iterator-bind-key)
+  `((,@(when globalp '(defmacro)) ,(cond ((and iterator (not (eq iterator t))) iterator)
+                                         (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
+                                         (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
+       ((,@(when iterator-bind-key '(key)) var container) &body body)
+       ;; IQ test: do you understand ,',? I don't. ; ;
+       `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform ,container))
+                                                                                 (container-slot ``(slot-value ,container ,'',container-slot))
+                                                                                 (t 'container)))
+              ,@body))))
+
+(defun emit-mapper (globalp rootp mapper accessor-name container-form container-transform)
+  `((,@(when globalp '(defun)) ,(if container-transform
+                                    (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
+                                    mapper)
+       (fn ,@(when rootp '(container)) &rest parameters)
+       (apply #'maphash-values fn ,container-form parameters))))
+
 (defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
                                spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
                                (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
@@ -161,61 +224,17 @@ Typical usages include:
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
-    `(progn
-       ,@(if spread-compound-name-p
-             `((defun ,accessor-name (container &rest name)
-                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
-                   (if presentp
-                       value
-                       ,(ecase (or if-does-not-exist :error)
-                               (:error `(error 'container-missing-cell-error :type ,description :name name :container container))
-                               (:continue nil))))))
-             `((defun ,accessor-name (container name ,@(unless if-does-not-exist '(&key (if-does-not-exist :error))))
-                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
-                   (if presentp
-                       value
-                       ,(ecase if-does-not-exist
-                               (:error `(error 'container-missing-cell-error :type ,description :name name :container container))
-                               (:continue nil)
-                               ((nil)
-                                `(ecase if-does-not-exist
-                                   (:error (error 'container-missing-cell-error :type ,description :name name :container container))
-                                   (:continue nil)))))))))
-       (defun (setf ,accessor-name) (val container ,@(when spread-compound-name-p '(&rest)) name)
-                 (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
-                 ,@(unless (eq if-exists :continue)
-                           `((when (nth-value 1 (gethash ,hash-key-form ,container-form))
-                               ,(ecase if-exists
-                                  (:return-nil `(return-from ,accessor-name))
-                                  (:warn `(warn-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-subcontainer)) 
-                                  (:error `(bad-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-subcontainer))))))
-                 (values (setf (gethash ,hash-key-form ,container-form) val)
-                         t))
-       ,@(when-let ((remover remover)
-                    (name (if (eq remover t)
-                              (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
-                              remover)))
-                   `((defun ,name (container ,@(when spread-compound-name-p '(&rest)) name)
-                       (remhash ,hash-key-form ,container-form))))
-       ,@(when coercer
-               `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (container ,@(when spread-compound-name-p '(&rest)) spec)
-                   (declare (type (or ,type symbol) spec))
-                   (etypecase spec
-                     (,type spec)
-                     (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) container spec) `(,accessor-name container spec)))))))
-       ,@(when iterator
-               `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
-                                  (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
-                                  (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
-                     ((,@(when iterator-bind-key '(key)) var container) &body body)
-                   ;; IQ test: do you understand ,',? I don't.
-                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform ,container))
-                                                                                             (container-slot ``(slot-value ,container ,'',container-slot))
-                                                                                             (t 'container)))
-                          ,@body))))
-       ,@(when mapper
-               `((defun ,(format-symbol (symbol-package accessor-name) "MAP-~A" container-transform) (fn container &rest parameters)
-                   (apply #'maphash-values fn ,container-form parameters)))))))
+   `(progn
+      ,@(emit-getter t nil accessor-name nil container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+      ,@(emit-setter t nil 'define-subcontainer accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+      ,@(when remover
+              (emit-remover t nil remover accessor-name container-form hash-key-form spread-compound-name-p type))
+      ,@(when coercer
+              (emit-coercer t nil accessor-name spread-compound-name-p type key-type))
+      ,@(when iterator
+              (emit-iterator t iterator accessor-name container-transform container-slot iterator-bind-key))
+      ,@(when mapper
+              (emit-mapper t nil mapper accessor-name container-form container-transform)))))
 
 (defmacro define-root-container (container accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
                                  spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
@@ -283,50 +302,12 @@ Typical usages include:
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
     `(progn
-       ,@(if spread-compound-name-p
-             `((defun ,accessor-name (&rest name)
-                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
-                   (if presentp
-                       value
-                       ,(ecase (or if-does-not-exist :error)
-                               (:error `(error 'container-missing-cell-error :type ,description :name name :container ,container))
-                               (:continue nil))))))
-             `((defun ,accessor-name (name &key (if-does-not-exist :error))
-                 (multiple-value-bind (value presentp) (gethash ,hash-key-form ,container-form)
-                   (if presentp
-                       value
-                       ,(ecase if-does-not-exist
-                               (:error `(error 'container-missing-cell-error :type ,description :name name :container ,container))
-                               (:continue nil)
-                               ((nil)
-                                `(ecase if-does-not-exist
-                                   (:error (error 'container-missing-cell-error :type ,description :name name :container ,container))
-                                   (:continue nil)))))))))
-       (defun (setf ,accessor-name) (val ,@(when spread-compound-name-p '(&rest)) name)
-                 (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
-                 ,@(unless (eq if-exists :continue)
-                           `((when (nth-value 1 (gethash ,hash-key-form ,container-form))
-                               ,(ecase if-exists
-                                  (:return-nil `(return-from ,accessor-name))
-                                  (:warn `(warn-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-root-container)) 
-                                  (:error `(bad-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name 'define-root-container))))))
-                 (values (setf (gethash ,hash-key-form ,container-form) val)
-                         t))
-       ,@(when-let ((remover remover)
-                    (name (if (eq remover t)
-                              (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
-                              remover)))
-                   (if spread-compound-name-p
-                       `((defun ,name (rest name)
-                           (remhash ,hash-key-form ,container-form)))
-                       `((defun ,name (name)
-                           (remhash ,hash-key-form ,container-form)))))
+       ,@(emit-getter t t accessor-name container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+       ,@(emit-setter t t 'define-root-container accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+       ,@(when remover
+               (emit-remover t t remover accessor-name container-form hash-key-form spread-compound-name-p type))
        ,@(when coercer
-               `((defun ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type) (spec)
-                   (declare (type (or ,type symbol) spec))
-                   (etypecase spec
-                     (,type spec)
-                     (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) spec) `(,accessor-name spec)))))))
+               (emit-coercer t t accessor-name spread-compound-name-p type key-type))
        ,@(when iterator
                `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
                                   (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
@@ -338,10 +319,7 @@ Typical usages include:
                                                                                              (t `',container)))
                           ,@body))))
        ,@(when mapper
-               `((defun ,(if container-transform
-                             (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
-                             mapper) (fn &rest parameters)
-                   (apply #'maphash-values fn ,container-form parameters)))))))
+              (emit-mapper t t mapper accessor-name container-form container-transform)))))
 
 (defun copy-hash-table-empty (table &key key test size rehash-size rehash-threshold)
   "Returns an empty copy of hash TABLE. The copy has the same properties

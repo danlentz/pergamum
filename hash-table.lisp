@@ -158,7 +158,7 @@ occupying KEY. The second return value indicates success."
   `((,@(when globalp '(defun)) ,(if container-transform
                                     (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
                                     mapper)
-       (fn ,@(when rootp '(container)) &rest parameters)
+       (fn ,@(unless rootp '(container)) &rest parameters)
        (apply #'maphash-values fn ,container-form parameters))))
 
 (defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn

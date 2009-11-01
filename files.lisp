@@ -72,6 +72,14 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
   (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type :position)))
     (stream-as-vector s (file-length s) :element-type element-type :position position)))
 
+(defun file-line (filename &rest rest &key (element-type 'character) position &allow-other-keys)
+  "Return the first line of FILENAME, starting from POSITION, as simple vector
+with ELEMENT-TYPE, defaulting to CHARACTER."
+  (with-open-stream (s (apply #'open filename :element-type element-type (remove-from-plist rest :element-type :position)))
+    (when position
+      (file-position s position))
+    (read-line s nil nil)))
+
 (defmacro with-output-to-file ((stream filespec &rest options &key (if-does-not-exist :create) (if-exists :supersede) &allow-other-keys) &body body)
   "Like WITH-OPEN-FILE, but with defaults conveniently set for file creation/overwriting."
   `(with-open-file (,stream ,filespec :direction :output :if-does-not-exist ,if-does-not-exist :if-exists ,if-exists

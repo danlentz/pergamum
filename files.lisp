@@ -45,6 +45,17 @@ Within the lexical context established by the WITHIN-DIRECTORY form,
 whether the directory had to be created, when IF-DOES-NOT-EXIST
 is :CREATE. (DIRECTORY-CREATED-P) evaluates to the negation of that
 value."
+(defun invoke-maybe-within-directory (fn &optional directory)
+
+  "Invoke FN, possibly, when DIRECTORY is non-NIL, within context
+established by WITHIN-DIRECTORY."
+      (within-directory (directory)
+        (funcall fn))
+      (funcall fn)))
+
+  "Execute BODY, possibly, when DIRECTORY is non-NIL, within context
+established by WITHIN-DIRECTORY."
+  `(invoke-maybe-within-directory (lambda () ,@body) ,directory))
   (destructuring-bind (directory-form &key (as (gensym)) (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) (ensure-list directory-spec)
     (flet ((wrap-body (dirsym oldsym body)
              `(let (,@(when posix `((,oldsym (posix-working-directory))))

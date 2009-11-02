@@ -65,7 +65,7 @@
    ;; files.lisp
    #:pathname-busy #:pathname-not-present
    #:posix-working-directory #:set-posix-working-directory
-   #:within-directory
+   #:within-directory #:directory-created-p #:directory-existed-p
    #:file-as-vector #:file-as-string #:file-line #:with-output-to-file
    #:remove-file #:symlink-to-p #:make-symlink #:symlink-target-file #:ensure-symlink
    ;; hash-table.lisp

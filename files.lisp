@@ -20,19 +20,12 @@
 
 (defsetf posix-working-directory set-posix-working-directory)
 
-(defmacro within-directory (directory-spec &body body)
-  "Execute BODY with the idea of current directory changed to the
-value specified by DIRECTORY-SPEC, which is either a lambda list
-with one mandatory form (interpreted as a directory specifier)
-and some optional keywords, or an atom directory specifier,
-i.e. either a string or a symbol which mush evaluate to a string.
-
-The value of the directory specifier is optionally captured 
-in the binding of a variable named by the AS keyword parameter.
+(defmacro within-directory ((directory-form &key (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) &body body)
+  "Evaluate DIRECTORY-FORM, and then execute BODY with the idea of
+current directory changed to the resulting value, which must
+be a pathname specifier -- either a pathname, or a namestring.
 
 Defined keywords:
- :AS - a symbol, optionally specifying the name of the variable
-       to be bound to the value of the directory specifier
  :LISP - a boolean, indicating a request to bind *D-P-D*
  :POSIX - a boolean, indicating a request to change POSIX's idea
           of the current directory
@@ -41,44 +34,45 @@ Defined keywords:
 See the manual for details.
 
 Within the lexical context established by the WITHIN-DIRECTORY form,
-(DIRECTORY-EXISTED-P) evaluates to a boolean value representing
+ (DIRECTORY-EXISTED-P) evaluates to a boolean value representing
 whether the directory had to be created, when IF-DOES-NOT-EXIST
 is :CREATE. (DIRECTORY-CREATED-P) evaluates to the negation of that
 value."
-(defun invoke-maybe-within-directory (fn &optional directory)
+  (flet ((wrap-body (dirsym oldsym body)
+           `(let (,@(when posix `((,oldsym (posix-working-directory))))
+                  ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,dirsym)))))
+              ,@(if posix
+                    `((set-posix-working-directory ,dirsym)
+                      (unwind-protect (progn ,@body)
+                        (set-posix-working-directory ,oldsym)))
+                    body))))
+    (with-gensyms (old existsp)
+      `(let* ((,as ,directory-form)
+              (,existsp (directory-exists-p ,as)))
+         (macrolet ((directory-created-p () `(not ,',existsp))
+                    (directory-existed-p () ',existsp))
+           (if ,existsp
+               ,(ecase if-exists
+                       (:continue (wrap-body as old body))
+                       (:error `(error 'pathname-busy :pathname ,as)))
+               ,(ecase if-does-not-exist
+                       (:create `(progn
+                                   (ensure-directories-exist ,as)
+                                   ,(wrap-body as old body)))
+                       (:error `(error 'pathname-not-present :pathname ,as)))))))))
 
+(defun invoke-maybe-within-directory (fn &optional directory)
   "Invoke FN, possibly, when DIRECTORY is non-NIL, within context
 established by WITHIN-DIRECTORY."
+  (if directory
       (within-directory (directory)
         (funcall fn))
       (funcall fn)))
 
+(defmacro maybe-within-directory (directory &body body)
   "Execute BODY, possibly, when DIRECTORY is non-NIL, within context
 established by WITHIN-DIRECTORY."
   `(invoke-maybe-within-directory (lambda () ,@body) ,directory))
-  (destructuring-bind (directory-form &key (as (gensym)) (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) (ensure-list directory-spec)
-    (flet ((wrap-body (dirsym oldsym body)
-             `(let (,@(when posix `((,oldsym (posix-working-directory))))
-                    ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,dirsym)))))
-                ,@(if posix
-                      `((set-posix-working-directory ,dirsym)
-                        (unwind-protect (progn ,@body)
-                          (set-posix-working-directory ,oldsym)))
-                      body))))
-      (with-gensyms (old existsp)
-        `(let ((,as ,directory-form)
-               (,existsp (directory-exists-p ,as)))
-           (macrolet ((directory-created-p () `(not ,existsp))
-                      (directory-existed-p () ,existsp))
-             (if ,existsp
-                 ,(ecase if-exists
-                         (:continue (wrap-body as old body))
-                         (:error `(error 'pathname-busy :pathname ,as)))
-                 ,(ecase if-does-not-exist
-                         (:create `(progn
-                                     (ensure-directories-exist ,as)
-                                     ,(wrap-body as old body)))
-                         (:error `(error 'pathname-not-present :pathname ,as))))))))))
 
 (defun file-as-vector (filename &rest rest &key (element-type '(unsigned-byte 8)) position &allow-other-keys)
   "Return contents of FILENAME, starting from POSITION, as simple vector

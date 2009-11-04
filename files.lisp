@@ -38,27 +38,27 @@ Within the lexical context established by the WITHIN-DIRECTORY form,
 whether the directory had to be created, when IF-DOES-NOT-EXIST
 is :CREATE. (DIRECTORY-CREATED-P) evaluates to the negation of that
 value."
-  (with-gensyms (existsp old)
+  (with-gensyms (existsp directory old)
     (once-only (directory-form)
       `(let ((,existsp (directory-exists-p ,directory-form)))
          (macrolet ((directory-created-p () `(not ,',existsp))
                     (directory-existed-p () ',existsp))
-           (flet ((invoke-within-directory ()
+           (flet ((invoke-within-directory (,directory)
                     (let (,@(when posix `((,old (posix-working-directory))))
-                          ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,directory-form)))))
+                          ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,directory)))))
                       ,@(if posix
-                            `((set-posix-working-directory ,directory-form)
+                            `((set-posix-working-directory ,directory)
                               (unwind-protect (progn ,@body)
                                 (set-posix-working-directory ,old)))
                             body))))
              (if ,existsp
                  ,(ecase if-exists
-                         (:continue `(proceed))
+                         (:continue `(invoke-within-directory ,directory-form))
                          (:error `(error 'pathname-busy :pathname ,directory-form)))
                  ,(ecase if-does-not-exist
                          (:create `(progn
                                      (ensure-directories-exist ,directory-form)
-                                     (proceed)))
+                                     (invoke-within-directory ,directory-form)))
                          (:error `(error 'pathname-not-present :pathname ,directory-form))))))))))
 
 (defun invoke-maybe-within-directory (fn &optional directory)

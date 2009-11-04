@@ -41,14 +41,14 @@
    *DEFAULT-PATHNAME-DEFAULTS*."
   (merge-pathnames (make-pathname :directory `(:relative ,@sub)) (or directory-pathname *default-pathname-defaults*)))
 
-(defun flatten-path-list (path &optional absolute directory-p)
+(defun flatten-path-list (path &optional absolute directory-p (separator "/"))
   "Transform a list of strings in PATH into a string constituting of 
    individual strings interspersed with slashes.
    A leading slash is prepended when ABSOLUTE is non-nil.
    A trailing slash is appended when DIRECTORY-P is non-nil."
   (apply #'concatenate 'simple-base-string
-         (xform directory-p (rcurry #'append (list "/"))
-                (xform (not absolute) #'rest (mapcan (curry #'list "/") path)))))
+         (xform directory-p (rcurry #'append (list separator))
+                (xform (not absolute) #'rest (mapcan (curry #'list separator) path)))))
 
 (defun fuse-downcased-string-path-list (path &optional absolute)
   "Transform a list of strings in PATH into a string constituting of 

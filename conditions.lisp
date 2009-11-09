@@ -138,18 +138,12 @@ into STREAM, iff JUST-PRINT-P is non-NIL."
                              (error ,@as))))
        ,@body)))
 
-(defmacro with-condition-collection ((type) &body body)
-  "Broken."
-  (with-gensyms (list cond)
-    `(let (,list)
-       (handler-case (progn ,@body)
-         (,type (,cond)
-           (push ,cond ,list)))
-       (nreverse ,list))))
-
-(defmacro returning-conditions (type &body body)
-  "Catch and return conditions SUBTYPEP to TYPE, during BODY execution."
-  `(handler-case (progn ,@body) (,type (cond) cond)))
+(defmacro with-collected-conditions ((type) &body body)
+  "Execute BODY with conditions of TYPE handled by returning the condition
+object as primary value.  When no condition of TYPE arises, return NIL as the
+primary value, shifting normal return values produced by BODY by one."
+  `(handler-case (multiple-value-call #'values nil (progn ,@body))
+     (,type (cond) cond)))
 
 (defmacro condition-bind-default ((&rest bindings) &body body)
   "Establish default bindings in the Zetalisp style, as described in the

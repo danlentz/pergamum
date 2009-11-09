@@ -145,8 +145,10 @@ occupying KEY. The second return value indicates success."
 
 (defun emit-iterator (globalp iterator accessor-name container-transform container-slot iterator-bind-key)
   `((,@(when globalp '(defmacro)) ,(cond ((and iterator (not (eq iterator t))) iterator)
-                                         (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
-                                         (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM were provided.~:@>")))
+                                         (container-transform
+                                          (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
+                                         (t
+                                          (format-symbol (symbol-package accessor-name) "DO-~AS" accessor-name)))
        ((,@(when iterator-bind-key '(key)) var container) &body body)
        ;; IQ test: do you understand ,',? I don't. ; ;
        `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform ,container))
@@ -155,9 +157,11 @@ occupying KEY. The second return value indicates success."
               ,@body))))
 
 (defun emit-mapper (globalp rootp mapper accessor-name container-form container-transform)
-  `((,@(when globalp '(defun)) ,(if container-transform
-                                    (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform)
-                                    mapper)
+  `((,@(when globalp '(defun)) ,(cond ((and mapper (not (eq mapper t))) mapper)
+                                      (container-transform
+                                       (format-symbol (symbol-package accessor-name) "MAP-~A" container-transform))
+                                      (t
+                                       (format-symbol (symbol-package accessor-name) "MAP-~AS" accessor-name)))
        (fn ,@(unless rootp '(container)) &rest parameters)
        (apply #'maphash-values fn ,container-form parameters))))
 

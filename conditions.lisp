@@ -145,6 +145,30 @@ primary value, shifting normal return values produced by BODY by one."
   `(handler-case (multiple-value-call #'values nil (progn ,@body))
      (,type (cond) cond)))
 
+(defun invoke-with-status-recording (fn)
+  (with-output-to-string (output)
+    (multiple-value-bind (condition successp)
+        (with-collected-conditions (error)
+          (let ((*standard-output* output)
+                (*error-output* output))
+            (funcall fn)))
+      (finish-output output)
+      (return-from invoke-with-status-recording
+        (list* :status successp :output (string-right-trim '(#\Newline) (get-output-stream-string output))
+               (when condition `(:condition ,(format nil "\"~A\"" condition))))))))
+
+(defmacro with-recorded-status (() &body body)
+  "Execute BODY, while recording its return value and its various effects,
+returning them in a property list, with following properties:
+
+ :STATUS    - the value returned by BODY, unless a condition subtypep to
+                 ERROR interrupts its execution, in which case NIL is returned;
+ :OUTPUT    - the aggregate output to the *STANDARD-OUTPUT* and *ERROR-OUTPUT*
+                 streams;
+ :CONDITION - the condition of type ERROR, if any such arises during execution
+                 of BODY."
+  `(invoke-with-status-recording (lambda () ,@body)))
+
 (defmacro condition-bind-default ((&rest bindings) &body body)
   "Establish default bindings in the Zetalisp style, as described in the
    2001 Kent Pitman's paper `Condition Handling in the Lisp Language Family.'"

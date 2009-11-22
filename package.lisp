@@ -27,7 +27,10 @@
    #:with-recorded-status
    #:condition-bind-default
    #:define-reported-condition #:report-simple-condition #:define-simple-error
-   #:simple-condition-reporter #:redefinition #:simple-redefinition #:bad-redefinition #:warn-redefinition
+   #:simple-condition-reporter
+   ;; conditions.lisp :: canned
+   #:redefinition #:simple-redefinition #:bad-redefinition #:warn-redefinition
+   #:missing-implementation #:not-implemented
    ;; functions.lisp
    #:feq #:feql #:fequal #:fequalp #:f=
    #:latch #:bukkake-combine #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:apply/find-if

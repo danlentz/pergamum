@@ -220,6 +220,9 @@ object is specified by OBJECT-INITARG being non-NIL."
   (apply #'format stream (simple-condition-format-control condition)
          (simple-condition-format-arguments condition)))
 
+;;;
+;;; Canned conditions
+;;;
 (define-condition redefinition ()
   ())
 
@@ -229,8 +232,18 @@ object is specified by OBJECT-INITARG being non-NIL."
 (define-condition bad-redefinition (redefinition simple-error)
   ())
 
+(define-reported-condition missing-implementation (program-error)
+  ((missing-designator :accessor missing-implementation-designator :initarg :designator))
+  (:report (missing-designator)
+           "~@<~A not implemented.~:@>" missing-designator)
+  (:default-initargs
+      :designator "Function"))
+
 (defun warn-redefinition (format-control &rest arguments)
   (warn 'simple-redefinition :format-control format-control :format-arguments arguments))
 
 (defun bad-redefinition (format-control &rest arguments)
   (error 'bad-redefinition :format-control format-control :format-arguments arguments))
+
+(defun not-implemented (&optional (designator "Function"))
+  (error 'missing-implementation :designator designator))

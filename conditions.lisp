@@ -145,29 +145,34 @@ primary value, shifting normal return values produced by BODY by one."
   `(handler-case (multiple-value-call #'values nil (progn ,@body))
      (,type (cond) cond)))
 
-(defun invoke-with-status-recording (fn)
-  (with-output-to-string (output)
-    (multiple-value-bind (condition successp)
-        (with-collected-conditions (error)
-          (let ((*standard-output* output)
-                (*error-output* output))
-            (funcall fn)))
-      (finish-output output)
-      (return-from invoke-with-status-recording
-        (list* :status successp :output (string-right-trim '(#\Newline) (get-output-stream-string output))
-               (when condition `(:condition ,(format nil "\"~A\"" condition))))))))
+(defun invoke-with-recorded-status (fn)
+  (multiple-value-bind (condition return-value)
+      (with-collected-conditions (error)
+        (funcall fn))
+    (return-from invoke-with-recorded-status
+      (list* :return-value return-value (when condition `(:condition ,(format nil "\"~A\"" condition)))))))
 
-(defmacro with-recorded-status (() &body body)
+(defun invoke-with-recorded-status-and-output (fn)
+  (with-output-to-string (output)
+    (destructuring-bind (&rest status &key &allow-other-keys)
+        (let ((*standard-output* output)
+              (*error-output* output))
+          (invoke-with-recorded-status fn))
+      (return-from invoke-with-recorded-status-and-output
+        (list* :output (string-right-trim '(#\Newline) (get-output-stream-string output)) status)))))
+
+(defmacro with-recorded-status ((&key record-output) &body body)
   "Execute BODY, while recording its return value and its various effects,
 returning them in a property list, with following properties:
 
- :STATUS    - the value returned by BODY, unless a condition subtypep to
-                 ERROR interrupts its execution, in which case NIL is returned;
- :OUTPUT    - the aggregate output to the *STANDARD-OUTPUT* and *ERROR-OUTPUT*
-                 streams;
- :CONDITION - the condition of type ERROR, if any such arises during execution
+ :RETURN-VALUE - the value returned by BODY, unless a condition of type ERROR
+                 interrupts its execution, in which case NIL is returned;
+ :OUTPUT       - the aggregate output to the *STANDARD-OUTPUT* and *ERROR-OUTPUT*
+                 streams, captured when RECORD-OUTPUT evaluates to non-NIL;
+ :CONDITION    - the condition of type ERROR, if any such arises during execution
                  of BODY."
-  `(invoke-with-status-recording (lambda () ,@body)))
+  `(funcall (if ,record-output #'invoke-with-recorded-status-and-output #'invoke-with-recorded-status)
+            (lambda () ,@body)))
 
 (defmacro condition-bind-default ((&rest bindings) &body body)
   "Establish default bindings in the Zetalisp style, as described in the

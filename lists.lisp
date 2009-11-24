@@ -103,3 +103,14 @@
   "Modify-macro for NSET-INTERSECTION. Updates the place designated by the
    first argument to its union with SETS. All arguments are subject to
    potential mutation.")
+
+(defun maptree (fn tree)
+  "Return a copy of TREE with non-CONSes substituted with the result of
+applying FN to them."
+  (labels ((trec (tree)
+             (when tree
+               (cons (if (consp (car tree))
+                         (trec (car tree))
+                         (funcall fn (car tree)))
+                     (trec (cdr tree))))))
+    (trec tree)))

@@ -40,6 +40,7 @@
    ;; lists.lisp
    #:nfsubst #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip #:diff-lists
    #:plist-difference #:plist-intersection #:set-differencef #:nset-differencef #:set-intersectionf #:nset-intersectionf
+   #:maptree
    ;; mop.lisp
    #+sbcl #:rename-class-slot #:slot-definition-documentation
    ;; numbers.lisp

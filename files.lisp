@@ -20,6 +20,12 @@
 
 (defsetf posix-working-directory set-posix-working-directory)
 
+(defun check-pathname-not-occupied (pathname)
+  "Check that PATHNAME is not occupied, and raise a error of type
+PATHNAME-BUSY otherwise."
+  (or (not (file-exists-p pathname))
+      (error 'pathname-busy :pathname pathname)))
+
 (defmacro within-directory ((directory-form &key (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) &body body)
   "Evaluate DIRECTORY-FORM, and then execute BODY with the idea of
 current directory changed to the resulting value, which must

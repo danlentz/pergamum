@@ -70,6 +70,7 @@
    ;; files.lisp
    #:pathname-busy #:pathname-not-present
    #:posix-working-directory #:set-posix-working-directory
+   #:check-pathname-not-occupied
    #:within-directory #:directory-created-p #:directory-existed-p #:maybe-within-directory
    #:file-as-vector #:file-as-string #:file-line #:with-output-to-file
    #:remove-file #:symlink-to-p #:make-symlink #:symlink-target-file #:ensure-symlink

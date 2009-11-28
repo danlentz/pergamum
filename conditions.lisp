@@ -144,30 +144,38 @@ into STREAM, iff JUST-PRINT-P is non-NIL."
                              (error ,@as))))
        ,@body)))
 
-(defmacro with-collected-conditions ((type) &body body)
+(defmacro with-collected-conditions ((type &optional backtrace) &body body)
   "Execute BODY with conditions of TYPE handled by returning the condition
-object as primary value.  When no condition of TYPE arises, return NIL as the
-primary value, shifting normal return values produced by BODY by one."
-  `(handler-case (multiple-value-call #'values nil (progn ,@body))
-     (,type (cond) cond)))
+object as primary value, and optionally, the backtrace as the secondary value.
+When no condition of TYPE arises, return NIL as primary and secondary values,
+shifting normal return values produced by BODY by two."
+  (with-gensyms (block)
+    `(block ,block
+       (handler-bind ((,type (lambda (c)
+                               (return-from ,block
+                                 (values c ,(when backtrace
+                                                  `(when ,backtrace
+                                                     (backtrace-as-list most-positive-fixnum))))))))
+         (multiple-value-call #'values nil nil (progn ,@body))))))
 
-(defun invoke-with-recorded-status (fn)
-  (multiple-value-bind (condition return-value)
-      (with-collected-conditions (error)
+(defun invoke-with-recorded-status (backtracep fn)
+  (multiple-value-bind (condition backtrace return-value)
+      (with-collected-conditions (error backtracep)
         (funcall fn))
-    (return-from invoke-with-recorded-status
-      (list* :return-value return-value (when condition `(:condition ,(format nil "\"~A\"" condition)))))))
+    (list* :return-value return-value
+           (when condition (list* :condition (format nil "~A" condition)
+                                  (when backtrace
+                                    `(:backtrace ,backtrace)))))))
 
-(defun invoke-with-recorded-status-and-output (fn)
-  (with-output-to-string (output)
+(defun invoke-with-recorded-status-and-output (backtracep fn)
+  (let ((output (make-string-output-stream)))
     (destructuring-bind (&rest status &key &allow-other-keys)
         (let ((*standard-output* output)
               (*error-output* output))
-          (invoke-with-recorded-status fn))
-      (return-from invoke-with-recorded-status-and-output
-        (list* :output (string-right-trim '(#\Newline) (get-output-stream-string output)) status)))))
+          (invoke-with-recorded-status backtracep fn))
+      (list* :output (string-right-trim '(#\Newline) (get-output-stream-string output)) status))))
 
-(defmacro with-recorded-status ((&key record-output) &body body)
+(defmacro with-recorded-status ((&key record-backtrace record-output) &body body)
   "Execute BODY, while recording its return value and its various effects,
 returning them in a property list, with following properties:
 
@@ -176,8 +184,11 @@ returning them in a property list, with following properties:
  :OUTPUT       - the aggregate output to the *STANDARD-OUTPUT* and *ERROR-OUTPUT*
                  streams, captured when RECORD-OUTPUT evaluates to non-NIL;
  :CONDITION    - the condition of type ERROR, if any such arises during execution
-                 of BODY."
+                 of BODY;
+ :BACKTRACE    - the backtrace at the point of occurence of the error, if both
+                 the error occured, and RECORD-BACKTRACE evaluates to non-NIL."
   `(funcall (if ,record-output #'invoke-with-recorded-status-and-output #'invoke-with-recorded-status)
+            ,record-backtrace
             (lambda () ,@body)))
 
 (defmacro condition-bind-default ((&rest bindings) &body body)

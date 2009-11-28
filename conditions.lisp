@@ -162,8 +162,9 @@ shifting normal return values produced by BODY by two."
          (multiple-value-call #'values nil nil (progn ,@body))))))
 
 (defun invoke-with-recorded-status (backtracep fn)
+  (declare (boolean backtracep) (function fn))
   (multiple-value-bind (condition backtrace return-value)
-      (with-collected-conditions (error backtracep)
+      (with-collected-conditions (serious-condition backtracep)
         (funcall fn))
     (list* :return-value return-value
            (when condition (list* :condition (format nil "~A" condition)
@@ -171,6 +172,7 @@ shifting normal return values produced by BODY by two."
                                     `(:backtrace ,backtrace)))))))
 
 (defun invoke-with-recorded-status-and-output (backtracep fn)
+  (declare (boolean backtracep) (function fn))
   (let ((output (make-string-output-stream)))
     (destructuring-bind (&rest status &key &allow-other-keys)
         (let ((*standard-output* output)

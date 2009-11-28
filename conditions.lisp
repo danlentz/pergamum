@@ -30,6 +30,9 @@
 (defun backtrace-as-list (&optional (count most-positive-fixnum))
   #+sbcl (sb-debug:backtrace-as-list count))
 
+(defun print-backtrace-frame (frame &optional (stream *debug-io*))
+  #+sbcl (sb-debug::print-frame-call frame stream))
+
 (defmacro with-condition-recourses (condition form &body clauses)
   "Execute FORM in the dynamic environment where a number of recourses
    for CONDITION is available, which determine reactions to it, and

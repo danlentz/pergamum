@@ -19,7 +19,7 @@
    #:copy-slots #:slot-value* #:define-print-object-method #:primary-method-not-required #:most-specific-last
    ;; conditions.lisp
    #:*debug-condition* #:dsignal #:derror
-   #:backtrace #:backtrace-as-list
+   #:backtrace #:backtrace-as-list #:print-backtrace-frame
    #:with-condition-recourses #:call-next-recourse-and-retry
    #:make-condition-raiser #:make-error-raiser 
    #:with-retry-restarts #:with-ignore-restart

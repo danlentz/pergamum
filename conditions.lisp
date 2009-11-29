@@ -170,7 +170,7 @@ shifting normal return values produced by BODY by two."
       (with-collected-conditions (serious-condition backtracep backtrace-as-list-p)
         (funcall fn))
     (list* :return-value return-value
-           (when condition (list* :condition (format nil "~A" condition)
+           (when condition (list* :condition condition
                                   (when backtrace
                                     `(:backtrace ,backtrace)))))))
 

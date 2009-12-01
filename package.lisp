@@ -107,7 +107,6 @@
    #:check-size-alignment #:check-address-alignment
    ;; extent.lisp
    #:baseless-extent #:extent #:make-extent #:base #:size #:end #:extent-data #:inp #:intersectp
-   #:coerce-to-sequence
    #:subextent* #:subextent-abs* #:subextent #:subextent-abs
    #:split-extent #:with-split-extent
    #:extent-mask
@@ -134,6 +133,8 @@
    #:u8-extents #:write-u8-extents
    ;; read.lisp
    #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader
+   ;; types.lisp
+   #:coerce-to-sequence #:remove-if-not-subtype-of
    ;; packages.lisp
    #:mar #:export-unmarred
    #:tunnel-package

@@ -36,6 +36,7 @@
    (:file "files" :depends-on ("streams"))
    (:file "lambda-lists" :depends-on ("pergamum"))
    (:file "u8-sequence" :depends-on ("alignment" "extent"))
+   (:file "types" :depends-on ("extent"))
    ;; tier 4
    (:file "bioable" :depends-on ("extent" "objects" "u8-sequence"))
    ;; expunge tier

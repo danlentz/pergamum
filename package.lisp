@@ -3,16 +3,36 @@
 
 (defpackage pergamum
   (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
-  (:import-from :cl-fad #:directory-exists-p #:file-exists-p)
+  (:import-from :cl-fad
+                #:directory-exists-p
+                #:file-exists-p)
   (:export
    ;; basis.lisp
-   #:symbol-macro-p #:progn-1 #:lret #:lret* #:if-let* #:case-let #:fcase #:fcase-1 #:fif #:fif-1 #:map-remove-if-not #:syncformat
+   #:symbol-macro-p
+   #:progn-1
+   #:lret
+   #:lret*
+   #:if-let*
+   #:case-let
+   #:fcase
+   #:fcase-1
+   #:fif
+   #:fif-1
+   #:map-remove-if-not
+   #:syncformat
    ;; control-flow.lisp
-   #:when-lret #:if-lret #:if-lret*
+   #:when-lret
+   #:if-lret
+   #:if-lret*
    ;; forms.lisp
-   #:quoted-p #:quoted-form
+   #:quoted-p
+   #:quoted-form
    ;; binary.lisp
-   #:logandf #:logiorf #:logandcf
+   #:logandf
+   #:logiorf
+   #:logandcf
+   ;; binding.lisp
+   #:define-execute-with-bound-variable
    ;; classes.lisp
    #:define-protocol-class
    ;; objects.lisp
@@ -36,7 +56,6 @@
    #:feq #:feql #:fequal #:fequalp #:f=
    #:latch #:bukkake-combine #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:apply/find-if
    #:iterate-until #:collect-until #:or-p #:and-p
-   #:define-execute-with-special
    #:function-insn-vector #:disassemble-insn-vector
    ;; lists.lisp
    #:nfsubst #:make-queue #:enqueue #:dequeue #:queue-contents #:queue-empty-p #:mapqueue #:mapcons #:unzip #:diff-lists

@@ -4,20 +4,27 @@
 (in-package :pergamum)
 
 
-(defmacro define-execute-with-special (name)
-  (let ((execute-with-fn-name (format-symbol (symbol-package name) "EXECUTE-WITH-~A" name))
-        (with-macro-name (format-symbol (symbol-package name) "WITH-~A" name))
-        (special-var-name (format-symbol (symbol-package name) "*~A*" name)))
-    `(progn
-       (defun ,execute-with-fn-name (,name fn)
-         ,(format nil "Call FN within dynamic context where ~A is bound to ~A.
-FN must be a function of no arguments." special-var-name name)
-         (let ((,special-var-name ,name))
-           (declare (special ,special-var-name))
-           (funcall fn)))
-
-       (defmacro ,with-macro-name (,name &body body)
-         ,(format nil "Execute BODY within dynamic context where ~A is bound to
-the result of evaluation of ~A." special-var-name name)
-         
-         `(,',execute-with-fn-name ,,name (lambda () ,@body))))))
+(defmacro define-execute-with-bound-variable (variable &body options)
+  (let* ((package (symbol-package variable))
+         (invoker-name (format-symbol package "EXECUTE-WITH-~A-BOUND" variable)))
+    (multiple-value-bind (bindings unrecognised) (unzip (compose (curry #'eq :binding) #'car) options)
+      (when unrecognised
+        (error "~@<In ~A: unrecognised options: ~A.~:@>"
+               'define-execute-with-maybe-bound-variable (mapcar #'car unrecognised)))
+      `(progn
+         (defun ,invoker-name (maybe value fn)
+           ,(format nil "Execute FN with ~A possibly bound to VALUE, depending on whether MAYBE is non-NIL." variable)
+           (if maybe
+               (let ((,variable value))
+                 (funcall fn))
+               (funcall fn)))
+         ,@(iter (for binding in bindings)
+                 (destructuring-bind (name form &key (define-with-macro t) define-with-maybe-macro documentation) (rest binding)
+                   (when define-with-macro
+                     (collect `(defmacro ,(format-symbol package "WITH-~A" name) (() &body body)
+                                 ,@(when documentation `(,documentation))
+                                 `(,',invoker-name t ,',form (lambda () ,@body)))))
+                   (when define-with-maybe-macro
+                     (collect `(defmacro ,(format-symbol package "WITH-MAYBE-~A" name) ((maybe) &body body)
+                                 ,@(when documentation `(,documentation))
+                                 `(,',invoker-name ,maybe ,',form (lambda () ,@body)))))))))))

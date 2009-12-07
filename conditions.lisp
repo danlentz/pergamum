@@ -174,14 +174,15 @@ shifting normal return values produced by BODY by two."
                                   (when backtrace
                                     `(:backtrace ,backtrace)))))))
 
-(defun invoke-with-recorded-status-and-output (backtracep backtrace-as-list-p fn)
-  (declare (boolean backtracep) (function fn))
-  (let ((output (make-string-output-stream)))
-    (destructuring-bind (&rest status &key &allow-other-keys)
-        (let ((*standard-output* output)
-              (*error-output* output))
-          (invoke-with-recorded-status backtracep backtrace-as-list-p fn))
-      (list* :output (string-right-trim '(#\Newline) (get-output-stream-string output)) status))))
+(defun invoke-with-maybe-prepended-output (maybe fn)
+  (declare (boolean maybe) (function fn))
+  (if maybe
+      (let ((output (make-string-output-stream)))
+        (destructuring-bind (&rest status &key &allow-other-keys) (let ((*standard-output* output)
+                                                                        (*error-output* output))
+                                                                    (funcall fn))
+          (list* :output (string-right-trim '(#\Newline) (get-output-stream-string output)) status)))
+      (funcall fn)))
 
 (defmacro with-recorded-status ((&key record-backtrace backtrace-as-list record-output) &body body)
   "Execute BODY, while recording its return value and its various effects,
@@ -195,9 +196,11 @@ returning them in a property list, with following properties:
                  of BODY;
  :BACKTRACE    - the backtrace at the point of occurence of the error, if both
                  the error occured, and RECORD-BACKTRACE evaluates to non-NIL."
-  `(funcall (if ,record-output #'invoke-with-recorded-status-and-output #'invoke-with-recorded-status)
-            ,record-backtrace ,backtrace-as-list
-            (lambda () ,@body)))
+  `(invoke-with-maybe-prepended-output
+    ,record-output
+    (lambda ()
+      (invoke-with-recorded-status ,record-backtrace ,backtrace-as-list
+                                   (lambda () ,@body)))))
 
 (defmacro condition-bind-default ((&rest bindings) &body body)
   "Establish default bindings in the Zetalisp style, as described in the

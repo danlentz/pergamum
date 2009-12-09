@@ -1,9 +1,4 @@
-;;; -*- Mode: Lisp -*-
-
-(defpackage :pergamum.system
-  (:use :cl :asdf))
-
-(in-package :pergamum.system)
+;;; -*- Mode: Lisp; indent-tabs-mode: nil -*-
 
 (defsystem :pergamum
   :depends-on (:alexandria :iterate :cl-fad)

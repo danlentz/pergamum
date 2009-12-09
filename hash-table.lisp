@@ -149,9 +149,10 @@ occupying KEY. The second return value indicates success."
                                           (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                          (t
                                           (format-symbol (symbol-package accessor-name) "DO-~AS" accessor-name)))
-       ((,@(when iterator-bind-key '(key)) var container) &body body)
+       ((,@(when iterator-bind-key '(key)) var container &optional block-name) &body body)
        ;; IQ test: do you understand ,',? I don't. ; ;
-       `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform ,container))
+       `(iter ,@(when block-name `(,block-name))
+              (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform ,container))
                                                                                  (container-slot ``(slot-value ,container ,'',container-slot))
                                                                                  (t 'container)))
               ,@body))))
@@ -316,9 +317,10 @@ Typical usages include:
                `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
                                   (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                   (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
-                     ((,@(when iterator-bind-key '(key)) var) &body body)
+                     ((,@(when iterator-bind-key '(key)) var &optional block-name) &body body)
                    ;; IQ test: do you understand ,',? I don't.
-                   `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
+                   `(iter ,@(when block-name `(,block-name))
+                          (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
                                                                                              (container-slot ``(slot-value container ,'',container-slot))
                                                                                              (t `',container)))
                           ,@body))))
@@ -353,9 +355,10 @@ are as per DEFINE-ROOT-CONTAINER."
                           `((,(cond ((and iterator (not (eq iterator t))) iterator)
                                     (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
                                     (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
-                                ((,@(when iterator-bind-key '(key)) var) &body body)
+                                ((,@(when iterator-bind-key '(key)) var &optional block-name) &body body)
                               ;; IQ test: do you understand ,',? I don't. ; ;
-                              `(iter (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
+                              `(iter ,@(when block-name `(,block-name))
+                                     (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
                                                                                                         (container-slot ``(slot-value container ,'',container-slot))
                                                                                                         (t `',container)))
                                      ,@body)))))

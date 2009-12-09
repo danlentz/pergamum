@@ -26,7 +26,7 @@
 
 (defun backtrace (&optional (count most-positive-fixnum) (stream *debug-io*))
   #-(or sbcl ecl clisp) (not-implemented 'backtrace)
-  #+sbcl (sb-debug:backtrace)
+  #+sbcl (sb-debug:backtrace count stream)
   #+ecl (si::tpl-backtrace)
   #+clisp (system::debug-backtrace-1))
 

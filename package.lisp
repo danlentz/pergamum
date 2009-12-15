@@ -53,6 +53,7 @@
    #:redefinition #:simple-redefinition #:bad-redefinition #:warn-redefinition
    #:missing-implementation #:not-implemented
    ;; functions.lisp
+   #:compose* #:reduce*
    #:feq #:feql #:fequal #:fequalp #:f=
    #:latch #:bukkake-combine #:maybe #:maybecall #:xform #:xform-if #:xform-if-not #:apply/find-if
    #:iterate-until #:collect-until #:or-p #:and-p

@@ -3,6 +3,34 @@
 
 (in-package :pergamum)
 
+
+(defun compose* (&rest functions)
+  "Return a function composed of FUNCTIONS, each of which must be a function of two arguments,
+except the last one, which can accept an arbitrary amount of arguments.  The resulting function requires
+at least one argument per function provided plus the amount of arguments required by the last function,
+minus one.  The value returned by the resulting function is computed by first taking the last
+ (1+ (- N-TOTAL-ARGUMENTS (LENGTH FUNCTIONS))) arguments and applying the last function to them, using
+the returned value to iteratively reduce the remaining arguments with remaining functions, by applying,
+on each step, the last remaining function to the last remaining argument and the value obtained on the
+previous step.
+
+Example: (FUNCALL (COMPOSE* #'CONS #'* #'+ #'LENGTH) :A 3 1 '(1)) => (:A . 6)"
+  (when (null functions)
+    (error "~@<Must specify at least one function.~:@>"))
+  (reduce (lambda (f acc)
+            (lambda (arg &rest args)
+              (funcall f arg (apply acc args))))
+          functions
+          :from-end t))
+
+(defun reduce* (fn initial-value &rest sequences)
+  (if (every #'null sequences)
+      initial-value
+      (iter (for marker initially sequences then (mapcar #'cdr marker))
+            (until (every #'null marker))
+            (for value = (apply fn (if (first-iteration-p) initial-value value) (mapcar #'car marker)))
+            (finally (return value)))))
+
 (defun feq (val)
   "An EQ currier."
   (lambda (x) (eq x val)))

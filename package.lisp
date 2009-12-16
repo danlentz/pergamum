@@ -78,7 +78,7 @@
    #:prepend
    #:emit-let #:emit-lambda #:emit-named-lambda #:with-named-lambda-emission #:emit-defun #:with-defun-emission
    #:emit-declarations
-   #:measuring-time-lapse #:measuring-time-lapse-1 #:measuring-performance
+   #:with-measured-time-lapse #:with-measured-time-lapse-1 #:with-measured-performance
    ;; lambda-lists.lisp
    #:&mandatory
    #:map-lambda-list #:map-lambda-list-bindings-actuals #:map-lambda-list-defaults-actuals

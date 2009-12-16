@@ -48,45 +48,44 @@ When END is NIL, it is interpreted as the minimum of lengths of A1 and A2."
   (iter (for i from start below (or end (min (length a1) (length a2))))
         (always (= (aref a1 i) (aref a2 i)))))
 
-(defmacro measuring-time-lapse-1 ((time-var) measured-form &body body)
+(defmacro with-measured-time-lapse-1 ((time-var) measured-form &body body)
   "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to
-   amount of seconds it took to execute MEASURED-FORM.
-
-   The return value is that of the MEASURED-FORM."
+amount of seconds it took to execute MEASURED-FORM.
+The return value is that of the MEASURED-FORM."
   (with-gensyms (start-time)
     `(let ((,start-time (get-internal-real-time)))
        (prog1 ,measured-form
          (let* ((,time-var (coerce (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second) 'float)))
            ,@body)))))
 
-(defmacro measuring-time-lapse ((time-var) measured-form &body body)
+(defmacro with-measured-time-lapse ((time-var) measured-form &body body)
   "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to
-   amount of seconds it took to execute MEASURED-FORM.
-
-   The return value is that of the last form in BODY."
+amount of seconds it took to execute MEASURED-FORM.
+The return value is that of the last form in BODY."
   (with-gensyms (start-time)
     `(let ((,start-time (get-internal-real-time)))
        ,measured-form
        (let ((,time-var (float (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second))))
          ,@body))))
 
-(defmacro measuring-performance ((unit-var units &key (rounds 8) (strategy 'minimize) (scale :unit) (type 'float)) &body body)
+(defmacro with-measured-performance ((unit-var units &key (rounds 8) (strategy 'minimize) (scale :unit) (type 'float)) &body body)
   "Try measuring performance of BODY's execution, with UNITS numerically representing the total amount
-   of work, by splitting that work by executing FORM ROUNDS times with UNIT-VAR bound to a proportionally
-   small amount and measuring time of each execution.
-   STRATEGY is then applied to select the execution time from candidates, and that is used
-   to calculate unit-per-second performance, as a numeric value scaled with regard to SCALE, and
-   coerced to TYPE, which must be a subtype of RATIONAL.
+of work, by splitting that work by executing FORM ROUNDS times with UNIT-VAR bound to a proportionally
+small amount and measuring time of each execution.
+STRATEGY is then applied to select the execution time from candidates, and that is used
+to calculate unit-per-second performance, as a numeric value scaled with regard to SCALE, and
+coerced to TYPE, which must be a subtype of RATIONAL.
 
-   STRATEGY can be either MINIMIZE or MAXIMIZE.
-   SCALE can be either :UNIT, :K, :KI, :M or :MI, for scale of 1, 1000, 1024, 1000000 and 1048576,
-   correspondingly, or a numeric constant."
+STRATEGY can be either MINIMIZE or MAXIMIZE.
+SCALE can be either :UNIT, :K, :KI, :M or :MI, for scale of 1, 1000, 1024, 1000000 and 1048576,
+correspondingly, or a numeric constant."
+  (declare (type (member minimize maximize) strategy))
   (with-gensyms (seconds)
     `(let ((,unit-var (coerce (ceiling ,units ,rounds) 'integer)))
        (coerce
         (round ,unit-var
                (* (iter (repeat ,rounds)
-                        (,strategy (measuring-time-lapse (,seconds) (progn ,@body)
+                        (,strategy (with-measured-time-lapse (,seconds) (progn ,@body)
                                      ,seconds)))
                   ,(case scale
                          (:unit 1)

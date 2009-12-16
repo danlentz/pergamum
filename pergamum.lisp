@@ -48,7 +48,7 @@ When END is NIL, it is interpreted as the minimum of lengths of A1 and A2."
   (iter (for i from start below (or end (min (length a1) (length a2))))
         (always (= (aref a1 i) (aref a2 i)))))
 
-(defmacro with-measured-time-lapse-1 ((time-var) measured-form &body body)
+(defmacro with-measured-time-lapse ((time-var) measured-form &body body)
   "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to
 amount of seconds it took to execute MEASURED-FORM.
 The return value is that of the MEASURED-FORM."
@@ -58,7 +58,7 @@ The return value is that of the MEASURED-FORM."
          (let* ((,time-var (coerce (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second) 'float)))
            ,@body)))))
 
-(defmacro with-measured-time-lapse ((time-var) measured-form &body body)
+(defmacro with-time-lapse-measure ((time-var) measured-form &body body)
   "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to
 amount of seconds it took to execute MEASURED-FORM.
 The return value is that of the last form in BODY."
@@ -85,7 +85,7 @@ correspondingly, or a numeric constant."
        (coerce
         (round ,unit-var
                (* (iter (repeat ,rounds)
-                        (,strategy (with-measured-time-lapse (,seconds) (progn ,@body)
+                        (,strategy (with-time-lapse-measure (,seconds) (progn ,@body)
                                      ,seconds)))
                   ,(case scale
                          (:unit 1)

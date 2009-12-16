@@ -36,3 +36,15 @@
   "Enable {#'a #'b #'c} syntax for function composition."
   (set-macro-character  #\{ #'compose-reader t)
   (set-syntax-from-char #\} #\)))
+
+(defun invoke-with-safe-reader-context (fn)
+  (let ((*read-eval* nil)
+        (*readtable* (copy-readtable)))
+    (set-dispatch-macro-character #\# #\. (lambda (stream &optional char sharp)
+                                            (declare (ignore char sharp))
+                                            (let ((*read-suppress* t))
+                                              (read stream nil nil t))))
+    (funcall fn)))
+
+(defmacro with-safe-reader-context (() &body body)
+  `(invoke-with-safe-reader-context (lambda () ,@body)))

@@ -116,28 +116,53 @@
    #:extent-spec #:extent #:print-extent-spec #:print-extent #:serialize-extent #:serialize-extent-list #:extent-reader #:read-extent-list
    #:do-extent-spec-aligned-blocks #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
-   #:u8-vector-wordle #:u8-vector-wordbe
-   #:u8-vector-word16le #:u8-vector-word16be
-   #:u8-vector-word32le #:u8-vector-word32be
-   #:u8-vector-word64le #:u8-vector-word64be
-   #:u32le-vector-to-u8 #:u32be-vector-to-u8 #:u8-vector-to-u32le #:u8-vector-to-u32be
-   #:u8-seq-word16le #:u8-seq-word16be
-   #:u8-seq-word32le #:u8-seq-word32be
-   #:u8-seq-word64le #:u8-seq-word64be
-   #:u8-seq-wordle #:u8-seq-wordbe
-   #:align-extend-u8-extent #:align-extend-u8-extent-inplace
-   #:print-u8-sequence #:print-u8-sequence-diff
+   #:u8-vector-wordle
+   #:u8-vector-wordbe
+   #:u8-vector-word16le
+   #:u8-vector-word16be
+   #:u8-vector-word32le
+   #:u8-vector-word32be
+   #:u8-vector-word64le
+   #:u8-vector-word64be
+   #:u32le-vector-to-u8
+   #:u32be-vector-to-u8
+   #:u8-vector-to-u32le
+   #:u8-vector-to-u32be
+   #:u8-seq-word16le
+   #:u8-seq-word16be
+   #:u8-seq-word32le
+   #:u8-seq-word32be
+   #:u8-seq-word64le
+   #:u8-seq-word64be
+   #:u8-seq-wordle
+   #:u8-seq-wordbe
+   #:align-extend-u8-extent
+   #:align-extend-u8-extent-inplace
+   #:print-u8-sequence
+   #:print-u8-sequence-diff
    ;; bioable.lisp
-   #:bioable #:bioable-range
-   #:read-block #:write-block #:write-blocks
-   #:u8-extent #:write-u8-extent
-   #:u8-extents #:write-u8-extents
+   #:bioable
+   #:bioable-range
+   #:read-block
+   #:write-block
+   #:write-blocks
+   #:u8-extent
+   #:write-u8-extent
+   #:u8-extents
+   #:write-u8-extents
    ;; read.lisp
-   #:make-unreadable-object #:enable-array-reader #:enable-compose-reader #:enable-curry-reader
+   #:make-unreadable-object
+   #:enable-array-reader
+   #:enable-compose-reader
+   #:enable-curry-reader
+   #:invoke-with-safe-reader-context
+   #:with-safe-reader-context
    ;; types.lisp
-   #:coerce-to-sequence #:remove-if-not-subtype-of
+   #:coerce-to-sequence
+   #:remove-if-not-subtype-of
    ;; packages.lisp
-   #:mar #:export-unmarred
+   #:mar
+   #:export-unmarred
    #:tunnel-package
    ;; to-expunge.lisp
    ))

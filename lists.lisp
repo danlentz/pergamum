@@ -48,13 +48,11 @@
     (queue-contents q)))
 
 (defun unzip (fn sequence &key (key #'identity))
-  (let (ret-yes ret-no)
-    (iter (for elt in sequence)
-          (if (funcall fn (funcall key elt))
-              (collect elt into yes)
-              (collect elt into no))
-          (finally (setf ret-yes yes ret-no no)))
-    (values ret-yes ret-no)))
+  (iter (for elt in sequence)
+        (if (funcall fn (funcall key elt))
+            (collect elt into yes)
+            (collect elt into no))
+        (finally (return (values yes no)))))
 
 (defun plist-difference (plist keys)
   "Return a copy of PLIST with all key-value pairs present in KEYS

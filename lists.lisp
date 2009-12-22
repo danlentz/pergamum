@@ -102,13 +102,27 @@
    first argument to its union with SETS. All arguments are subject to
    potential mutation.")
 
-(defun maptree (fn tree)
-  "Return a copy of TREE with non-CONSes substituted with the result of
-applying FN to them."
+(defun maptree (fn atomp child-list-fn root-node &key collect-non-atoms)
+  "Return a listified copy of a generic tree, defined by its ROOT-NODE,
+the ATOMP predicate and the CHILD-LIST-FN node accessor.
+Atoms of the tree are substituted with the result of applying FN to them.
+When COLLECT-NON-ATOMS is non-NIL, "
+  (labels ((trec (node)
+             (if (funcall atomp node)
+                 (funcall fn node)
+                 (let ((processed-childs (mapcar #'trec (funcall child-list-fn node))))
+                   (if collect-non-atoms
+                       (cons (funcall fn node) processed-childs)
+                       processed-childs)))))
+    (trec root-node)))
+
+(defun map-list-tree (fn tree)
+  "Like MAPTREE with ATOM being the atomicity predicate, IDENTITY being the
+child list accessor and without non-atom collection."
   (labels ((trec (tree)
              (when tree
-               (cons (if (consp (car tree))
-                         (trec (car tree))
-                         (funcall fn (car tree)))
+               (cons (if (atom (car tree))
+                         (funcall fn (car tree))
+                         (trec (car tree)))
                      (trec (cdr tree))))))
     (trec tree)))

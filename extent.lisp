@@ -15,7 +15,7 @@
 (defun check-extent (extent)
   "See if EXTENT is a valid extentile."
   (unless (etypecase extent
-            (cons (and (realp (car extent)) (realp (cdr extent)) (>= (cdr extent) 0)))
+            (cons (and (realp (car extent)) (realp (cdr extent))))
             (extent (and (realp (extent-base extent)) (typep (extent-data extent) 'vector))))
     (error "~@<~S is neither a valid extent nor a valid extent spec.~:@>" extent)))
 
@@ -47,9 +47,9 @@ KEYS, except ELEMENT-TYPE, are passed as-is to MAKE-INSTANCE."
   "Make an extentile with BASE, with type dependent on type of SIZE-OR-DATA.
 If the latter is a vector, then a generic extent is made, otherwise
 the result is an extent spec."
-  (if (vectorp size-or-data)
-      (make-extent 'extent base size-or-data)
-      (cons base size-or-data)))
+  (etypecase size-or-data
+    (vector (make-extent 'extent base size-or-data))
+    (real (cons base size-or-data))))
 
 (defun coerce-to-sequence (o)
   (etypecase o
@@ -60,23 +60,29 @@ the result is an extent spec."
 (defun base (extent)
   "Given EXTENT, return its base."
   (declare (type extentile extent))
-  (if (consp extent)
-      (car extent)
-      (extent-base extent)))
+  (etypecase extent
+    (cons (car extent))
+    (extent (extent-base extent))))
 
 (defun (setf base) (value extent)
   "Given EXTENT, return its base."
   (declare (type extentile extent))
-  (if (consp extent)
-      (setf (car extent) value)
-      (setf (extent-base extent) value)))
+  (etypecase extent
+    (cons (setf (car extent) value))
+    (extent (setf (extent-base extent) value))))
 
 (defun size (extent)
   "Given EXTENT, return its size."
   (declare (type extentile extent))
-  (if (consp extent)
-      (cdr extent)
-      (array-dimension (extent-data extent) 0)))
+  (etypecase extent
+    (cons (cdr extent))
+    (extent (array-dimension (extent-data extent) 0))))
+
+(defun (setf size) (value extent)
+  "Change EXTENT's size to VALUE."
+  (etypecase extent
+    (cons (setf (cdr extent) value))
+    (extent (error "~@<Extent size modification is not supported.~:@>"))))
 
 (defun end (extent)
   "Given EXTENT, return its end."
@@ -86,15 +92,17 @@ the result is an extent spec."
 (defun inp (extent p)
   "Given EXTENT, see if absolute value P is within it."
   (declare (type extentile extent) (type integer p))
-  (let ((base (base extent)))
-    (and (>= p base) (< p (+ base (size extent))))))
+  (if (plusp (size extent))
+      (>=/< p (base extent) (end extent))
+      (>/=< p (end extent) (base extent))))
 
 (defun intersectp (x y)
   "Determine whether extents X and Y intersect."
   (declare (type extentile x y))
-  (and (plusp (size x)) (plusp (size y))
+  (and (not (or (zerop (size x)) (zerop (size y))))
        (or (inp x (base y))
-           (inp x (1- (end y))))))
+           (inp x (+ (end y) (if (plusp (size y))
+                                 1 -1))))))
 
 (defun split-extent (extent offset &optional ignore-head ignore-tail)
   "Produce two subextents of EXTENT, by splitting it at OFFSET.

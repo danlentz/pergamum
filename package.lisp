@@ -118,6 +118,10 @@
    #+sbcl #:rename-class-slot
    #:slot-definition-documentation
    ;; numbers.lisp
+   #:><
+   #:>=<
+   #:>=/<
+   #:>/=<
    #:power-of-2-p
    #:ilog2-ceiling
    #:ilog2-cover

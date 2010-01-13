@@ -3,6 +3,19 @@
 
 (in-package :pergamum)
 
+
+(defun >< (y x1 x2)
+  (and (> y x1) (< y x2)))
+
+(defun >=< (y x1 x2)
+  (and (>= y x1) (<= y x2)))
+
+(defun >=/< (y x1 x2)
+  (and (>= y x1) (< y x2)))
+
+(defun >/=< (y x1 x2)
+  (and (> y x1) (<= y x2)))
+
 (defun power-of-2-p (x)
   (zerop (logand x (1- x))))
 

@@ -57,9 +57,11 @@ the truename, which isn't there with dead symlinks."
   #+ccl (ccl::%delete-file p))
 
 (defun make-symlink (symlink target)
-  #-(or (and sbcl (not win32)) (and clisp unix)) (not-implemented 'make-symlink)
+  #-(or (and sbcl (not win32)) (and clisp unix) ecl ccl) (not-implemented 'make-symlink)
   #+(and sbcl (not win32)) (sb-posix:symlink target symlink)
-  #+(and clisp unix) (linux:symlink target symlink))
+  #+(and clisp unix) (linux:symlink target symlink)
+  #+ecl (ext:run-program "/bin/ln" (list "-s" (namestring symlink) (namestring target)) :wait t :input nil :output nil :error nil)
+  #+ccl (ccl:run-program "/bin/ln" (list "-s" (namestring symlink) (namestring target)) :wait t :input nil :output nil :error nil))
 
 (defun backtrace (&optional (count most-positive-fixnum) (stream *debug-io*))
   #-(or sbcl ecl clisp) (not-implemented 'backtrace)

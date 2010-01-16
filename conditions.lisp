@@ -24,22 +24,6 @@
     (signal *debug-condition*)
     (invoke-debugger *debug-condition*)))
 
-(defun backtrace (&optional (count most-positive-fixnum) (stream *debug-io*))
-  #-(or sbcl ecl clisp) (not-implemented 'backtrace)
-  #+sbcl (sb-debug:backtrace count stream)
-  #+ecl (si::tpl-backtrace)
-  #+clisp (system::debug-backtrace-1)
-  #+ccl "")
-
-(defun backtrace-as-list (&optional (count most-positive-fixnum))
-  #-(or sbcl ccl) (not-implemented 'backtrace-as-list)
-  #+sbcl (sb-debug:backtrace-as-list count)
-  #+ccl (ccl::backtrace-as-list count))
-
-(defun print-backtrace-frame (frame &optional (stream *debug-io*))
-  #-(or sbcl) (not-implemented 'print-frame-call)
-  #+sbcl (sb-debug::print-frame-call frame stream))
-
 (defmacro with-condition-recourses (condition form &body clauses)
   "Execute FORM in the dynamic environment where a number of recourses
    for CONDITION is available, which determine reactions to it, and

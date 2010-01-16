@@ -7,23 +7,6 @@
 
 (define-condition pathname-not-present (file-error) ())
 
-(defun posix-working-directory ()
-  "Return the POSIX idea of the current working directory."
-   #-(or sbcl ecl ccl) (not-implemented 'posix-working-directory)
-  #+sbcl (sb-posix:getcwd)
-  #+ecl (si:getcwd)
-  #+ccl (ccl::current-directory-name))
-
-(defun set-posix-working-directory (pathname)
-  "Change the POSIX view of the current directory."
-  (zerop 
-   #-(or sbcl ecl ccl) (not-implemented 'set-posix-working-directory)
-   #+sbcl (sb-posix:chdir pathname)
-   #+ecl (si:chdir pathname)
-   #+ccl (ccl::%chdir (namestring pathname))))
-
-(defsetf posix-working-directory set-posix-working-directory)
-
 (defun check-pathname-not-occupied (pathname)
   "Check that PATHNAME is not occupied, and raise a error of type
 PATHNAME-BUSY otherwise."
@@ -119,26 +102,10 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
       ;; "It is an error [...] for filespec to contain a nil component where the file system does not permit a nil component..."
       (rename-file (namestring pathname) (namestring (make-pathname :directory (append (pathname-directory target-directory) (list (lastcar (pathname-directory pathname)))))))))
 
-(defun make-directory (pathname &optional (mode #o755))
-  #-(or sbcl ccl) (not-implemented 'make-directory)
-  #+sbcl (sb-posix:mkdir pathname mode)
-  #+ccl (ccl::%mkdir pathname mode))
-
-(defun remove-file (p)
-  "We need this because DELETE-FILE deletes the symlink target,
-instead of the symlink itself."
-  #-(or sbcl ccl) (not-implemented 'remove-file)
-  #+sbcl (sb-posix:unlink p)
-  #+ccl (ccl::%delete-file p))
-
 (defun symlink-to-p (symlink target)
   "See if SYMLINK does point at TARGET."
   (if-let ((destination (file-exists-p symlink)))
     (pathname-match-p destination target)))
-
-(defun make-symlink (symlink target)
-  #-(or (and sbcl (not win32)) ccl) (not-implemented 'make-symlink)
-  #+(and sbcl (not win32)) (sb-posix:symlink target symlink))
 
 (defun symlink-target-file (symlink)
   "See if the file SYMLINK points at exists, and return that."

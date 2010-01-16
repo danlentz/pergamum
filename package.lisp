@@ -2,11 +2,22 @@
 ;;;
 
 (defpackage pergamum
-  (:use :common-lisp :alexandria :iterate)
+  (:use :common-lisp :alexandria :iterate :feet-of-clay)
   (:import-from :cl-fad
                 #:directory-exists-p
                 #:file-exists-p)
   (:export
+   ;; reexport feet-of-clay
+   #:posix-working-directory
+   #:set-posix-working-directory
+   #:make-directory
+   #:remove-file
+   #:make-symlink
+   #:backtrace
+   #:backtrace-as-list
+   #:print-backtrace-frame
+   #:function-insn-vector
+   #:disassemble-insn-vector
    ;; basis.lisp
    #:symbol-macro-p
    #:progn-1
@@ -45,9 +56,6 @@
    #:*debug-condition*
    #:dsignal
    #:derror
-   #:backtrace
-   #:backtrace-as-list
-   #:print-backtrace-frame
    #:with-condition-recourses
    #:call-next-recourse-and-retry
    #:make-condition-raiser
@@ -93,8 +101,6 @@
    #:collect-until
    #:or-p
    #:and-p
-   #:function-insn-vector
-   #:disassemble-insn-vector
    ;; lists.lisp
    #:nfsubst
    #:make-queue
@@ -183,8 +189,6 @@
    ;; files.lisp
    #:pathname-busy
    #:pathname-not-present
-   #:posix-working-directory
-   #:set-posix-working-directory
    #:check-pathname-not-occupied
    #:within-directory
    #:directory-created-p
@@ -195,10 +199,7 @@
    #:file-line
    #:with-output-to-file
    #:rename-to-directory
-   #:make-directory
-   #:remove-file
    #:symlink-to-p
-   #:make-symlink
    #:symlink-target-file
    #:ensure-symlink
    ;; hash-table.lisp

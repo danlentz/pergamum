@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10; indent-tabs-mode: nil; show-trailing-whitespace: t -*-
 ;;;
 
 (in-package :pergamum)
@@ -151,20 +151,3 @@ Example: (FUNCALL (COMPOSE* #'CONS #'* #'+ #'LENGTH) :A 3 1 '(1)) => (:A . 6)"
 
 (defun and-p (a b)
   (and a b))
-
-#+sbcl
-(defun function-insn-vector (name)
-  (sb-sys:without-gcing
-    (let* ((function (fdefinition name))
-           (object (sb-disassem::fun-code function))
-           (vector-sap (sb-kernel:code-instructions object))
-           (vector-length (sb-disassem::code-inst-area-length object)))
-      (let ((final-vec (make-array vector-length :element-type '(unsigned-byte 8))))
-        (iter (for i below vector-length)
-              (setf (aref final-vec i) (sb-vm::sap-ref-8 vector-sap i)))
-        final-vec))))
-
-#+sbcl
-(defun disassemble-insn-vector (vector &optional (start 0) end)
-  (sb-sys:without-gcing
-    (sb-disassem:disassemble-memory (sb-vm::sap+ (sb-sys:vector-sap vector) start) (- (or end (length vector)) start))))

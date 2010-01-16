@@ -3,8 +3,10 @@
 (defsystem :pergamum
   :depends-on (:alexandria :iterate :cl-fad)
   :components
-  (;; tier 0
-   (:file "package")
+  (;; tier dep
+   (:file "feet-of-clay")
+   ;; tier 0
+   (:file "package" :depends-on ("feet-of-clay"))
    ;; tier 1
    (:file "alignment" :depends-on ("package"))
    (:file "basis" :depends-on ("package"))

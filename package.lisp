@@ -195,6 +195,7 @@
    #:file-line
    #:with-output-to-file
    #:rename-to-directory
+   #:make-directory
    #:remove-file
    #:symlink-to-p
    #:make-symlink

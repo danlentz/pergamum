@@ -20,7 +20,7 @@
    #-(or sbcl ecl ccl) (not-implemented 'set-posix-working-directory)
    #+sbcl (sb-posix:chdir pathname)
    #+ecl (si:chdir pathname)
-   #+ccl (ccl::%chdir pathname)))
+   #+ccl (ccl::%chdir (namestring pathname))))
 
 (defsetf posix-working-directory set-posix-working-directory)
 
@@ -118,6 +118,11 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
       ;; In fact, this is weakly supported by CLHS:
       ;; "It is an error [...] for filespec to contain a nil component where the file system does not permit a nil component..."
       (rename-file (namestring pathname) (namestring (make-pathname :directory (append (pathname-directory target-directory) (list (lastcar (pathname-directory pathname)))))))))
+
+(defun make-directory (pathname &optional (mode #o755))
+  #-(or sbcl ccl) (not-implemented 'make-directory)
+  #+sbcl (sb-posix:mkdir pathname mode)
+  #+ccl (ccl::%mkdir pathname mode))
 
 (defun remove-file (p)
   "We need this because DELETE-FILE deletes the symlink target,

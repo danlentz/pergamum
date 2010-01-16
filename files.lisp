@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10; indent-tabs-mode: nil; show-trailing-whitespace: t -*-
 ;;;
 
 (in-package :pergamum)
@@ -9,14 +9,18 @@
 
 (defun posix-working-directory ()
   "Return the POSIX idea of the current working directory."
+   #-(or sbcl ecl ccl) (not-implemented 'posix-working-directory)
   #+sbcl (sb-posix:getcwd)
-  #+ecl (si:getcwd))
+  #+ecl (si:getcwd)
+  #+ccl (ccl::current-directory-name))
 
 (defun set-posix-working-directory (pathname)
   "Change the POSIX view of the current directory."
-  (zerop (#+sbcl sb-posix:chdir
-          #+ecl  si:chdir
-                 pathname)))
+  (zerop 
+   #-(or sbcl ecl ccl) (not-implemented 'set-posix-working-directory)
+   #+sbcl (sb-posix:chdir pathname)
+   #+ecl (si:chdir pathname)
+   #+ccl (ccl::%chdir pathname)))
 
 (defsetf posix-working-directory set-posix-working-directory)
 
@@ -116,8 +120,11 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
       (rename-file (namestring pathname) (namestring (make-pathname :directory (append (pathname-directory target-directory) (list (lastcar (pathname-directory pathname)))))))))
 
 (defun remove-file (p)
+  "We need this because DELETE-FILE deletes the symlink target,
+instead of the symlink itself."
+  #-(or sbcl ccl) (not-implemented 'remove-file)
   #+sbcl (sb-posix:unlink p)
-  #-sbcl (error "~@<Not implemented: REMOVE-FILE.~:@>"))
+  #+ccl (ccl::%delete-file p))
 
 (defun symlink-to-p (symlink target)
   "See if SYMLINK does point at TARGET."
@@ -125,8 +132,8 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
     (pathname-match-p destination target)))
 
 (defun make-symlink (symlink target)
-  #+(and sbcl (not win32)) (sb-posix:symlink target symlink)
-  #+(or (not sbcl) win32) (error "~@<Not implemented: MAKE-SYMLINK.~:@>"))
+  #-(or (and sbcl (not win32)) ccl) (not-implemented 'make-symlink)
+  #+(and sbcl (not win32)) (sb-posix:symlink target symlink))
 
 (defun symlink-target-file (symlink)
   "See if the file SYMLINK points at exists, and return that."

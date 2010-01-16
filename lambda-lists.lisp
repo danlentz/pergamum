@@ -54,10 +54,16 @@
     (rec spec form nil '&mandatory)))
 
 (defun map-lambda-list-defaults-actuals (fn lambda-list application &key insert-keywords)
-  (map-lambda-list (order-funcalling (fn 4) 2 3) lambda-list application :insert-keywords insert-keywords))
+  (map-lambda-list (lambda (i0 i1 a b)
+                     (declare (ignore i0 i1))
+                     (funcall fn a b))
+                   lambda-list application :insert-keywords insert-keywords))
 
 (defun map-lambda-list-bindings-actuals (fn lambda-list application &key insert-keywords)
-  (map-lambda-list (order-funcalling (fn 4) 1 3) lambda-list application :insert-keywords insert-keywords))
+  (map-lambda-list (lambda (i0 a i1 b)
+                     (declare (ignore i0 i1))
+                     (funcall fn a b))
+                   lambda-list application :insert-keywords insert-keywords))
 
 (defun lambda-list-binds (list)
   "Yield a list of symbols bound by a well-formed lambda LIST."

@@ -1,8 +1,8 @@
-;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: PERGAMUM; Base: 10; indent-tabs-mode: nil; show-trailing-whitespace: t -*-
 ;;;
 
 (defpackage pergamum
-  (:use :common-lisp :alexandria :iterate #+sbcl :sb-mop)
+  (:use :common-lisp :alexandria :iterate)
   (:import-from :cl-fad
                 #:directory-exists-p
                 #:file-exists-p)

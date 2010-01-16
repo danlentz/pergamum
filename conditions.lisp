@@ -28,12 +28,16 @@
   #-(or sbcl ecl clisp) (not-implemented 'backtrace)
   #+sbcl (sb-debug:backtrace count stream)
   #+ecl (si::tpl-backtrace)
-  #+clisp (system::debug-backtrace-1))
+  #+clisp (system::debug-backtrace-1)
+  #+ccl "")
 
 (defun backtrace-as-list (&optional (count most-positive-fixnum))
-  #+sbcl (sb-debug:backtrace-as-list count))
+  #-(or sbcl ccl) (not-implemented 'backtrace-as-list)
+  #+sbcl (sb-debug:backtrace-as-list count)
+  #+ccl (ccl::backtrace-as-list count))
 
 (defun print-backtrace-frame (frame &optional (stream *debug-io*))
+  #-(or sbcl) (not-implemented 'print-frame-call)
   #+sbcl (sb-debug::print-frame-call frame stream))
 
 (defmacro with-condition-recourses (condition form &body clauses)

@@ -7,6 +7,8 @@
                 #:directory-exists-p
                 #:file-exists-p)
   (:export
+   ;; everything hinges on that!
+   #:not-implemented
    ;; reexport feet-of-clay
    #:posix-working-directory
    #:set-posix-working-directory

@@ -268,6 +268,3 @@ object is specified by OBJECT-INITARG being non-NIL."
 
 (defun bad-redefinition (format-control &rest arguments)
   (error 'bad-redefinition :format-control format-control :format-arguments arguments))
-
-(defun not-implemented (&optional (designator "Function"))
-  (error 'missing-implementation :designator designator))

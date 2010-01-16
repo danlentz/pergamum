@@ -4,6 +4,9 @@
 (cl:defpackage :feet-of-clay
   (:use :common-lisp)
   (:export
+   ;; everything hinges on that!
+   #:not-implemented
+   ;; the meat
    #:posix-working-directory
    #:set-posix-working-directory
    #:make-directory
@@ -17,6 +20,9 @@
    ))
 
 (cl:in-package :feet-of-clay)
+
+(defun not-implemented (&optional (designator "Function"))
+  (error (find-symbol "MISSING-IMPLEMENTATION" :pergamum) :designator designator))
 
 (defun posix-working-directory ()
   "Return the POSIX idea of the current working directory."

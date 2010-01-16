@@ -36,9 +36,10 @@
 (defsetf posix-working-directory set-posix-working-directory)
 
 (defun make-directory (pathname &optional (mode #o755))
-  #-(or sbcl ccl) (not-implemented 'make-directory)
+  #-(or sbcl ccl ecl) (not-implemented 'make-directory)
   #+sbcl (sb-posix:mkdir pathname mode)
-  #+ccl (ccl::%mkdir pathname mode))
+  #+ccl (ccl::%mkdir pathname mode)
+  #+ecl (si:mkdir pathname))
 
 (defun remove-file (p)
   "We need this because DELETE-FILE deletes the symlink target,

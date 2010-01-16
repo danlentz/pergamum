@@ -194,6 +194,7 @@
    #:file-as-string
    #:file-line
    #:with-output-to-file
+   #:rename-to-directory
    #:remove-file
    #:symlink-to-p
    #:make-symlink

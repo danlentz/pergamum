@@ -20,37 +20,40 @@
 
 (defun posix-working-directory ()
   "Return the POSIX idea of the current working directory."
-   #-(or sbcl ecl ccl) (not-implemented 'posix-working-directory)
-  #+sbcl (sb-posix:getcwd)
-  #+ecl (si:getcwd)
-  #+ccl (ccl::current-directory-name))
+   #-(or sbcl ecl ccl clisp) (not-implemented 'posix-working-directory)
+   #+sbcl (sb-posix:getcwd)
+   #+ecl (si:getcwd)
+   #+ccl (ccl::current-directory-name)
+   #+clisp (ext:cd))
 
 (defun set-posix-working-directory (pathname)
   "Change the POSIX view of the current directory."
   (zerop 
-   #-(or sbcl ecl ccl) (not-implemented 'set-posix-working-directory)
+   #-(or sbcl ecl ccl clisp) (not-implemented 'set-posix-working-directory)
    #+sbcl (sb-posix:chdir pathname)
    #+ecl (si:chdir pathname)
-   #+ccl (ccl::%chdir (namestring pathname))))
+   #+ccl (ccl::%chdir (namestring pathname))
+   #+clisp (ext:cd pathname)))
 
 (defsetf posix-working-directory set-posix-working-directory)
 
 (defun make-directory (pathname &optional (mode #o755))
-  #-(or sbcl ccl ecl) (not-implemented 'make-directory)
+  #-(or sbcl ccl ecl clisp) (not-implemented 'make-directory)
   #+sbcl (sb-posix:mkdir pathname mode)
   #+ccl (ccl::%mkdir pathname mode)
-  #+ecl (si:mkdir pathname))
+  #+ecl (si:mkdir pathname)
+  #+clisp (ext:make-directory pathname))
 
 (defun remove-file (p)
-  "We need this because DELETE-FILE deletes the symlink target,
-instead of the symlink itself."
-  #-(or sbcl ccl) (not-implemented 'remove-file)
-  #+sbcl (sb-posix:unlink p)
+  "We need this because on some Lisps DELETE-FILE might choose to operate on
+the truename, which isn't there with dead symlinks."
+  #-ccl (delete-file p)
   #+ccl (ccl::%delete-file p))
 
 (defun make-symlink (symlink target)
-  #-(or (and sbcl (not win32)) ccl) (not-implemented 'make-symlink)
-  #+(and sbcl (not win32)) (sb-posix:symlink target symlink))
+  #-(or (and sbcl (not win32)) (and clisp unix)) (not-implemented 'make-symlink)
+  #+(and sbcl (not win32)) (sb-posix:symlink target symlink)
+  #+(and clisp unix) (linux:symlink target symlink))
 
 (defun backtrace (&optional (count most-positive-fixnum) (stream *debug-io*))
   #-(or sbcl ecl clisp) (not-implemented 'backtrace)

@@ -21,17 +21,22 @@
       (slot-value object slot-name)
       default))
 
-(defmacro define-print-object-method (((object type &key (unbound-slot-value :unbound-slot)) &rest slots) format-control &rest format-arguments)
-  "Define a PRINT-OBJECT method for objects with TYPE.
-
-   The definition is a call to FORMAT, with FORMAT-CONTROL and 
-   FORMAT-ARGUMENTS, with SLOTS bound to slots of OBJECT, defaulting
-   when the respective slots are unbound, to :UNBOUND-SLOT."
+(defmacro define-print-object-method (((object object-type &key (unreadable t) (type t) identity (unbound-slot-value :unbound-slot)) &rest slots) format-control
+                                      &rest format-arguments)
+  "Define a PRINT-OBJECT method for objects with OBJECT-TYPE.
+The definition is a call to FORMAT, with FORMAT-CONTROL and 
+FORMAT-ARGUMENTS, with SLOTS bound to slots of OBJECT, defaulting
+when the respective slots are unbound, to :UNBOUND-SLOT.
+When UNREADABLE is non-NIL, the call to FORMAT is wrapped into
+PRINT-UNREADABLE-OBJECT, with TYPE and IDENTITY passed to it."
   (with-gensyms (stream)
-    `(defmethod print-object ((,object ,type) ,stream)
+    `(defmethod print-object ((,object ,object-type) ,stream)
        (symbol-macrolet ,(iter (for slot in slots)
                                (collect `(,slot (slot-value* ,object ',slot ,unbound-slot-value))))
-         (format ,stream ,format-control ,@format-arguments)))))
+         ,(if unreadable
+              `(print-unreadable-object (,object ,stream :type ,type :identity ,identity)
+                 (format ,stream ,format-control ,@format-arguments))
+              `(format ,stream ,format-control ,@format-arguments))))))
 
 (define-method-combination primary-method-not-required ()
   ((around (:around))

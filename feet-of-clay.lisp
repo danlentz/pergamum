@@ -34,7 +34,7 @@
 
 (defun set-posix-working-directory (pathname)
   "Change the POSIX view of the current directory."
-  (zerop 
+  (zerop
    #-(or sbcl ecl ccl clisp) (not-implemented 'set-posix-working-directory)
    #+sbcl (sb-posix:chdir pathname)
    #+ecl (si:chdir pathname)
@@ -47,7 +47,7 @@
   #-(or sbcl ccl ecl clisp) (not-implemented 'make-directory)
   #+sbcl (sb-posix:mkdir pathname mode)
   #+ccl (ccl::%mkdir pathname mode)
-  #+ecl (si:mkdir pathname)
+  #+ecl (si:mkdir pathname mode)
   #+clisp (ext:make-directory pathname))
 
 (defun remove-file (p)

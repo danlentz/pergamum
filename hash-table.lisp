@@ -115,7 +115,7 @@ occupying KEY. The second return value indicates success."
                              (:error (error 'container-missing-cell-error :type ,description :name name :container ,(if rootp container 'container)))
                              (:continue nil))))))))))
 
-(defun emit-setter (globalp rootp def-name accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+(defun emit-setter (globalp rootp def-name accessor-name container-form alias-container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
   `((,@(when globalp '(defun)) (setf ,accessor-name) (val ,@(unless rootp '(container)) ,@(when spread-compound-name-p '(&rest)) name)
        (declare (type ,(if type-allow-nil-p `(or null ,type) type) val))
        ,@(unless (eq if-exists :continue)
@@ -124,15 +124,19 @@ occupying KEY. The second return value indicates success."
                              (:return-nil `(return-from ,accessor-name))
                              (:warn `(warn-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name ',def-name)) 
                              (:error `(bad-redefinition "~@<redefining ~A ~S in ~A~:@>" ,description name ',def-name))))))
-       (values (setf (gethash ,hash-key-form ,container-form) val)
+       (values (setf (gethash ,hash-key-form ,container-form) val
+                     ,@(when alias-container-form
+                             `((gethash ,hash-key-form ,alias-container-form) val)))
                t))))
 
-(defun emit-remover (globalp rootp remover accessor-name container-form hash-key-form spread-compound-name-p type)
+(defun emit-remover (globalp rootp remover accessor-name container-form alias-container-form hash-key-form spread-compound-name-p type)
   (let ((name (if (eq remover t)
                   (format-symbol (symbol-package accessor-name) "REMOVE-~A" type)
                   remover)))
     `((,@(when globalp '(defun)) ,name (,@(unless rootp '(container)) ,@(when spread-compound-name-p '(&rest)) name)
-         (remhash ,hash-key-form ,container-form)))))
+         (remhash ,hash-key-form ,container-form)
+         ,@(when alias-container-form
+                 `((remhash ,hash-key-form ,alias-container-form)))))))
 
 (defun emit-coercer (globalp rootp accessor-name spread-compound-name-p type key-type)
   `((,@(when globalp '(defun))
@@ -166,8 +170,10 @@ occupying KEY. The second return value indicates success."
        (fn ,@(unless rootp '(container)) &rest parameters)
        (apply #'maphash-values fn ,container-form parameters))))
 
-(defmacro define-subcontainer (accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
-                               spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
+(defmacro define-subcontainer (accessor &key (type accessor) compound-name-p container-transform alias-container-transform container-slot alias-container-slot
+                               name-transform-fn spread-compound-name-p 
+                               aliased-accessor remover coercer aliased-coercer iterator aliased-iterator mapper aliased-mapper
+                               if-does-not-exist (if-exists :warn)
                                (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace accessible via the first parameter of the accessors.
 
@@ -178,7 +184,7 @@ is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
 
 Compound (i.e. of type CONS) names can be used by providing 
 the COMPOUND-NAME-P key. Spread compound name specification
-(i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
+ (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
 instead of '(accessor '(name-component-1 name-component-2 ...))
 can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
 REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
@@ -194,7 +200,7 @@ absent which it defaults to :ERROR.
 
 Defined keywords:
  :TYPE - type of objects stored through defined accessor, 
-         defaults to ACCESSOR-NAME
+         defaults to ACCESSOR
  :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
              in the coercer type dispatch
  :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
@@ -223,26 +229,43 @@ Typical usages include:
   (declare (type (member :continue :return-nil :warn :error) if-exists)
            (type (member :continue :error nil) if-does-not-exist)
            (type (or null string) description))
+  (when (and (or alias-container-transform alias-container-slot aliased-coercer aliased-iterator aliased-mapper)
+             (not aliased-accessor))
+    (error "~@<Must provide ALIASED-ACCESSOR keyword.~:@>"))
   (let* ((container-form (cond (container-transform `(,container-transform container))
                                (container-slot `(slot-value container ',container-slot))
                                (t 'container)))
+         (alias-container-form (cond (alias-container-transform `(,alias-container-transform container))
+                                     (alias-container-slot `(slot-value container ',alias-container-slot))
+                                     (aliased-accessor 'container)))
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
-   `(progn
-      ,@(emit-getter t nil accessor-name nil container-form hash-key-form spread-compound-name-p if-does-not-exist description)
-      ,@(emit-setter t nil 'define-subcontainer accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
-      ,@(when remover
-              (emit-remover t nil remover accessor-name container-form hash-key-form spread-compound-name-p type))
-      ,@(when coercer
-              (emit-coercer t nil accessor-name spread-compound-name-p type key-type))
-      ,@(when iterator
-              (emit-iterator t iterator accessor-name container-transform container-slot iterator-bind-key))
-      ,@(when mapper
-              (emit-mapper t nil mapper accessor-name container-form container-transform)))))
+    (destructuring-bind (reader &optional (writer reader)) (ensure-cons accessor)
+      `(progn
+         ,@(emit-getter t nil reader nil container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+         ,@(emit-setter t nil 'define-subcontainer writer container-form alias-container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+         ,@(when remover
+                 (emit-remover t nil remover reader container-form alias-container-form hash-key-form spread-compound-name-p type))
+         ,@(when coercer
+                 (emit-coercer t nil reader spread-compound-name-p type key-type))
+         ,@(when iterator
+                 (emit-iterator t iterator writer container-transform container-slot iterator-bind-key))
+         ,@(when mapper
+                 (emit-mapper t nil mapper writer container-form container-transform))
+         ,@(when aliased-accessor
+                 (emit-getter t nil aliased-accessor nil alias-container-form hash-key-form spread-compound-name-p if-does-not-exist description))
+         ,@(when aliased-coercer
+                 (emit-coercer t nil aliased-accessor spread-compound-name-p type key-type))
+         ,@(when aliased-iterator
+                 (emit-iterator t iterator aliased-accessor alias-container-transform alias-container-slot iterator-bind-key))
+         ,@(when aliased-mapper
+                 (emit-mapper t nil aliased-mapper aliased-accessor alias-container-form alias-container-transform))))))
 
-(defmacro define-root-container (container accessor-name &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
-                                 spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
+(defmacro define-root-container (container accessor &key (type accessor) compound-name-p container-transform alias-container-transform container-slot alias-container-slot
+                                 name-transform-fn spread-compound-name-p 
+                                 aliased-accessor remover coercer aliased-coercer iterator mapper aliased-mapper
+                                 if-does-not-exist (if-exists :warn)
                                  (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
   "Define a namespace stored in CONTAINER.
 
@@ -253,7 +276,7 @@ is to be accessed via (SLOT-VALUE <CONTAINER> CONTAINER-SLOT).
 
 Compound (i.e. of type CONS) names can be used by providing 
 the COMPOUND-NAME-P key. Spread compound name specification
-(i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
+ (i.e. access like '(accessor 'name-component-1 'name-component-2 ...)' 
 instead of '(accessor '(name-component-1 name-component-2 ...))
 can be achieved by specifying the SPREAD-COMPOUND-NAME key. 
 REMOVER, COERCER, ITERATOR and MAPPER define optional functions/macros to
@@ -269,7 +292,7 @@ absent which it defaults to :ERROR.
 
 Defined keywords:
  :TYPE - type of objects stored through defined accessor, 
-         defaults to ACCESSOR-NAME
+         defaults to ACCESSOR
  :KEY-TYPE - type of keys, defaults to SYMBOL. Only makes a difference
              in the coercer type dispatch
  :COMPOUND-NAME-P, :CONTAINER-TRANSFORM, :NAME-TRANSFORM-FN, 
@@ -303,33 +326,44 @@ Typical usages include:
   (let* ((container-form (cond (container-transform `(,container-transform ,container))
                                (container-slot `(slot-value ,container ',container-slot))
                                (t container)))
+         (alias-container-form (cond (alias-container-transform `(,alias-container-transform container))
+                                     (alias-container-slot `(slot-value container ',alias-container-slot))
+                                     (aliased-accessor container)))
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
-    `(progn
-       ,@(emit-getter t t accessor-name container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
-       ,@(emit-setter t t 'define-root-container accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
-       ,@(when remover
-               (emit-remover t t remover accessor-name container-form hash-key-form spread-compound-name-p type))
-       ,@(when coercer
-               (emit-coercer t t accessor-name spread-compound-name-p type key-type))
-       ,@(when iterator
-               `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
-                                  (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
-                                  (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
-                     ((,@(when iterator-bind-key '(key)) var &optional block-name) &body body)
-                   ;; IQ test: do you understand ,',? I don't.
-                   `(iter ,@(when block-name `(,block-name))
-                          (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
-                                                                                             (container-slot ``(slot-value container ,'',container-slot))
-                                                                                             (t `',container)))
-                          ,@body))))
-       ,@(when mapper
-              (emit-mapper t t mapper accessor-name container-form container-transform)))))
+    (destructuring-bind (reader &optional (writer reader)) (ensure-cons accessor)
+      `(progn
+         ,@(emit-getter t t reader container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+         ,@(emit-setter t t 'define-root-container writer container-form alias-container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+         ,@(when remover
+                 (emit-remover t t remover writer container-form nil hash-key-form spread-compound-name-p type))
+         ,@(when coercer
+                 (emit-coercer t t writer spread-compound-name-p type key-type))
+         ,@(when iterator
+                 `((defmacro ,(cond ((and iterator (not (eq iterator t))) iterator)
+                                    (container-transform (format-symbol (symbol-package accessor) "DO-~A" container-transform))
+                                    (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
+                       ((,@(when iterator-bind-key '(key)) var &optional block-name) &body body)
+                     ;; IQ test: do you understand ,',? I don't.
+                     `(iter ,@(when block-name `(,block-name))
+                            (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
+                                                                                               (container-slot ``(slot-value container ,'',container-slot))
+                                                                                               (t `',container)))
+                            ,@body))))
+         ,@(when mapper
+                 (emit-mapper t t mapper writer container-form container-transform))
+         ,@(when aliased-accessor
+                 (emit-getter t t aliased-accessor container-form alias-container-form hash-key-form spread-compound-name-p if-does-not-exist description))
+         ,@(when aliased-coercer
+                 (emit-coercer t t aliased-accessor spread-compound-name-p type key-type))
+         ,@(when aliased-mapper
+                 (emit-mapper t t aliased-mapper aliased-accessor alias-container-form alias-container-transform))))))
 
-(defmacro with-container (accessor-name (container &key (type accessor-name) compound-name-p container-transform container-slot name-transform-fn
-                                                   spread-compound-name-p remover coercer iterator mapper if-does-not-exist (if-exists :warn)
-                                                   (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
+(defmacro with-container (accessor (container &key (type accessor) compound-name-p container-transform container-slot
+                                              name-transform-fn spread-compound-name-p
+                                              remover coercer iterator mapper if-does-not-exist (if-exists :warn)
+                                              (description (string-downcase (string type))) type-allow-nil-p (key-type 'symbol) iterator-bind-key)
                           &body body)
   "Execute BODY within context where various accessors to CONTAINER
 are established, as if by DEFINE-ROOT-CONTAINER.  All keyword options
@@ -343,26 +377,27 @@ are as per DEFINE-ROOT-CONTAINER."
          (hash-key-form (cond ((null name-transform-fn) 'name)
                               ((null compound-name-p) `(,name-transform-fn name))
                               (t `(mapcar #',name-transform-fn name)))))
-    `(labels (,@(emit-getter nil t accessor-name container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
-              ,@(emit-setter nil t 'define-root-container accessor-name container-form hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
-                ,@(when remover
-                        (emit-remover nil t remover accessor-name container-form hash-key-form spread-compound-name-p type))
-                ,@(when coercer
-                        (emit-coercer nil t accessor-name spread-compound-name-p type key-type))
-                ,@(when mapper
-                        (emit-mapper nil t mapper accessor-name container-form container-transform)))
-       (macrolet (,@(when iterator
-                          `((,(cond ((and iterator (not (eq iterator t))) iterator)
-                                    (container-transform (format-symbol (symbol-package accessor-name) "DO-~A" container-transform))
-                                    (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
+    (destructuring-bind (reader &optional (writer reader)) (ensure-cons accessor)
+      `(labels (,@(emit-getter nil t reader container container-form hash-key-form spread-compound-name-p if-does-not-exist description)
+                ,@(emit-setter nil t 'define-root-container writer container-form nil hash-key-form spread-compound-name-p if-exists type type-allow-nil-p description)
+                  ,@(when remover
+                          (emit-remover nil t remover writer container-form nil hash-key-form spread-compound-name-p type))
+                  ,@(when coercer
+                          (emit-coercer nil t writer spread-compound-name-p type key-type))
+                  ,@(when mapper
+                          (emit-mapper nil t mapper writer container-form container-transform)))
+         (macrolet (,@(when iterator
+                            `((,(cond ((and iterator (not (eq iterator t))) iterator)
+                                      (container-transform (format-symbol (symbol-package accessor) "DO-~A" container-transform))
+                                      (t (error "~@<It is not known to me, how to name the iterator: neither :ITERATOR, nor :CONTAINER-TRANSFORM provided.~:@>")))
                                 ((,@(when iterator-bind-key '(key)) var &optional block-name) &body body)
-                              ;; IQ test: do you understand ,',? I don't. ; ;
-                              `(iter ,@(when block-name `(,block-name))
-                                     (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
-                                                                                                        (container-slot ``(slot-value container ,'',container-slot))
-                                                                                                        (t `',container)))
-                                     ,@body)))))
-         ,@body))))
+                                ;; IQ test: do you understand ,',? I don't. ; ;
+                                `(iter ,@(when block-name `(,block-name))
+                                       (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
+                                                                                                          (container-slot ``(slot-value container ,'',container-slot))
+                                                                                                          (t `',container)))
+                                       ,@body)))))
+           ,@body)))))
 
 (defun copy-hash-table-empty (table &key key test size rehash-size rehash-threshold)
   "Returns an empty copy of hash TABLE. The copy has the same properties

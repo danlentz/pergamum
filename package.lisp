@@ -266,6 +266,9 @@
    #:do-extent-spec-aligned-blocks
    #:with-aligned-extent-spec-pieces
    ;; u8-sequence.lisp
+   #:swap-word16
+   #:swap-word32
+   #:swap-word64
    #:u8-vector-wordle
    #:u8-vector-wordbe
    #:u8-vector-word16le

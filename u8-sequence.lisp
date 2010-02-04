@@ -3,6 +3,29 @@
 
 (in-package :pergamum)
 
+(defun swap-word16 (x)
+  (declare (type (unsigned-byte 16) x))
+  (logior (ash (logand x #xff00) -8)
+          (ash (logand x #x00ff) 8)))
+
+(defun swap-word32 (x)
+  (declare (type (unsigned-byte 32) x))
+  (logior (ash (logand x #xff000000) -24)
+          (ash (logand x #x00ff0000) -8)
+          (ash (logand x #x0000ff00) 8)
+          (ash (logand x #x000000ff) 24)))
+
+(defun swap-word64 (x)
+  (declare (type (unsigned-byte 64) x))
+  (logior (ash (logand x #xff00000000000000) -56)
+          (ash (logand x #x00ff000000000000) -40)
+          (ash (logand x #x0000ff0000000000) -24)
+          (ash (logand x #x000000ff00000000) -8)
+          (ash (logand x #x00000000ff000000) 8)
+          (ash (logand x #x0000000000ff0000) 24)
+          (ash (logand x #x000000000000ff00) 40)
+          (ash (logand x #x00000000000000ff) 56)))
+
 (defun u8-seq-word16le (sequence offset)
   (declare (type sequence sequence))
   (logior (ash (elt sequence (+ offset 0)) 0)

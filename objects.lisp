@@ -3,6 +3,25 @@
 
 (in-package :pergamum)
 
+
+;;;;
+;;;; NAMED-OBJECT & NAMED-STRUCTURE
+;;;;
+(defclass named-object ()
+  ((name :accessor object-name :initarg :name)))
+
+(defstruct named-structure
+  name)
+
+(defmethod object-name ((o named-structure))
+  (named-structure-name o))
+
+(defmethod (setf object-name) (value (o named-structure))
+  (setf (named-structure-name o) value))
+
+;;;;
+;;;; COPY-SLOTS
+;;;;
 (defun copy-slots (from to slots)
   (dolist (slot slots)
     (setf (slot-value to slot) (slot-value from slot))))
@@ -14,6 +33,9 @@
                        (nconcing `((slot-value ,to ',slot) (slot-value ,from ',slot))))))
       whole))
 
+;;;;
+;;;; SLOT-VALUE*
+;;;;
 (defun slot-value* (object slot-name &optional (default :unbound-slot))
   "Return the value of slot named SLOT-NAME in OBJECT, when it is bound;
    otherwise return DEFAULT, which defaults to :UNBOUND-SLOT."

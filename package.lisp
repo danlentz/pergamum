@@ -49,6 +49,9 @@
    ;; classes.lisp
    #:define-protocol-class
    ;; objects.lisp
+   #:named-object
+   #:named-structure
+   #:object-name
    #:copy-slots
    #:slot-value*
    #:define-print-object-method
@@ -61,7 +64,7 @@
    #:with-condition-recourses
    #:call-next-recourse-and-retry
    #:make-condition-raiser
-   #:make-error-raiser 
+   #:make-error-raiser
    #:with-retry-restarts
    #:with-ignore-restart
    #:make-fixed-restarter

@@ -6,6 +6,13 @@
   (:import-from :cl-fad
                 #:directory-exists-p
                 #:file-exists-p)
+  (:import-from #+sbcl :sb-mop #+(or ecl clisp) :clos #+clozure :ccl
+                #:slot-definition-name
+                #:class-slots
+                #:class-direct-slots
+                #:class-direct-superclasses
+                #:direct-slot-definition
+                #:standard-direct-slot-definition)
   (:export
    ;; everything hinges on that!
    #:not-implemented

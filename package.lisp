@@ -301,6 +301,8 @@
    #:bioable-range
    #:read-block
    #:write-block
+   #:read-aligned-block
+   #:write-aligned-block
    #:write-blocks
    #:u8-extent
    #:write-u8-extent

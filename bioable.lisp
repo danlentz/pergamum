@@ -3,12 +3,19 @@
 
 (in-package :pergamum)
 
+
+;;;;
+;;;; Class
+;;;;
 (defclass bioable ()
   ((range :accessor bioable-range :type extent-spec :initarg :range)))
 
 (define-print-object-method ((o bioable) range)
     "~@<#<BIOABLE~; range: ~/pergamum:print-extent-spec/~;>~:@>" range)
 
+;;;;
+;;;; Base
+;;;;
 (defgeneric read-block (bioable base vector &optional start end)
   (:documentation
    "Read bytes from BIOABLE at BASE into an extent of VECTOR, marked by
@@ -25,6 +32,23 @@ and interpreted as end of the vector.")
   (:method :around ((o bioable) base vector &optional (start 0) end)
     (call-next-method o base vector start (or end (length vector)))))
 
+(defgeneric read-aligned-block (bioable vector base length offset)
+  (:documentation
+   "Read bytes from BIOABLE at BASE into VECTOR.  BASE and LENGTH
+are assumed to honor BIOABLE's alignment requirements.")
+  (:method ((o bioable) base vector length offset)
+    (read-block o base vector offset (+ offset length))))
+
+(defgeneric write-aligned-block (bioable vector base length offset)
+  (:documentation
+   "Write bytes from VECTOR into BIOABLE at BASE.  BASE and LENGTH
+are assumed to honor BIOABLE's alignment requirements.")
+  (:method ((o bioable) base vector length offset)
+    (read-block o base vector offset (+ offset length))))
+
+;;;;
+;;;; Extent-worded I/O
+;;;;
 (defgeneric read-blocks (bioable extent-specs)
   (:method ((o bioable) (extent-specs list))
     (iter (for spec in extent-specs)

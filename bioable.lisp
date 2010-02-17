@@ -32,18 +32,18 @@ and interpreted as end of the vector.")
   (:method :around ((o bioable) base vector &optional (start 0) end)
     (call-next-method o base vector start (or end (length vector)))))
 
-(defgeneric read-aligned-block (bioable vector base length offset)
+(defgeneric read-aligned-block (bioable base vector offset length)
   (:documentation
    "Read bytes from BIOABLE at BASE into VECTOR.  BASE and LENGTH
 are assumed to honor BIOABLE's alignment requirements.")
-  (:method ((o bioable) base vector length offset)
+  (:method ((o bioable) base vector offset length)
     (read-block o base vector offset (+ offset length))))
 
-(defgeneric write-aligned-block (bioable vector base length offset)
+(defgeneric write-aligned-block (bioable base vector offset length)
   (:documentation
    "Write bytes from VECTOR into BIOABLE at BASE.  BASE and LENGTH
 are assumed to honor BIOABLE's alignment requirements.")
-  (:method ((o bioable) base vector length offset)
+  (:method ((o bioable) base vector offset length)
     (read-block o base vector offset (+ offset length))))
 
 ;;;;

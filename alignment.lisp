@@ -82,19 +82,24 @@ VALUE and the sum of ALIGNED and ALIGNMENT."
 
 (defun operate-on-extremity (length beginp left right fn)
   "Given the split of an alignment granule to LEFT and RIGHT and an extent
-LENGTH, map FN over the granule-local and absolute sets of offsets at either
-the beginning or the end of extent, depending on BEGINP, within intersection
-of that granule and the extent.  The mapping proceeds from the extremity,
+LENGTH, map FN over the intra-granule and intra-extent offsets at either
+its beginning or its end, depending on BEGINP, within intersection of the
+granule and the extent.  The mapping proceeds from the extremity,
 inwards into the extent.
-FN must accept two arguments: the intra-granule offset, and extent offset.
+FN must accept two arguments: the intra-granule offset, and intra-extent offset.
 
              _= alignment granule boundaries =.
             /
-...|lllllrrr|eeeeeeee|eeeee=>         ; split is: left=5, right=3, rightp=NIL
-     <=eeeee|eeeeeeee|llrrrrrr|...    ; split is: left=2, right=6, rightp=T"
-  (let* ((inner-part (if beginp left right))
-         (inner-boundary-offset (if beginp (- length inner-part) (1- inner-part)))
-         (granule-start (if beginp 0 (+ left right -1)))
+...|lllllrrr|eeeeeeee|eeeee=>         ; split is: left=5, right=3, beginp=T
+    MERGING                              0 >= g >= (1- right)
+                                         0 >= i >= (1- right)
+    ==========================
+                      MERGING            (1- left) >= g >= 0
+                                         (1- length) >= i >= (- length left)
+     <=eeeee|eeeeeeee|llrrrrrr|...    ; split is: left=2, right=6, beginp=NIL"
+  (let* ((inner-part (if beginp right left))
+         (granule-start (if beginp left (1- left)))
+         (inner-boundary-offset (if beginp 0 (1- length)))
          (step (if beginp 1 -1)))
     (iter (for g from granule-start by step)
           (for i from inner-boundary-offset by step)

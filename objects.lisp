@@ -38,10 +38,12 @@
 ;;;;
 (defun slot-value* (object slot-name &optional (default :unbound-slot))
   "Return the value of slot named SLOT-NAME in OBJECT, when it is bound;
-   otherwise return DEFAULT, which defaults to :UNBOUND-SLOT."
-  (if (slot-boundp object slot-name)
-      (slot-value object slot-name)
-      default))
+otherwise return DEFAULT, which defaults to :UNBOUND-SLOT."
+  (cond ((not (slot-exists-p object slot-name))
+         (format nil "#<MISSING-SLOT-~S>" slot-name))
+        ((slot-boundp object slot-name)
+         (slot-value object slot-name))
+        (t default)))
 
 (defmacro define-print-object-method (((object object-type &key (unreadable t) (type t) identity (unbound-slot-value :unbound-slot)) &rest slots) format-control
                                       &rest format-arguments)

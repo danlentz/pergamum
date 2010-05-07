@@ -26,7 +26,7 @@
    (:file "streams" :depends-on ("basis"))
    (:file "pathnames" :depends-on ("basis"))
    (:file "hash-table" :depends-on ("basis" "conditions"))
-   (:file "pergamum" :depends-on ("basis"))
+   (:file "pergamum" :depends-on ("basis" "forms"))
    (:file "objects" :depends-on ("forms"))
    (:file "extent" :depends-on ("basis" "alignment"))
    ;; tier 3

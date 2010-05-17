@@ -51,12 +51,6 @@ the result is an extent spec."
     (vector (make-extent 'extent base size-or-data))
     (real (cons base size-or-data))))
 
-(defun coerce-to-sequence (o)
-  (etypecase o
-    (list o)
-    (vector o)
-    (extent (extent-data o))))
-
 (defun base (extent)
   "Given EXTENT, return its base."
   (declare (type extentile extent))

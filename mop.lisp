@@ -69,5 +69,6 @@
       (make-instances-obsolete class))))
 
 (defun slot-definition-documentation (slotd)
+  #-sbcl (declare (ignore slotd))
   #+sbcl
   (sb-pcl::%slot-definition-documentation slotd))

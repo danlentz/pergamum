@@ -57,7 +57,7 @@
 (defun plist-difference (plist keys)
   "Return a copy of PLIST with all key-value pairs present in KEYS
    removed."
-  (iter (for (key value . rest) on plist by #'cddr)
+  (iter (for (key value . nil) on plist by #'cddr)
         (unless (find key keys :test #'eq)
           (collect key)
           (collect value))))
@@ -65,7 +65,7 @@
 (defun plist-intersection (plist keys)
   "Return a copy of PLIST with all key-value pairs not present in KEYS
    removed."
-  (iter (for (key value . rest) on plist by #'cddr)
+  (iter (for (key value . nil) on plist by #'cddr)
         (when (find key keys :test #'eq)
           (collect key)
           (collect value))))

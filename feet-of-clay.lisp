@@ -64,22 +64,24 @@ the truename, which isn't there with dead symlinks."
   #+ccl (ccl:run-program "/bin/ln" (list "-s" (namestring symlink) (namestring target)) :wait t :input nil :output nil :error nil))
 
 (defun backtrace (&optional (count most-positive-fixnum) (stream *debug-io*))
+  #-(or sbcl ecl clisp) (declare (ignore stream count))
   #-(or sbcl ecl clisp) (not-implemented 'backtrace)
   #+sbcl (sb-debug:backtrace count stream)
   #+ecl (si::tpl-backtrace)
-  #+clisp (system::debug-backtrace-1)
-  #+ccl "")
+  #+clisp (system::debug-backtrace-1))
 
 (defun backtrace-as-list (&optional (count most-positive-fixnum))
   #-(or sbcl ccl) (not-implemented 'backtrace-as-list)
   #+sbcl (sb-debug:backtrace-as-list count)
-  #+ccl (ccl::backtrace-as-list count))
+  #+ccl (ccl::backtrace-as-list :count count))
 
 (defun print-backtrace-frame (frame &optional (stream *debug-io*))
+  #-(or sbcl) (declare (ignore frame stream))
   #-(or sbcl) (not-implemented 'print-frame-call)
   #+sbcl (sb-debug::print-frame-call frame stream))
 
 (defun function-insn-vector (name)
+  #-(or sbcl) (declare (ignore name))
   #-(or sbcl) (not-implemented 'function-insn-vector)
   #+sbcl
   (sb-sys:without-gcing
@@ -93,6 +95,7 @@ the truename, which isn't there with dead symlinks."
         final-vec))))
 
 (defun disassemble-insn-vector (vector &optional (start 0) end)
+  #-(or sbcl) (declare (ignore vector start end))
   #-(or sbcl) (not-implemented 'disassemble-insn-vector)
   #+sbcl
   (sb-sys:without-gcing

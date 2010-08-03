@@ -197,7 +197,7 @@
    #:subfile
    #:subfile*
    #:subdirectory
-   #:subdirectory* 
+   #:subdirectory*
    ;; files.lisp
    #:pathname-busy
    #:pathname-not-present
@@ -210,6 +210,7 @@
    #:file-as-string
    #:file-line
    #:with-output-to-file
+   #:with-standard-output-to-file
    #:rename-to-directory
    #:symlink-to-p
    #:symlink-target-file

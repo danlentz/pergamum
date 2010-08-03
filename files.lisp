@@ -93,6 +93,12 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
                             ,@(remove-from-plist options :direction :if-does-not-exist :if-exists))
      ,@body))
 
+(defmacro with-standard-output-to-file ((filespec &rest options &key (if-does-not-exist :create) (if-exists :supersede) &allow-other-keys) &body body)
+  "Like WITH-OUTPUT-TO-FILE, but bind *STANDARD-OUTPUT* instead."
+  `(with-output-to-file (*standard-output* ,filespec :direction :output :if-does-not-exist ,if-does-not-exist :if-exists ,if-exists
+                                           ,@(remove-from-plist options :direction :if-does-not-exist :if-exists))
+     ,@body))
+
 (defun rename-to-directory (pathname target-directory)
   "Unfortunately, RENAME-FILE is underwhelming, when moving directories."
   (if (pathname-name pathname)

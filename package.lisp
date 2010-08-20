@@ -82,6 +82,8 @@
    #:with-collected-conditions
    #:with-recorded-status
    #:condition-bind-default
+   #:call-with-maybe-break-on-signals-set
+   #:with-maybe-set-break-on-signals
    #:define-reported-condition
    #:report-simple-condition
    #:define-simple-error

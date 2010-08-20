@@ -245,6 +245,18 @@ object is specified by OBJECT-INITARG being non-NIL."
          (simple-condition-format-arguments condition)))
 
 ;;;
+;;; *BREAK-ON-SIGNALS* control
+;;;
+(defun call-with-maybe-break-on-signals-set (bool bos-value fn)
+  (if bool
+      (let ((*break-on-signals* bos-value))
+        (funcall fn))
+      (funcall fn)))
+
+(defmacro with-maybe-set-break-on-signals ((bool &optional (bos-value ''error)) &body body)
+  `(call-with-maybe-break-on-signals-set ,bool ,bos-value (lambda () ,@body)))
+
+;;;
 ;;; Canned conditions
 ;;;
 (define-condition redefinition ()

@@ -126,6 +126,7 @@
    #:diff-lists
    #:plist-difference
    #:plist-intersection
+   #:plist-merge
    #:set-differencef
    #:nset-differencef
    #:set-intersectionf

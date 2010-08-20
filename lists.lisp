@@ -70,6 +70,14 @@
           (collect key)
           (collect value))))
 
+(defun plist-merge (overridee overrider)
+  "Return a combination of OVERRIDEE and OVERRIDER plists, such that
+the set of keys present is their union, whereas the keys of their intersection
+have associated values from OVERRIDER."
+  (lret ((result (copy-list overridee)))
+    (iter (for (k v) on overrider by #'cddr)
+          (setf (getf result k) v))))
+
 (defun diff-lists (list1 list2 &key (skip-mismatches 0))
   "Recursively look for differences between LIST1 and LIST2.
    When such a difference is found, its formpath is returned as first value,

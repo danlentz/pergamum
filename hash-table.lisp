@@ -348,7 +348,7 @@ Typical usages include:
                      ;; IQ test: do you understand ,',? I don't.
                      `(iter ,@(when block-name `(,block-name))
                             (for (,,(if iterator-bind-key 'key nil) ,var) in-hashtable ,,(cond (container-transform ``(,container-transform container))
-                                                                                               (container-slot ``(slot-value container ,'',container-slot))
+                                                                                               (container-slot ``(slot-value ,',container ,'',container-slot))
                                                                                                (t `',container)))
                             ,@body))))
          ,@(when mapper

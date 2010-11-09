@@ -142,7 +142,7 @@ occupying KEY. The second return value indicates success."
   `((,@(when globalp '(defun))
        ,(format-symbol (symbol-package accessor-name) "COERCE-TO-~A" type)
        (,@(unless rootp '(container)) ,@(when spread-compound-name-p '(&rest)) spec)
-       (declare (type (or ,type symbol) spec))
+       (declare (type (or ,type ,key-type) spec))
        (etypecase spec
          (,type spec)
          (,key-type ,(if spread-compound-name-p `(apply (function ,accessor-name) ,@(unless rootp '(container)) spec) `(,accessor-name ,@(unless rootp '(container)) spec)))))))

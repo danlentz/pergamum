@@ -38,20 +38,6 @@
 (defun emit-binding-form-body (body &key declarations)
   (prepend (list* 'declare declarations) body :key #'rest))
 
-(defun destructure-binding-form-body (body)
-  (labels ((do-destructure (body declarations)
-             (if (and (consp body) (consp (car body)) (eq (caar body) 'declare))
-                 (do-destructure (cdr body) (append declarations (cdar body)))
-                 (values declarations body))))
-    (do-destructure body nil)))
-
-(defun destructure-def-body (body)
-  (destructuring-bind (documentation body) (if (stringp (first body))
-                                               (list (first body) (rest body))
-                                               (list nil body))
-    (multiple-value-bind (declarations body) (destructure-binding-form-body body)
-      (values documentation declarations body))))
-
 (defun emit-let (bindings body &key declarations)
   (declare (list bindings))
   (if bindings

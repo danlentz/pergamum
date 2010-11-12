@@ -169,8 +169,6 @@
    #:order-funcalling
    #:vector-=
    #:ensure-destructurisation
-   #:destructure-binding-form-body
-   #:destructure-def-body
    #:prepend
    #:emit-let
    #:emit-lambda

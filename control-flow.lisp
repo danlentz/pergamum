@@ -98,3 +98,28 @@ NOT in effect."
             (,%if-let* ,bindings)
             ,else-tag
             (return-from ,block ,else-form))))))
+
+(defmacro cond-let (&body clauses)
+  "Like COND, but each condition is a LET-like binding subform, instead.
+
+ (cond-let
+   ((variable-1 condition-form-1)
+    clause-body-forms...)
+   ((variable-2 condition-form-2)
+    clause-body-forms...)
+   ...
+   (t
+    clause-body-forms...))
+
+Each condition form is executed in turn, until one returns non-NIL,
+at which point the corresponding clause's body forms are executed
+with the variable bound to the value returned."
+  (when clauses
+    (destructuring-bind (binding &body body) (first clauses)
+      (if (endp (cdr clauses))
+          (if (eq t binding)
+              (ensure-form body)
+              `(when-let* (,binding) ,@body))
+          `(if-let ,binding
+                   ,(ensure-form body)
+                   (cond-let ,@(rest clauses)))))))

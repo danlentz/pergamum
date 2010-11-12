@@ -44,6 +44,7 @@
    #:when-lret
    #:if-lret
    #:if-lret*
+   #:cond-let
    ;; forms.lisp
    #:ensure-form
    #:quoted-p

@@ -15,6 +15,15 @@
 (defun quote-if-non-self-evaluating (form)
   (if (or (typep form 'cons) (typep form 'symbol)) (list 'quote form) form))
 
+(defun ensure-form (form-or-forms)
+  "Given FORM-OR-FORMS, which must be either an atom or a list of forms 
+individually suitable for evaluation, return a single form suitable for 
+evaluation;  that is, return it unmodified in the atom case, and either
+return its first element, or prepend a PROGN symbol in the list case."
+  (cond ((atom form-or-forms)       form-or-forms)
+        ((endp (cdr form-or-forms)) (car form-or-forms))
+        (t                          (cons 'progn form-or-forms))))
+
 (defmacro op-parameter-destructurer ((op params) form &body body)
   (once-only (form)
     `(let (,@(when op `((,op (if (consp ,form) (first ,form) ,form))))

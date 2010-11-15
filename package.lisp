@@ -45,6 +45,7 @@
    #:if-lret
    #:if-lret*
    ;; forms.lisp
+   #:ensure-form
    #:quoted-p
    #:quoted-form
    ;; binary.lisp

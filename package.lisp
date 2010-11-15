@@ -53,6 +53,11 @@
    #:logandf
    #:logiorf
    #:logandcf
+   ;; string.lisp
+   #:strconcat
+   #:strconcat*
+   #:escape
+   #:escape*
    ;; binding.lisp
    #:define-execute-with-bound-variable
    ;; classes.lisp

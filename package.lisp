@@ -146,6 +146,9 @@
    #+sbcl #:rename-class-slot
    #:slot-definition-documentation
    ;; numbers.lisp
+   #:excess
+   #:shortage
+   #:with-measure
    #:><
    #:>=<
    #:>=/<

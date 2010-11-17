@@ -4,6 +4,26 @@
 (in-package :pergamum)
 
 
+(defun excess (x measure)
+  "When X exceeds MEASURE, return their difference, otherwise return NIL."
+  (declare (integer x measure))
+  (when (> x measure)
+    (- x measure)))
+
+(defun shortage (x measure)
+  "When MEASURE exceeds X, return their difference, otherwise return NIL."
+  (declare (integer x measure))
+  (when (> measure x)
+    (- measure x)))
+
+(defun invoke-with-measure (value measure fn)
+  (cond ((> value measure) (funcall fn nil               value (- value measure)))
+        ((< value measure) (funcall fn (- measure value) value nil))
+        (t                 (funcall fn nil               value nil))))
+
+(defmacro with-measure ((shortage x excess) (value measure) &body body)
+  `(invoke-with-measure ,value ,measure (lambda (,shortage ,x ,excess) ,@body)))
+
 (defun >< (y x1 x2)
   (and (> y x1) (< y x2)))
 

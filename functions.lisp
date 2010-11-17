@@ -56,11 +56,25 @@ Example: (FUNCALL (COMPOSE* #'CONS #'* #'+ #'LENGTH) :A 3 1 '(1)) => (:A . 6)"
   (lambda (fn)
     (apply fn args)))
 
+(defun arg (n)
+  "Return a function returning its N'th argument, while ignoring others."
+  (lambda (&rest args)
+    (nth n args)))
+
+(define-compiler-macro arg (&whole form n)
+  (if (and (integerp n) (< n 10))
+      (let ((syms (append (iter (for i below n) (collect (gensym "IGN")))
+                          (list (gensym "RETARG")))))
+        `(lambda (,@syms &rest rest)
+           (declare (ignore ,@(butlast syms) rest))
+           ,(lastcar syms)))
+      form))
+
 (defun bukkake-combine (&rest functions)
-  "Return a function accepting an indefinite amount of values, 
-   applying all FUNCTIONS to them in turn, returning the value
-   of last application.
-   Name courtesy of Andy Hefner."
+  "Return a function accepting an indefinite amount of values,
+applying all FUNCTIONS to them in turn, returning the value
+of last application.
+Name courtesy of Andy Hefner."
   (lambda (&rest params)
     (mapc (rcurry #'apply params) (butlast functions))
     (apply (lastcar functions) params)))
@@ -116,8 +130,8 @@ Example: (FUNCALL (COMPOSE* #'CONS #'* #'+ #'LENGTH) :A 3 1 '(1)) => (:A . 6)"
 
 (defun apply/find-if (pred fn &rest args)
   "Return the first member of a set computed by application of FN to ARGS,
-   which also satisfies PRED. The second value indicates whether the set
-   returned by FN was non-empty."
+which also satisfies PRED. The second value indicates whether the set
+returned by FN was non-empty."
   (declare (type (function (*) list) fn))
   (let ((set (apply fn args)))
     (values (find-if pred set) (not (null set)))))

@@ -111,6 +111,7 @@
    #:fequalp
    #:f=
    #:latch
+   #:arg
    #:bukkake-combine
    #:maybe
    #:maybecall

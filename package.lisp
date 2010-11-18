@@ -41,6 +41,8 @@
    #:fif-1
    #:map-remove-if-not
    #:syncformat
+   ;; macrology.lisp
+   #:with-ignored-names
    ;; control-flow.lisp
    #:when-lret
    #:if-lret

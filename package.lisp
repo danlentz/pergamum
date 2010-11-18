@@ -50,6 +50,7 @@
    #:ensure-form
    #:quoted-p
    #:quoted-form
+   #:with-maybe-named-lambda-emission
    ;; binary.lisp
    #:logandf
    #:logiorf

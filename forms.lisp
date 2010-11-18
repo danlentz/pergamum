@@ -65,12 +65,19 @@ return its first element, or prepend a PROGN symbol in the list case."
   `(labels ((,name ,list
 	      ,@(emit-lambda-body body :documentation documentation :declarations declarations))) #',name))
 
-(defmacro with-named-lambda-emission ((name lambda-list &key documentation declarations) &body body)
-  `(emit-named-lambda ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
-
 (defun emit-defun (name list body &key documentation declarations)
   `(defun ,name ,list
      ,@(emit-lambda-body body :documentation documentation :declarations declarations)))
 
-(defmacro with-defun-emission ((name lambda-list &key documentation declarations) &body body)
-  `(emit-defun ,name ,lambda-list (list ,@body) :documentation ,documentation :declarations ,declarations))
+(defun emit-maybe-named-lambda (name lambda-list body)
+  (if name
+      `(labels ((,name (,@lambda-list) ,@body)) #',name)
+      `(lambda (,@lambda-list) ,@body)))
+
+(defmacro with-maybe-named-lambda-emission (name &body ((lambda-sym (&rest lambda-list) &body body)))
+  "Given a LAMBDA form, either pass it as-is, when NAME is NIL,
+or return a NAMED-LET form, binding the function to NAME.
+
+Example:"
+  (assert (eq 'lambda lambda-sym))
+  (emit-maybe-named-lambda name lambda-list body))

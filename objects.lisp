@@ -5,6 +5,15 @@
 
 
 ;;;;
+;;;; IDENTITY
+;;;;
+(defun object-identity (x)
+  #-(or sbcl)
+  (not-implemented)
+  #+sbcl
+  (sb-kernel:get-lisp-obj-address x))
+
+;;;;
 ;;;; NAMED-OBJECT & NAMED-STRUCTURE
 ;;;;
 (defclass named-object ()

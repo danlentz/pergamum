@@ -63,6 +63,7 @@
    ;; classes.lisp
    #:define-protocol-class
    ;; objects.lisp
+   #:object-identity
    #:named-object
    #:named-structure
    #:object-name

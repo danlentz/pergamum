@@ -3,6 +3,11 @@
 
 (in-package :pergamum)
 
+
+(defun maybe-list (x)
+  "Return either X wrapped in a list, when it's non-NIL, or NIL."
+  (when x (list x)))
+
 (defun symbol-macro-p (x env)
   "See if X denotes a symbol macro within ENV."
   (and (symbolp x)

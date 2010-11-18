@@ -28,6 +28,7 @@
    #:function-insn-vector
    #:disassemble-insn-vector
    ;; basis.lisp
+   #:maybe-list
    #:symbol-macro-p
    #:progn-1
    #:lret

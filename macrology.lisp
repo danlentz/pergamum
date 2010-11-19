@@ -14,7 +14,7 @@ which contains an ignore declaration in the case there were any symbols
 to ignore.
 
 Example:
-  (defmacro ignorably-let ((var value-form) &body body)
+  (defmacro ignorably-let (((var value-form)) &body body)
     (with-ignored-names (ignores var)
       `(let ((,var ,value-form))
          ,@ignores
@@ -37,7 +37,7 @@ Example:
                                        (list spec nil))))
                                   specs)))
     (multiple-value-bind (names things) (apply #'values (apply #'mapcar #'list names-and-things))
-      `(labels ((,ignore-name-p (x) (eq x '_))
+      `(labels ((,ignore-name-p (x) (string= (symbol-name x) "_"))
                 (,symbol-selector-name (x &optional (thing "G"))
                   (if (,ignore-name-p x)
                       (gensym thing)

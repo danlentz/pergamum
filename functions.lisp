@@ -51,6 +51,18 @@ Example: (FUNCALL (COMPOSE* #'CONS #'* #'+ #'LENGTH) :A 3 1 '(1)) => (:A . 6)"
   "A = currier."
   (lambda (x) (= x val)))
 
+(defun flist (&rest before-items)
+  "Return a function which places its first argument as the last element
+of a fresh list containing BEFORE-ITEMS."
+  (lambda (x)
+    (apply #'list (append before-items (list x)))))
+
+(define-compiler-macro flist (&rest before-items)
+  "Return a function which places its first argument as the last element
+of a fresh list containing BEFORE-ITEMS."
+  `(lambda (x)
+     (list ,@before-items x)))
+
 (defun latch (&rest args)
   "Produce a function which applies its first parameter to ARGS."
   (lambda (fn)

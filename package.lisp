@@ -115,6 +115,7 @@
    #:fequal
    #:fequalp
    #:f=
+   #:flist
    #:latch
    #:arg
    #:bukkake-combine

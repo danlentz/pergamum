@@ -4,7 +4,7 @@
 (in-package :pergamum)
 
 
-(defmacro with-ignored-names ((pastable-ignore-form-var &rest specs) &body body)
+(defmacro with-ignored-names (pastable-ignore-form-var (ignorelist-var &rest specs) &body body)
   "Each SPEC must be either a NAME, or a (NAME THING), with plain
 NAME producing a plain, unprefixed gensym in the expansion.
 
@@ -24,10 +24,13 @@ Example:
   (let ((#:g42 123))
     (declare (ignore #:g42))
     (foo))"
+  (check-type pastable-ignore-form-var symbol)
+  (check-type ignorelist-var symbol)
   (let ((final-names (make-gensym-list (length specs) "FINAL-NAMES"))
-        (ignore-tracker (gensym "IGNORE-TRACKER"))
         (ignore-name-p (gensym "IGNORE-CRITERIA"))
         (symbol-selector-name (gensym "SYMBOL-SELECTOR"))
+        (bind-ignore-form-p (not (string= "_" (symbol-name pastable-ignore-form-var))))
+        (bind-ignorelist-p  (not (string= "_" (symbol-name ignorelist-var))))
         (names-and-things (mapcar (lambda (spec)
                                     (etypecase spec
                                       (list
@@ -36,20 +39,25 @@ Example:
                                       (symbol
                                        (list spec nil))))
                                   specs)))
-    (multiple-value-bind (names things) (apply #'values (apply #'mapcar #'list names-and-things))
-      `(labels ((,ignore-name-p (x) (string= (symbol-name x) "_"))
-                (,symbol-selector-name (x &optional (thing "G"))
-                  (if (,ignore-name-p x)
-                      (gensym thing)
-                      x)))
-         (let* (,@(mapcar (lambda (g n tn) (list g `(,symbol-selector-name ,n ,@(when tn (list tn)))))
-                          final-names names things)
-                (,pastable-ignore-form-var (let ((,ignore-tracker (remove nil (mapcar (lambda (n f)
-                                                                                        (when (,ignore-name-p n) f))
-                                                                                      (list ,@names)
-                                                                                      (list ,@final-names)))))
-                                             (when ,ignore-tracker
-                                               `((declare (ignore ,@,ignore-tracker)))))))
-           (let (,@(mapcar (lambda (n g) (list n g))
-                           names final-names))
+    (assert (or bind-ignore-form-p bind-ignorelist-p))
+    (let ((ignore-tracker (if bind-ignorelist-p
+                              ignorelist-var
+                              (gensym "IGNORE-TRACKER"))))
+      (multiple-value-bind (names things) (apply #'values (apply #'mapcar #'list names-and-things))
+        `(labels ((,ignore-name-p (x) (string= (symbol-name x) "_"))
+                  (,symbol-selector-name (x &optional (thing "G"))
+                    (if (,ignore-name-p x)
+                        (gensym thing)
+                        x)))
+           (let* (,@(mapcar (lambda (g n tn) (list g `(,symbol-selector-name ,n ,@(when tn (list tn)))))
+                            final-names names things)
+                  (,ignore-tracker (remove nil (mapcar (lambda (n f)
+                                                         (when (,ignore-name-p n) f))
+                                                       (list ,@names)
+                                                       (list ,@final-names))))
+                  ,@(when bind-ignore-form-p
+                          `((,pastable-ignore-form-var (when ,ignore-tracker
+                                                         `((declare (ignore ,@,ignore-tracker)))))))
+                  ,@(mapcar (lambda (n g) `(,n ,g))
+                            names final-names))
              ,@body))))))

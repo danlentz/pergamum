@@ -54,6 +54,11 @@ otherwise return DEFAULT, which defaults to :UNBOUND-SLOT."
          (slot-value object slot-name))
         (t default)))
 
+(defun slotting (name)
+  "Return a function accepting an object as its only argument, 
+which returns the value of its slot with NAME."
+  (lambda (x) (slot-value x name)))
+
 (defmacro define-print-object-method (((object object-type &key (unreadable t) (type t) identity (unbound-slot-value :unbound-slot)) &rest slots) format-control
                                       &rest format-arguments)
   "Define a PRINT-OBJECT method for objects with OBJECT-TYPE.

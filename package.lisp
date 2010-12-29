@@ -73,6 +73,7 @@
    #:object-name
    #:copy-slots
    #:slot-value*
+   #:slotting
    #:define-print-object-method
    #:primary-method-not-required
    #:most-specific-last

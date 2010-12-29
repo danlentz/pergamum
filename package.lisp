@@ -62,6 +62,7 @@
    #:strconcat*
    #:escape
    #:escape*
+   #:decoded-time-string
    ;; binding.lisp
    #:define-execute-with-bound-variable
    ;; classes.lisp

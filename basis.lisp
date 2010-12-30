@@ -13,6 +13,10 @@
   (and (symbolp x)
        (nth-value 1 (macroexpand-1 x env))))
 
+(defmacro currily (func &rest argspec)
+  (with-gensyms (arg)
+    `(lambda (,arg) (funcall ,func ,@(subst-if arg (lambda (x) (and (symbolp x) (string= x "_"))) argspec)))))
+
 (defmacro progn-1 (&body body)
   `(multiple-value-prog1
        (progn

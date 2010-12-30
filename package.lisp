@@ -30,6 +30,7 @@
    ;; basis.lisp
    #:maybe-list
    #:symbol-macro-p
+   #:currily
    #:progn-1
    #:lret
    #:lret*

@@ -343,6 +343,7 @@
    #:enable-curry-reader
    #:invoke-with-safe-reader-context
    #:with-safe-reader-context
+   #:read-ignoring-missing-packages
    ;; types.lisp
    #:coerce-to-sequence
    #:remove-if-not-subtype-of

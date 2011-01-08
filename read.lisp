@@ -48,3 +48,17 @@
 
 (defmacro with-safe-reader-context (() &body body)
   `(invoke-with-safe-reader-context (lambda () ,@body)))
+
+(defun read-ignoring-missing-packages (stream &optional (eof-error-p t) eof-value recursive-p)
+  "Like READ, but do not signal an error when the expression to be read contains
+symbols in missing packages, at the cost of mutilation of such forms.
+Thanks to Pascal Bourgignon and Tobias Rittweiler, without whom this function
+would not exist."
+  (let ((*readtable* (copy-readtable)))
+    (set-syntax-from-char #\: #\')
+    (multiple-value-bind (result offset) (read stream eof-error-p eof-value recursive-p)
+      (if (eql #\: (peek-char nil stream eof-error-p eof-value recursive-p))
+          (progn
+            (read-char stream eof-error-p eof-value recursive-p)
+            (read stream eof-error-p eof-value recursive-p))
+          (values result offset)))))

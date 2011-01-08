@@ -342,6 +342,7 @@
    #:enable-compose-reader
    #:enable-curry-reader
    #:read-ignoring-missing-packages
+   #:dispatching-macro-character-let
    ;; types.lisp
    #:coerce-to-sequence
    #:remove-if-not-subtype-of

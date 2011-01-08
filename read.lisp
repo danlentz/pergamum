@@ -50,3 +50,16 @@ would not exist."
             (read-char stream eof-error-p eof-value recursive-p)
             (read stream eof-error-p eof-value recursive-p))
           (values result offset)))))
+
+(defun invoke-binding-dipatching-macro-characters (dispatch-char bindings body)
+  (let ((*readtable* (copy-readtable)))
+    (iter (for (char function) in bindings)
+          (set-dispatch-macro-character dispatch-char char function))
+    (funcall body)))
+
+(defmacro dispatching-macro-character-let (dispatch-char (&rest bindings) &body body)
+  `(invoke-binding-dipatching-macro-characters
+    ,dispatch-char (list ,@(iter (for b in bindings)
+                                 (destructuring-bind (char &optional function) (ensure-list b)
+                                   (collect `(list ,char ,(or function `(constantly nil)))))))
+    (lambda () ,@body)))

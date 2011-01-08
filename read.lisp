@@ -37,18 +37,6 @@
   (set-macro-character  #\{ #'compose-reader t)
   (set-syntax-from-char #\} #\)))
 
-(defun invoke-with-safe-reader-context (fn)
-  (let ((*read-eval* nil)
-        (*readtable* (copy-readtable)))
-    (set-dispatch-macro-character #\# #\. (lambda (stream &optional char sharp)
-                                            (declare (ignore char sharp))
-                                            (let ((*read-suppress* t))
-                                              (read stream nil nil t))))
-    (funcall fn)))
-
-(defmacro with-safe-reader-context (() &body body)
-  `(invoke-with-safe-reader-context (lambda () ,@body)))
-
 (defun read-ignoring-missing-packages (stream &optional (eof-error-p t) eof-value recursive-p)
   "Like READ, but do not signal an error when the expression to be read contains
 symbols in missing packages, at the cost of mutilation of such forms.

@@ -341,8 +341,6 @@
    #:enable-array-reader
    #:enable-compose-reader
    #:enable-curry-reader
-   #:invoke-with-safe-reader-context
-   #:with-safe-reader-context
    #:read-ignoring-missing-packages
    ;; types.lisp
    #:coerce-to-sequence

@@ -63,3 +63,17 @@ would not exist."
                                  (destructuring-bind (char &optional function) (ensure-list b)
                                    (collect `(list ,char ,(or function `(constantly nil)))))))
     (lambda () ,@body)))
+
+(defun invoke-binding-character-syntaxes (bindings body)
+  (let ((*readtable* (copy-readtable)))
+    (iter (for (to-char from-char) in bindings)
+          (set-syntax-from-char to-char from-char))
+    (funcall body)))
+
+(defmacro character-syntax-let ((&rest bindings) &body body)
+  `(invoke-binding-character-syntaxes
+    (list ,@(iter (for (to from) in bindings)
+                  (unless (characterp to)
+                    (error "~@<The character binding must be specified by a character and a form.~:@>"))
+                  (collect `(list ,to ,from))))
+    (lambda () ,@body)))

@@ -344,6 +344,7 @@
    #:enable-curry-reader
    #:read-ignoring-missing-packages
    #:dispatching-macro-character-let
+   #:character-syntax-let
    ;; types.lisp
    #:coerce-to-sequence
    #:remove-if-not-subtype-of

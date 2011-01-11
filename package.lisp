@@ -352,5 +352,7 @@
    #:mar
    #:export-unmarred
    #:tunnel-package
+   #:add-nickname
+   #:remove-nickname
    ;; to-expunge.lisp
    ))

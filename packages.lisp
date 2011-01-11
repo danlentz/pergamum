@@ -20,3 +20,33 @@
     (do-external-symbols (sym source)
       (push sym syms))
     (export (set-difference syms (package-shadowing-symbols package) :key #'symbol-name :test #'string=))))
+
+(defun remove-nickname (package nickname)
+  "Remove the nickname from the list of nicknames of PACKAGE.
+Return the package designated by PACKAGE.
+
+Stolen from Pascal Bourgignon's ORG.INFORMATIMAGO.COMMON-LISP.CESARUM library."
+  (let ((package (find-package package)))
+    (rename-package package
+                    (package-name package)
+                    (remove nickname (package-nicknames package)
+                            :test (function string=)))))
+
+(defun add-nickname (package nickname)
+  "Add the nickname to the package.  Return the package.
+
+A reduced version of the original, from Pascal Bourgignon's
+ORG.INFORMATIMAGO.COMMON-LISP.CESARUM library."
+  ;; !!! The consequences are undefined if new-name or any new-nickname conflicts with any existing package names.
+  (let* ((pack     (find-package package))
+         (nickpack (find-package nickname)))
+    (cond
+      ((null pack)
+       (error "~@<~S does not name an existing package.~:@>" package))
+      ((eq nickpack pack))
+      ((null nickpack)
+       (rename-package pack (package-name pack)
+                       (cons nickname (copy-seq (package-nicknames pack)))))
+      (t
+       (error "~@<~S names an existing package.~:@>" nickname)))
+    pack))

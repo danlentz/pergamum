@@ -3,6 +3,12 @@
 
 (in-package :pergamum)
 
+
+(defun maybe-prop (key value)
+  "Return a list (KEY VALUE), whenever VALUE is non-NIL."
+  (when value
+    (list key value)))
+
 (defun nfsubst (fn tree)
   "Pipe non-CONSes in TREE through FN, producing a new one."
   (cond ((null tree) nil)

@@ -3,28 +3,36 @@
 
 (in-package :pergamum)
 
-
-(defmacro define-execute-with-bound-variable (variable &body options)
-  (let* ((package (symbol-package variable))
-         (invoker-name (format-symbol package "EXECUTE-WITH-~A-BOUND" variable)))
-    (multiple-value-bind (bindings unrecognised) (unzip (compose (curry #'eq :binding) #'car) options)
-      (when unrecognised
-        (error "~@<In ~A: unrecognised options: ~A.~:@>"
-               'define-execute-with-maybe-bound-variable (mapcar #'car unrecognised)))
+(defmacro define-binder (variable name &key invoker maybep (fixed-value-form nil fixed-value-form-p) (documentation t))
+  (flet ((proper-sym (format-control &rest args)
+           (apply #'format-symbol (symbol-package variable) format-control args))
+         (docstring (what)
+           (when documentation
+             (list (format nil "~A with ~A ~:[~;possibly ~]bound to VALUE." what variable maybep)))))
+    (let ((body  (proper-sym "BODY"))
+          (pred (proper-sym "PRED"))
+          (value (proper-sym "VALUE"))
+          (fn (proper-sym "FN"))
+          (invoker (or invoker (proper-sym "INVOKE~:[~;-MAYBE~]-~A" maybep name))))
       `(progn
-         (defun ,invoker-name (maybe value fn)
-           ,(format nil "Execute FN with ~A possibly bound to VALUE, depending on whether MAYBE is non-NIL." variable)
-           (if maybe
-               (let ((,variable value))
-                 (funcall fn))
-               (funcall fn)))
-         ,@(iter (for binding in bindings)
-                 (destructuring-bind (name form &key (define-with-macro t) define-with-maybe-macro documentation) (rest binding)
-                   (when define-with-macro
-                     (collect `(defmacro ,(format-symbol package "WITH-~A" name) (() &body body)
-                                 ,@(when documentation `(,documentation))
-                                 `(,',invoker-name t ,',form (lambda () ,@body)))))
-                   (when define-with-maybe-macro
-                     (collect `(defmacro ,(format-symbol package "WITH-MAYBE-~A" name) ((maybe) &body body)
-                                 ,@(when documentation `(,documentation))
-                                 `(,',invoker-name ,maybe ,',form (lambda () ,@body)))))))))))
+         (defun ,invoker (,@(when maybep `(,pred)) ,value ,fn)
+           ,@(docstring "Call FN")
+           ,(if maybep
+                `(if ,pred
+                     (let ((,variable ,value))
+                       (declare (special ,variable))
+                       (funcall ,fn))
+                     (funcall ,fn))
+                `(let ((,variable ,value))
+                   (declare (special ,variable))
+                   (funcall ,fn))))
+         (defmacro ,name (,@(if (and maybep (not fixed-value-form-p))
+                                `((,pred ,value))
+                                `(,@(when maybep `(,pred)) ,@(unless fixed-value-form-p `(,value))))
+                          &body ,body)
+           ,@(docstring "Execute BODY")
+           `(,',invoker ,,@(when maybep `(,pred))
+                        ,,(if fixed-value-form-p
+                              (list 'quote fixed-value-form)
+                              value)
+                        (lambda () ,@,body)))))))

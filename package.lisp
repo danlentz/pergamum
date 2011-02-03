@@ -65,7 +65,7 @@
    #:escape*
    #:decoded-time-string
    ;; binding.lisp
-   #:define-execute-with-bound-variable
+   #:define-binder
    ;; classes.lisp
    #:define-protocol-class
    ;; objects.lisp

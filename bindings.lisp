@@ -3,7 +3,7 @@
 
 (in-package :pergamum)
 
-(defmacro define-binder (name variable &key invoker maybep (fixed-value-form nil fixed-value-form-p) (documentation t))
+(defmacro define-binder (name variable &key invoker maybep (fixed-value nil fixed-value-p) (documentation t))
   (flet ((proper-sym (format-control &rest args)
            (apply #'format-symbol (symbol-package variable) format-control args))
          (docstring (what)
@@ -26,13 +26,13 @@
                 `(let ((,variable ,value))
                    (declare (special ,variable))
                    (funcall ,fn))))
-         (defmacro ,name (,@(if (and maybep (not fixed-value-form-p))
+         (defmacro ,name (,@(if (and maybep (not fixed-value-p))
                                 `((,pred ,value))
-                                `(,@(when maybep `(,pred)) ,@(unless fixed-value-form-p `(,value))))
+                                `(,@(when maybep `(,pred)) ,@(unless fixed-value-p `(,value))))
                           &body ,body)
            ,@(docstring "Execute BODY")
            `(,',invoker ,,@(when maybep `(,pred))
-                        ,,(if fixed-value-form-p
-                              (list 'quote fixed-value-form)
+                        ,,(if fixed-value-p
+                              (list 'quote fixed-value)
                               value)
                         (lambda () ,@,body)))))))

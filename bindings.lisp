@@ -3,7 +3,7 @@
 
 (in-package :pergamum)
 
-(defmacro define-binder (variable name &key invoker maybep (fixed-value-form nil fixed-value-form-p) (documentation t))
+(defmacro define-binder (name variable &key invoker maybep (fixed-value-form nil fixed-value-form-p) (documentation t))
   (flet ((proper-sym (format-control &rest args)
            (apply #'format-symbol (symbol-package variable) format-control args))
          (docstring (what)

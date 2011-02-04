@@ -102,7 +102,9 @@ with ELEMENT-TYPE, defaulting to CHARACTER."
 (defun rename-to-directory (pathname target-directory)
   "Unfortunately, RENAME-FILE is underwhelming, when moving directories."
   (if (pathname-name pathname)
-      (rename-file (namestring pathname) (namestring (make-pathname :directory (pathname-directory target-directory) :name (pathname-name pathname))))
+      (rename-file (namestring pathname) (namestring (make-pathname :directory (pathname-directory target-directory)
+                                                                    :name (pathname-name pathname)
+                                                                    :type (pathname-type pathname))))
       ;; We rely on that RENAME-FILE works on directories.  Known to be true on SBCL/linux and CCL/linux.
       ;; In fact, this is weakly supported by CLHS:
       ;; "It is an error [...] for filespec to contain a nil component where the file system does not permit a nil component..."

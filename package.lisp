@@ -46,6 +46,7 @@
    #:with-ignored-names
    #:with-symbols-packaged-with
    #:pass-&key*
+   #:defmacro*
    ;; control-flow.lisp
    #:when-lret
    #:if-lret

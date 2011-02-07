@@ -88,3 +88,44 @@ contains a dash, and FOOBARP, whenever it doesn't."
                                     ,(make-keyword name)
                                     ,sym))
                            symbols))))
+
+(defmacro defmacro* (name lambda-list &body body)
+  "Define a macro wrt. NAME, LAMBDA-LIST and BODY, as if by DEFMACRO,
+while binding PASS-&KEYS around BODY to a form, expanding to a
+PASS-&KEY form passed names of all full &KEY specifications
+ (i.e. those having predicates), when the PASS-&KEYS form itself
+was passed no symbols, or an intersection of names of all full &KEY
+specifications with the set of symbols passed to PASS-&KEYS, whenever
+there are any.
+
+Example:
+
+ (defmacro* with-fooage ((&key (foo nil foop) (bar nil barp) (qu-ux t qu-ux-p))
+                         (&key (drat t dratp)) &body body)
+   (let ((processed-body (process-body body drat)))
+    `(invoke-with-fooage (lambda () ,@body) ,@(pass-&keys foo bar qu-ux))))"
+  (with-symbols-packaged-with (pass-&keys limit xs) name
+    (multiple-value-bind (body decls doc) (parse-body body :documentation t)
+      (labels ((keyspec-passable-p (spec)
+                 (and (consp spec) (= 3 (length spec))))
+               (check-passable-keyspec-valid (spec &aux (pred-name (symbol-name (third spec))))
+                 (unless (or (not (find #\- pred-name))
+                             (and (>= (count #\- pred-name) 2)
+                                  (ends-with-subseq "-P" pred-name)))
+                   (error "~@<In DEFMACRO* ~S: complete keyword argument specifications be idiomatic: ~
+                            either FOO-BAR-P or FOOBARP, but not FOO-BARP or FOOBAR-P.~:@>" name)))
+               (scour-single-list (list)
+                 (remove-if-not #'keyspec-passable-p (rest (member '&key list))))
+               (scour-tree-keyspecs (list)
+                 (let ((&key-tail (member '&key list)))
+                   (append (scour-single-list &key-tail)
+                           (mapcan #'scour-tree-keyspecs (remove-if-not #'consp (ldiff list &key-tail)))))))
+        (let ((passable-keyspecs (scour-tree-keyspecs lambda-list)))
+          (mapc #'check-passable-keyspec-valid passable-keyspecs)
+          `(defmacro ,name ,lambda-list
+             ,@(ensure-list doc)
+             ,@decls
+             (macrolet ((,pass-&keys (&rest ,limit)
+                          `(pass-&key* ,@(xform ,limit (lambda (,xs) (remove-if-not (rcurry #'member ,limit) ,xs))
+                                                ',(mapcar #'first passable-keyspecs)))))
+               ,@body)))))))

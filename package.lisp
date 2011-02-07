@@ -134,6 +134,7 @@
    #:and-p
    ;; lists.lisp
    #:maybe-prop
+   #:maybe-prop*
    #:nfsubst
    #:make-queue
    #:enqueue

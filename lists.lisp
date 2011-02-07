@@ -4,7 +4,12 @@
 (in-package :pergamum)
 
 
-(defun maybe-prop (key value)
+(defun maybe-prop (pred key value)
+  "Return a list (KEY VALUE), whenever PRED is non-NIL."
+  (when pred
+    (list key value)))
+
+(defun maybe-prop* (key value)
   "Return a list (KEY VALUE), whenever VALUE is non-NIL."
   (when value
     (list key value)))

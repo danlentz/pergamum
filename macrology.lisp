@@ -61,3 +61,30 @@ Example:
                   ,@(mapcar (lambda (n g) `(,n ,g))
                             names final-names))
              ,@body))))))
+
+(defmacro with-symbols-packaged-with ((&rest symbols) as &body body)
+  "Execute BODY with SYMBOLS bound to the symbols of the corresponding
+name, but contained within the package containing the symbol AS."
+  (with-gensyms (package)
+    `(let* ((,package (symbol-package ,as))
+            ,@(mapcar (lambda (sym)
+                        (list sym `(intern ,(symbol-name sym) ,package)))
+                      symbols))
+       ,@body)))
+
+(defmacro pass-&key* (&rest symbols)
+  "Given a list of SYMBOLS, return a plist, containing properties with
+keywords named after corresponding SYMBOLS, and values being the
+results of evaluation of SYMBOLS, without, however, those properties,
+which have a corresponding predicate symbol bound to NIL.
+
+The predicate symbol is named FOO-BAR-P, whenever a symbol name
+contains a dash, and FOOBARP, whenever it doesn't."
+  `(mapcan (lambda (pred-key-val)
+             (when (first pred-key-val)
+               (rest pred-key-val)))
+           (list ,@(mapcar (lambda (sym &aux (name (symbol-name sym)))
+                             `(list ,(find-symbol (format nil (if (find #\- name) "~A-P" "~AP") name))
+                                    ,(make-keyword name)
+                                    ,sym))
+                           symbols))))

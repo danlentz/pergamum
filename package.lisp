@@ -44,6 +44,8 @@
    #:syncformat
    ;; macrology.lisp
    #:with-ignored-names
+   #:with-symbols-packaged-with
+   #:pass-&key*
    ;; control-flow.lisp
    #:when-lret
    #:if-lret

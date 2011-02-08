@@ -109,7 +109,7 @@
                           (collect `(,condition (make-fixed-restarter ',restart ,@params)))))
      ,@body))
 
-(defmacro with-maybe-just-printing-conditions ((stream type) just-print-p &body body)
+(defmacro with-maybe-just-printing-conditions ((stream type &optional (format "~@<;; ~@;~A~:@>~%")) just-print-p &body body)
   "Execute BODY with conditions of TYPE being handled by printing them
 into STREAM, iff JUST-PRINT-P is non-NIL."
   (with-gensyms (cond)
@@ -117,7 +117,7 @@ into STREAM, iff JUST-PRINT-P is non-NIL."
        (if ,just-print-p
            (handler-case (funcall #'body)
              (,type (,cond)
-               (format ,stream "~@<;; ~@;~A~:@>" ,cond)))
+               (format ,stream ,format ,cond)))
            (funcall #'body)))))
 
 (defmacro with-condition-printing ((stream type) &body body)

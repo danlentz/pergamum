@@ -91,20 +91,35 @@ contains a dash, and FOOBARP, whenever it doesn't."
 
 (defmacro defmacro* (name lambda-list &body body)
   "Define a macro wrt. NAME, LAMBDA-LIST and BODY, as if by DEFMACRO,
-while binding PASS-&KEYS around BODY to a form, expanding to a
-PASS-&KEY form passed names of all full &KEY specifications
- (i.e. those having predicates), when the PASS-&KEYS form itself
-was passed no symbols, or an intersection of names of all full &KEY
-specifications with the set of symbols passed to PASS-&KEYS, whenever
-there are any.
+while binding key-passing macros around BODY to forms, which all
+expand to a PASS-&KEY form, itself passed some or all names of full
+&KEY specifications (regardless of where the latter are found within
+the macro lambda list).
+
+The following key-passing macro forms are defined:
+
+  PASS-ALL-&KEYS
+
+Passes names of all those keyword parameters, which have full,
+three-element specifications.
+
+  PASS-&KEYS &rest NAMES
+
+Like PASS-ALL-&KEYS, but intersects the set of passed names with
+NAMES.
+
+  PASS-&KEYS-SANS &rest WITHOUT-NAMES
+
+Like PASS-ALL-&KEYS, but subtracts WITHOUT-NAMES from the set of
+passed names.
 
 Example:
 
  (defmacro* with-fooage ((&key (foo nil foop) (bar nil barp) (qu-ux t qu-ux-p))
                          (&key (drat t dratp)) &body body)
    (let ((processed-body (process-body body drat)))
-    `(invoke-with-fooage (lambda () ,@body) ,@(pass-&keys foo bar qu-ux))))"
-  (with-symbols-packaged-with (pass-&keys limit xs) name
+    `(invoke-with-fooage (lambda () ,@body) ,@(pass-&keys-sans drat))))"
+  (with-symbols-packaged-with (pass-all-&keys pass-&keys pass-&keys-sans limit) name
     (multiple-value-bind (body decls doc) (parse-body body :documentation t)
       (labels ((keyspec-passable-p (spec)
                  (and (consp spec) (= 3 (length spec))))
@@ -120,12 +135,16 @@ Example:
                  (let ((&key-tail (member '&key list)))
                    (append (scour-single-list &key-tail)
                            (mapcan #'scour-tree-keyspecs (remove-if-not #'consp (ldiff list &key-tail)))))))
-        (let ((passable-keyspecs (scour-tree-keyspecs lambda-list)))
+        (let* ((passable-keyspecs (scour-tree-keyspecs lambda-list))
+               (passable-names (mapcar #'first passable-keyspecs)))
           (mapc #'check-passable-keyspec-valid passable-keyspecs)
           `(defmacro ,name ,lambda-list
              ,@(ensure-list doc)
              ,@decls
              (macrolet ((,pass-&keys (&rest ,limit)
-                          `(pass-&key* ,@(xform ,limit (lambda (,xs) (remove-if-not (rcurry #'member ,limit) ,xs))
-                                                ',(mapcar #'first passable-keyspecs)))))
+                          `(pass-&key* ,@(remove-if-not (rcurry #'member ,limit) ',passable-names)))
+                        (,pass-&keys-sans (&rest ,limit)
+                          `(pass-&key* ,@(remove-if (rcurry #'member ,limit) ',passable-names)))
+                        (,pass-all-&keys ()
+                          '(,pass-&keys-sans)))
                ,@body)))))))

@@ -117,7 +117,7 @@ into STREAM, iff JUST-PRINT-P is non-NIL."
        (if ,just-print-p
            (handler-case (funcall #'body)
              (,type (,cond)
-               (format ,stream "~@<~A~:@>" ,cond)))
+               (format ,stream "~@<;; ~@;~A~:@>" ,cond)))
            (funcall #'body)))))
 
 (defmacro with-condition-printing ((stream type) &body body)

@@ -88,7 +88,6 @@
    #:dsignal
    #:derror
    #:with-condition-recourses
-   #:call-next-recourse-and-retry
    #:make-condition-raiser
    #:make-error-raiser
    #:with-retry-restarts

@@ -44,6 +44,7 @@
    #:syncformat
    ;; macrology.lisp
    #:with-ignored-names
+   #:with-symbols-packaged-in
    #:with-symbols-packaged-with
    #:pass-&key*
    #:defmacro*

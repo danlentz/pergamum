@@ -62,6 +62,15 @@ Example:
                             names final-names))
              ,@body))))))
 
+(defmacro with-symbols-packaged-in ((&rest symbols) package &body body)
+  "Execute BODY with SYMBOLS bound to the symbols of the corresponding
+name, but contained within the package containing the symbol AS."
+  (once-only (package)
+    `(let* (,@(mapcar (lambda (sym)
+                        (list sym `(intern ,(symbol-name sym) ,package)))
+                      symbols))
+       ,@body)))
+
 (defmacro with-symbols-packaged-with ((&rest symbols) as &body body)
   "Execute BODY with SYMBOLS bound to the symbols of the corresponding
 name, but contained within the package containing the symbol AS."

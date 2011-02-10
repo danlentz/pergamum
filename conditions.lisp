@@ -136,16 +136,27 @@ into STREAM, iff JUST-PRINT-P is non-NIL."
        (,type (,cond)
 	 (format ,stream "~@<~A~:@>" ,cond)))))
 
-(defmacro with-error-resignaling ((type ((cond) &rest as)) &body body)
-  "Execute BODY with conditions of TYPE being handled by resignaling them
-   by evaluating AS with COND bound to the condition and passed to CL:ERROR.
+(defmacro with-error-resignaling ((&rest clauses) &body body)
+  "Execute BODY within dynamic extent, where CLAUSE establish
+handlers for certain condition types, which resignal those conditions
+as conditions of a different type.
 
-   When COND equals to NIL, an ignore declaration is emitted."
-  (let ((binding (or cond (gensym "IGNORED"))))
-    `(handler-bind ((,type (lambda (,binding)
-                             ,@(when (null cond) `((declare (ignore ,binding))))
-                             (error ,@as))))
-       ,@body)))
+Each clause must be of a following form:
+
+ (TYPE ((&optional COND) &rest AS))
+
+Such a clause would establish a handler for conditions of TYPE, which
+would then be resignalled by splicing the AS argument list to an ERROR
+form, with the latter evaluated within a lexical context, where COND
+would be optionally bound to the condition being handled."
+  `(handler-bind (,@(mapcar (lambda (clause)
+                              (destructuring-bind (type ((&optional cond) &rest as)) clause
+                                (let ((binding (or cond (gensym "IGNORED"))))
+                                  `(,type (lambda (,binding)
+                                            ,@(when (null cond) `((declare (ignore ,binding))))
+                                            (error ',(first as) ,@(rest as)))))))
+                            clauses))
+     ,@body))
 
 (defmacro with-collected-conditions ((type &optional backtrace backtrace-as-list) &body body)
   "Execute BODY with conditions of TYPE handled by returning the condition

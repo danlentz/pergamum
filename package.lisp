@@ -228,6 +228,7 @@
    #:pathname-busy
    #:pathname-not-present
    #:check-pathname-not-occupied
+   #:with-directory
    #:within-directory
    #:directory-created-p
    #:directory-existed-p

@@ -13,46 +13,54 @@ PATHNAME-BUSY otherwise."
   (or (not (file-exists-p pathname))
       (error 'pathname-busy :pathname pathname)))
 
-(defmacro within-directory ((directory-form &key (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) &body body)
-  "Evaluate DIRECTORY-FORM, and then execute BODY with the idea of
-current directory changed to the resulting value, which must
-be a pathname specifier -- either a pathname, or a namestring.
+(defmacro with-directory ((directory &key value (if-exists :continue) (if-does-not-exist :error)) &body body)
+  "Evaluate DIRECTORY, ensure that such a directory exists, and then
+execute BODY within a lexical context, where (DIRECTORY-EXISTED-P)
+evaluates to a boolean value representing whether the directory had to
+be created, when IF-DOES-NOT-EXIST is :CREATE. (DIRECTORY-CREATED-P)
+evaluates to the negation of that value.
 
 Defined keywords:
- :LISP - a boolean, indicating a request to bind *D-P-D*
+ :IF-EXISTS         - one of :ERROR or :CONTINUE
+ :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE
+ :VALUE             - bind the result of evaluation of DIRECTORY to this symbol"
+  (with-gensyms (existsp)
+    (with-symbols-packaged-in (directory-created-p directory-existed-p invoke) *package*
+      (let ((dirsym (or value (gensym "DIRECTORY"))))
+        `(let* ((,dirsym ,directory)
+                (,existsp   (directory-exists-p ,dirsym)))
+           (macrolet ((,directory-created-p () `(not ,',existsp))
+                      (,directory-existed-p () ',existsp))
+             (flet ((,invoke () ,@body))
+               (if ,existsp
+                   ,(ecase if-exists
+                           (:continue `(,invoke))
+                           (:error `(error 'pathname-busy :pathname ,dirsym)))
+                   ,(ecase if-does-not-exist
+                           (:create `(progn
+                                       (ensure-directories-exist ,dirsym)
+                                       (,invoke)))
+                           (:error `(error 'pathname-not-present :pathname ,dirsym)))))))))))
+
+(defmacro within-directory ((directory &key (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) &body body)
+  "Like WITH-DIRECTORY, but change Lisp's and/or POSIX-ly ideas of
+current directory to the directory.
+
+Defined keywords:
+ :LISP - a boolean, indicating a request to bind *DEFAULT-PATHNAME-DEFAULTS*
  :POSIX - a boolean, indicating a request to change POSIX's idea
           of the current directory
  :IF-EXISTS - one of :ERROR or :CONTINUE
- :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE
-See the manual for details.
-
-Within the lexical context established by the WITHIN-DIRECTORY form,
- (DIRECTORY-EXISTED-P) evaluates to a boolean value representing
-whether the directory had to be created, when IF-DOES-NOT-EXIST
-is :CREATE. (DIRECTORY-CREATED-P) evaluates to the negation of that
-value."
-  (with-gensyms (existsp directory old)
-    (once-only (directory-form)
-      `(let ((,existsp (directory-exists-p ,directory-form)))
-         (macrolet ((directory-created-p () `(not ,',existsp))
-                    (directory-existed-p () ',existsp))
-           (flet ((invoke-within-directory (,directory)
-                    (let (,@(when posix `((,old (posix-working-directory))))
-                          ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,directory)))))
-                      ,@(if posix
-                            `((set-posix-working-directory ,directory)
-                              (unwind-protect (progn ,@body)
-                                (set-posix-working-directory ,old)))
-                            body))))
-             (if ,existsp
-                 ,(ecase if-exists
-                         (:continue `(invoke-within-directory ,directory-form))
-                         (:error `(error 'pathname-busy :pathname ,directory-form)))
-                 ,(ecase if-does-not-exist
-                         (:create `(progn
-                                     (ensure-directories-exist ,directory-form)
-                                     (invoke-within-directory ,directory-form)))
-                         (:error `(error 'pathname-not-present :pathname ,directory-form))))))))))
+ :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE"
+  (with-gensyms (old dirsym)
+    `(with-directory (,directory :value ,dirsym :if-exists ,if-exists :if-does-not-exist ,if-does-not-exist)
+       (let (,@(when posix `((,old (posix-working-directory))))
+             ,@(when lisp `((*default-pathname-defaults* (parse-namestring ,dirsym)))))
+         ,@(if posix
+               `((set-posix-working-directory ,dirsym)
+                 (unwind-protect (progn ,@body)
+                   (set-posix-working-directory ,old)))
+               body)))))
 
 (defun invoke-maybe-within-directory (fn &optional directory)
   "Invoke FN, possibly, when DIRECTORY is non-NIL, within context

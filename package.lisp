@@ -230,8 +230,6 @@
    #:check-pathname-not-occupied
    #:with-directory
    #:within-directory
-   #:directory-created-p
-   #:directory-existed-p
    #:maybe-within-directory
    #:file-as-vector
    #:file-as-string

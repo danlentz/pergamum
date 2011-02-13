@@ -13,6 +13,15 @@ PATHNAME-BUSY otherwise."
   (or (not (file-exists-p pathname))
       (error 'pathname-busy :pathname pathname)))
 
+(defun directory-empty-p (pathname)
+  "Return T, when PATHNAME designates a directory, containing no files
+or subdirectories, NIL otherwise.
+
+The consequences are unspecified, when either the name portion of
+PATHNAME is non-NIL, or the directory it designates does not exist."
+  (and (null (directory (merge-pathnames "*" pathname)))
+       (null (directory (merge-pathnames "*/" pathname)))))
+
 (defmacro with-directory ((directory &key value (if-exists :continue) (if-does-not-exist :error)) &body body)
   "Evaluate DIRECTORY, ensure that such a directory exists, and then
 execute BODY within a lexical context, where (DIRECTORY-EXISTED-P)

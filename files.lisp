@@ -34,21 +34,21 @@ Defined keywords:
  :IF-DOES-NOT-EXIST - one of :ERROR or :CREATE
  :VALUE             - bind the result of evaluation of DIRECTORY to this symbol"
   (with-gensyms (existsp)
-    (with-symbols-packaged-in (directory-created-p directory-existed-p invoke) *package*
+    (with-symbols-packaged-in (directory-created-p directory-existed-p invoke-with-directory) *package*
       (let ((dirsym (or value (gensym "DIRECTORY"))))
         `(let* ((,dirsym ,directory)
                 (,existsp   (directory-exists-p ,dirsym)))
            (macrolet ((,directory-created-p () `(not ,',existsp))
                       (,directory-existed-p () ',existsp))
-             (flet ((,invoke () ,@body))
+             (flet ((,invoke-with-directory () ,@body))
                (if ,existsp
                    ,(ecase if-exists
-                           (:continue `(,invoke))
+                           (:continue `(,invoke-with-directory))
                            (:error `(error 'pathname-busy :pathname ,dirsym)))
                    ,(ecase if-does-not-exist
                            (:create `(progn
                                        (ensure-directories-exist ,dirsym)
-                                       (,invoke)))
+                                       (,invoke-with-directory)))
                            (:error `(error 'pathname-not-present :pathname ,dirsym)))))))))))
 
 (defmacro within-directory ((directory &key (lisp t) (posix t) (if-exists :continue) (if-does-not-exist :error)) &body body)

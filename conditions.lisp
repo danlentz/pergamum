@@ -76,7 +76,7 @@ sought."
                               (setf ,attempted nil)
                               (flet ((,call-next-recourse-and-retry ()
                                        (when-let ((recourse (pop ,recourses)))
-                                         (setf ,attempt-fn (cdr recourse))
+                                         (setf ,attempt-fn (curry (cdr recourse) ,condition-var))
                                          (go ,retry-tag))))
                                 (let ((,recourse-name-var (caar ,recourses)))
                                   (declare (ignorable ,recourse-name-var))

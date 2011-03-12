@@ -359,5 +359,7 @@
    #:tunnel-package
    #:add-nickname
    #:remove-nickname
+   ;; state.lisp
+   #:define-variable-set
    ;; to-expunge.lisp
    ))

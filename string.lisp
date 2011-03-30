@@ -37,6 +37,16 @@ list prepended with ESCAPE-CHAR."
 list prepended with ESCAPE-CHAR."
   (escape x escape-char chars-to-escape))
 
+(defun down-case-string (x)
+  "Given a string designator X, return the down-cased version of the
+associated string."
+  (string-downcase (string x)))
+
+(defun up-case-string (x)
+  "Given a string designator X, return the up-cased version of the
+associated string."
+  (string-upcase (string x)))
+
 (defun decoded-time-string (second minute hour date month year dow daylight-p zone)
   (declare (ignorable second daylight-p zone))
   (format nil "~[Mon~;Tue~;Wed~;Thu~;Fri~;Sat~;Sun~] ~[Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~4,'0D, ~2,'0D:~2,'0D"

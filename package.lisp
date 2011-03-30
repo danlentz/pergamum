@@ -67,6 +67,8 @@
    #:strconcat*
    #:escape
    #:escape*
+   #:down-case-string
+   #:up-case-string
    #:decoded-time-string
    ;; binding.lisp
    #:define-binder
@@ -114,27 +116,35 @@
    #:missing-implementation
    #:not-implemented
    ;; functions.lisp
-   #:compose*
-   #:reduce*
-   #:feq
-   #:feql
-   #:fequal
-   #:fequalp
-   #:f=
-   #:flist
-   #:latch
-   #:arg
-   #:bukkake-combine
+   #:eq-to
+   #:eql-to
+   #:equal-to
+   #:equalp-to
+   #:=-to
+   #:member-of
+   #:member-of*
+   #:eq-member-of*
+   #:eq-not-member-of*
+   #:equal-member-of*
+   #:equal-not-member-of*
+   #:string=-member-of*
+   #:string=-not-member-of*
    #:maybe
    #:maybecall
    #:xform
    #:xform-if
    #:xform-if-not
+   #:orp
+   #:andp
+   #:compose*
+   #:reduce*
+   #:flist
+   #:latch
+   #:arg
+   #:bukkake-combine
    #:apply/find-if
    #:iterate-until
    #:collect-until
-   #:or-p
-   #:and-p
    ;; lists.lisp
    #:maybe-prop
    #:maybe-prop*

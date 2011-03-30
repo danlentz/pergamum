@@ -70,6 +70,8 @@
    #:down-case-string
    #:up-case-string
    #:decoded-time-string
+   ;; string, but really sequences.lisp
+   #:prefixp
    ;; binding.lisp
    #:define-binder
    ;; classes.lisp

@@ -51,3 +51,7 @@ associated string."
   (declare (ignorable second daylight-p zone))
   (format nil "~[Mon~;Tue~;Wed~;Thu~;Fri~;Sat~;Sun~] ~[Jan~;Feb~;Mar~;Apr~;May~;Jun~;Jul~;Aug~;Sep~;Oct~;Nov~;Dec~] ~2,'0D ~4,'0D, ~2,'0D:~2,'0D"
           dow (1- month) date year hour minute))
+
+(defun prefixp (prefix sequence)
+  "A predicate, determining whether PREFIX is a prefix of SEQUENCE."
+  (nth-value 1 (starts-with-subseq prefix sequence :return-suffix t)))

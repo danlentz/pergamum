@@ -24,6 +24,31 @@
     (signal *debug-condition*)
     (invoke-debugger *debug-condition*)))
 
+(defun invoke-with-condition-recourses (condition fn common-recourse recourses)
+  (let (attempted)
+    (flet ((try ()
+             (setf attempted t)
+             (funcall fn)))
+      (let* ((attempt-fn #'try)
+             (recourses (copy-list recourses)))
+        (tagbody retry-tag
+           (handler-case (return-from invoke-with-condition-recourses
+                           (let ((values (multiple-value-list (funcall attempt-fn))))
+                             (if attempted
+                                 (values values)
+                                 (try))))
+             (condition-type (condvar)
+               (setf attempted nil)
+               (flet ((call-next-recourse-and-retry ()
+                        (when-let ((recourse (pop recourses)))
+                          (setf attempt-fn (curry (cdr recourses) condvar))
+                          (go retry-tag))))
+                 (cond (common-recourse
+                        (funcall common-recourse condvar))
+                       (t
+                        (call-next-recourse-and-retry)
+                        (error condvar)))))))))))
+
 (defmacro with-condition-recourses (condition form &body clauses)
   "Execute FORM in a dynamic environment where a number of recourses
 for CONDITION is available, which determine reactions to it, and

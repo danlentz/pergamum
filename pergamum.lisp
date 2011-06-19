@@ -58,15 +58,15 @@ The return value is that of the MEASURED-FORM."
          (let* ((,time-var (coerce (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second) 'float)))
            ,@body)))))
 
-(defmacro with-time-lapse-measure ((time-var) measured-form &body body)
+(defmacro with-time-lapse-measure ((time-var) measurer-form &body body)
   "First, execute MEASURED-FORM, then execute BODY with TIME-VAR bound to
 amount of seconds it took to execute MEASURED-FORM.
 The return value is that of the last form in BODY."
   (with-gensyms (start-time)
     `(let ((,start-time (get-internal-real-time)))
-       ,measured-form
-       (let ((,time-var (float (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second))))
-         ,@body))))
+       (multiple-value-prog1 (progn ,@body)
+         (let ((,time-var (float (/ (- (get-internal-real-time) ,start-time) internal-time-units-per-second))))
+           ,measurer-form)))))
 
 (defmacro with-measured-performance ((unit-var units &key (rounds 8) (strategy 'minimize) (scale :unit) (type 'float)) &body body)
   "Try measuring performance of BODY's execution, with UNITS numerically representing the total amount

@@ -92,8 +92,8 @@
    #:dsignal
    #:derror
    #:with-condition-recourses
-   #:make-condition-raiser
-   #:make-error-raiser
+   #:signalling
+   #:erring
    #:with-retry-restarts
    #:with-ignore-restart
    #:make-fixed-restarter

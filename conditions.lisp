@@ -108,12 +108,12 @@ sought."
                                   ,@(butlast common-clause-body)
                                   (return-from ,block ,(car (last common-clause-body)))))))))))))))))))
 
-(defun make-condition-raiser (type &rest params)
+(defun signalling (type &rest params)
   (lambda (&rest rest)
     (declare (ignore rest))
     (signal type params)))
 
-(defun make-error-raiser (type &rest params)
+(defun erring (type &rest params)
   (lambda (&rest rest)
     (declare (ignore rest))
     (error type params)))

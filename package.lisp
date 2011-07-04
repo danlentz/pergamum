@@ -92,6 +92,7 @@
    #:dsignal
    #:derror
    #:with-condition-recourses
+   #:with-breaking-on-conditions
    #:signalling
    #:erring
    #:with-retry-restarts

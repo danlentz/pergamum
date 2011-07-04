@@ -118,6 +118,14 @@ sought."
     (declare (ignore rest))
     (error type params)))
 
+(defmacro with-breaking-on-conditions ((type) &body body)
+  "Execute BODY within dynamic extent, where unhandled conditions of
+TYPE are intercepted and BREAK-ed upon."
+  (with-gensyms (cond)
+    `(handler-case (progn ,@body)
+       (,type (,cond)
+         (break "Caught: ~A." ,cond)))))
+
 (defmacro with-retry-restarts ((&rest restart-clauses) &body body)
   `(loop (restart-case (return (progn ,@body))
            ,@(iter (for clause in restart-clauses)

@@ -15,6 +15,13 @@ circular list XS."
      :collect x
      :until (eq rest xs)))
 
+(defun intersperse (x xs)
+  "Return a sequence of elements, with X inserted between every two
+adjacent elements of XS."
+  (loop :for (e . rest) :on xs
+     :collect e
+     :when rest :collect x))
+
 (defun maybe-prop (pred key value)
   "Return a list (KEY VALUE), whenever PRED is non-NIL."
   (when pred

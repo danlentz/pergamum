@@ -151,6 +151,7 @@
    ;; lists.lisp
    #:nthref
    #:uncirculate-list
+   #:intersperse
    #:maybe-prop
    #:maybe-prop*
    #:nfsubst

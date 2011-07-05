@@ -71,6 +71,7 @@
    #:up-case-string
    #:decoded-time-string
    ;; string, but really sequences.lisp
+   #:duplicates
    #:prefixp
    ;; binding.lisp
    #:define-binder

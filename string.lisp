@@ -55,3 +55,20 @@ associated string."
 (defun prefixp (prefix sequence)
   "A predicate, determining whether PREFIX is a prefix of SEQUENCE."
   (nth-value 1 (starts-with-subseq prefix sequence :return-suffix t)))
+
+(defun duplicates (xs &key key test &aux
+                   (test (or test 'eql))
+                   (key (or key #'identity)))
+  "Return those elements of XS, which occur more than once, according
+to KEY and TEST."
+  (let ((hash (make-hash-table :test test)))
+    (iter (for x in-sequence xs)
+          (push x (gethash (funcall key x) hash)))
+    (coerce (iter (for (nil v) in-hashtable hash)
+                  (when (> (length v) 1)
+                    (appending v)))
+            (typecase xs
+              (list          'list)
+              (simple-vector 'simple-vector)
+              (vector        'vector)
+              (t             (type-of xs))))))

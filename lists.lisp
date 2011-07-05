@@ -4,6 +4,10 @@
 (in-package :pergamum)
 
 
+(defun nthref (tree &rest indices)
+  "Use INDICES to index into TREE.  Think AREF for lists."
+  (reduce #'nth (append (nreverse indices) (list tree)) :from-end t))
+
 (defun maybe-prop (pred key value)
   "Return a list (KEY VALUE), whenever PRED is non-NIL."
   (when pred

@@ -149,6 +149,7 @@
    #:iterate-until
    #:collect-until
    ;; lists.lisp
+   #:nthref
    #:maybe-prop
    #:maybe-prop*
    #:nfsubst

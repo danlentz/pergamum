@@ -150,6 +150,7 @@
    #:collect-until
    ;; lists.lisp
    #:nthref
+   #:uncirculate-list
    #:maybe-prop
    #:maybe-prop*
    #:nfsubst

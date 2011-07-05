@@ -8,6 +8,13 @@
   "Use INDICES to index into TREE.  Think AREF for lists."
   (reduce #'nth (append (nreverse indices) (list tree)) :from-end t))
 
+(defun uncirculate-list (xs)
+  "Return a non-circular list of all elements of a potentially
+circular list XS."
+  (loop :for (x . rest) :on xs
+     :collect x
+     :until (eq rest xs)))
+
 (defun maybe-prop (pred key value)
   "Return a list (KEY VALUE), whenever PRED is non-NIL."
   (when pred

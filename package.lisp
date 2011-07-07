@@ -151,6 +151,7 @@
    #:collect-until
    ;; lists.lisp
    #:nthref
+   #:try-nthref
    #:uncirculate-list
    #:intersperse
    #:maybe-prop

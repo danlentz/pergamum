@@ -5,8 +5,18 @@
 
 
 (defun nthref (tree &rest indices)
-  "Use INDICES to index into TREE.  Think AREF for lists."
+  "Use INDICES to index into TREE.  Think AREF for lists.
+An error is raised when a non-list appears at any point (except the
+leaf) during tree descent."
   (reduce #'nth (append (nreverse indices) (list tree)) :from-end t))
+
+(defun try-nthref (tree &rest indices)
+  "Like NTHREF, but return NIL when a non-list appears at any point
+during tree descent."
+  (reduce (lambda (i tree)
+            (when (listp tree)
+              (nth i tree)))
+          (append (nreverse indices) (list tree)) :from-end t))
 
 (defun uncirculate-list (xs)
   "Return a non-circular list of all elements of a potentially

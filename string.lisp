@@ -72,3 +72,9 @@ to KEY and TEST."
               (simple-vector 'simple-vector)
               (vector        'vector)
               (t             (type-of xs))))))
+
+(defun parse-csv-line (cs)
+  "Given a string, structured as comma-separated list of elements,
+return these elements with spaces removed."
+  (mapcar (lambda (cs) (string-trim '(#\Space) cs))
+          (split-sequence:split-sequence #\, cs)))

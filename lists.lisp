@@ -13,9 +13,10 @@ leaf) during tree descent."
 (defun try-nthref (tree &rest indices)
   "Like NTHREF, but return NIL when a non-list appears at any point
 during tree descent."
-  (reduce (lambda (i tree)
-            (when (listp tree)
-              (nth i tree)))
+  (reduce (named-lambda rec (i tree)
+            (cond ((not (consp tree)) nil)
+                  ((not (plusp i))    (car tree))
+                  ((consp tree)       (rec (1- i) (cdr tree)))))
           (append (nreverse indices) (list tree)) :from-end t))
 
 (defun uncirculate-list (xs)

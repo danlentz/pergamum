@@ -75,6 +75,15 @@ to KEY and TEST."
 
 (defun parse-csv-line (cs)
   "Given a string, structured as comma-separated list of elements,
-return these elements with spaces removed."
+return these elements, with spaces removed."
   (mapcar (lambda (cs) (string-trim '(#\Space) cs))
           (split-sequence:split-sequence #\, cs)))
+
+(defun parse-csv-alist-line (cs)
+  "Given a string, structured as comma-separated list of key-value
+elements, separated by a colon, return these elements, with spaces
+removed, as an alist."
+  (mapcar (lambda (kv &aux (colon-posn (position #\: kv)))
+            (cons (string-trim '(#\Space) (subseq kv 0 colon-posn))
+                  (string-trim '(#\Space) (subseq kv (1+ colon-posn)))))
+          (parse-csv-line cs)))

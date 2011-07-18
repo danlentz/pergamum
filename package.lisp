@@ -71,6 +71,7 @@
    #:up-case-string
    #:decoded-time-string
    #:parse-csv-line
+   #:parse-csv-alist-line
    ;; string, but really sequences.lisp
    #:duplicates
    #:prefixp

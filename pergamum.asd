@@ -1,7 +1,7 @@
 ;;; -*- Mode: Lisp; indent-tabs-mode: nil -*-
 
 (defsystem :pergamum
-  :depends-on (:alexandria :iterate :cl-fad)
+  :depends-on (:alexandria :iterate :cl-fad :split-sequence)
   :components
   (;; tier dep
    (:file "feet-of-clay")

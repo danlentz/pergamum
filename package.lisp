@@ -79,6 +79,7 @@
    #:define-binder
    ;; classes.lisp
    #:define-protocol-class
+   #:defclass-structly
    ;; objects.lisp
    #:object-identity
    #:named-object
